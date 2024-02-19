@@ -1,13 +1,14 @@
-const express = require('express');
-const PORT = 3000;
+import dotenv from "dotenv"
+import express from "express"
+import routes from "./routes/routes.js"
 
-const app = express();
-app.use(express.json());
+dotenv.config()
 
-app.listen(PORT, () => {
-  console.log(`Server Started at ${3000}`);
-});
+const app = express()
+app.use(express.json())
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+app.listen(3000, () => {
+  console.log(`Server Started at ${3000}`)
+})
+
+app.use("/api", routes)
