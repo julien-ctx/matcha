@@ -50,6 +50,10 @@ Then, access CLI with
 psql -d matcha -U matcha
 ```
 
+#### Migrations
+
+Migrations commands can be written in `backend/database/migrations` in the format `[migration-number]_[action].sql` (example: `001_create_user_table.sql`).
+
 ### Formatting
 
 Prettier and ESlint allow to smoothly format files across the app. Make you sure you have selected the default formatter in your VSCode `settings.json`. 
