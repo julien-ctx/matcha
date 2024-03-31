@@ -5,8 +5,8 @@ const router = express.Router()
 
 router.get("/data", async (req, res) => {
   try {
-    const { rows } = await pool.query("SELECT * FROM matcha")
-    res.json(rows)
+    await pool.query("SELECT 1")
+    res.send("Successfully connected to the database")
   } catch (err) {
     console.error("Error executing query", err.stack)
     res.status(500).send("Server Error")
