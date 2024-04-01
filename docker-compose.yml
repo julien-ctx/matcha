@@ -16,7 +16,7 @@ services:
       - db
     restart: always
     env_file:
-      - ./.env
+      - .env
 
   frontend:
     build:

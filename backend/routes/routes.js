@@ -3,7 +3,7 @@ import pool from "../database/db.js"
 
 const router = express.Router()
 
-router.get("/test", async (req, res) => {
+router.get("/db-test", async (req, res) => {
   try {
     await pool.query("SELECT 1 FROM User WHERE FALSE")
     res.send("The 'User' table exists in the database.")
@@ -16,6 +16,10 @@ router.get("/test", async (req, res) => {
       res.status(500).send("Server Error")
     }
   }
+})
+
+router.get("/front-test", async (req, res) => {
+  res.status(200).send("OK")
 })
 
 export default router
