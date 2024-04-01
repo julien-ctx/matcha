@@ -1,5 +1,6 @@
 version: '3.8'
 services:
+
   backend:
     build:
       context: ./backend
@@ -33,6 +34,7 @@ services:
     image: postgres:14
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

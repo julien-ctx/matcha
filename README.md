@@ -51,6 +51,10 @@ Then, access CLI with
 psql -d matcha -U matcha
 ```
 
+### Tables
+
+You can create default tables by specifying the PostgreSQL command inside `backend/database/init`. When you build and launch the Docker containers, these tables will be created if they don't exist and available in the app.
+
 #### Migrations
 
 Migrations commands can be written in `backend/database/migrations` in the format `[migration-number]_[action].sql` (example: `001_create_user_table.sql`).
