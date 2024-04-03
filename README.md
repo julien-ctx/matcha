@@ -26,29 +26,19 @@ Check that PostgreSQL is *Running* and *Loaded* with
 brew services info postgresql@14
 ```
 
-Start the CLI with
+Access docker container.
 ```
-psql -d postgres -U <macbook-default-username>
-```
-
-In the CLI, create the database
-```
-CREATE DATABASE matcha;
+docker exec -it matcha-db-1 bash
 ```
 
-Then, create the user
+Log into the CLI.
 ```
-CREATE USER matcha WITH ENCRYPTED PASSWORD '<password>';
-```
-
-Grant privilege to the user
-```
-GRANT ALL PRIVILEGES ON DATABASE matcha TO matcha;
+psql -U user matcha
 ```
 
-Then, access CLI with
+List tables.
 ```
-psql -d matcha -U matcha
+\dt
 ```
 
 ### Tables
