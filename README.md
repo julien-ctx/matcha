@@ -4,7 +4,7 @@ At the root of the repository, use `docker compose up -d` to launch the app. Mak
 
 The backend will be accessible on port 3000 and the frontend on port 8080. PostgreSQL database is accessible on port 5432.
 
-A database is created by default with the name `matcha`. The user and password are stored in the .env file.
+A database is created by default with the name `matcha`. The user and password are stored in the .env file. Make sure to delete the volumes if you want to execute the initialization scripts again.
 
 ## Tools
 
