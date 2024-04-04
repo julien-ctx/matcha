@@ -23,8 +23,7 @@ export default function Register() {
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
-    console.log(process.env.NEXT_PUBLIC_API_URL)
-    axios.get(`${process.env.NEXT_PUBLIC_API_URL}front-test`).then((response) => {
+    axios.post(`${process.env.NEXT_PUBLIC_API_URL}register`, formData).then((response) => {
       console.log(response.status)
     })
   }
