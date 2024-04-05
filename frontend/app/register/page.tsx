@@ -23,9 +23,16 @@ export default function Register() {
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
-    axios.post(`${process.env.NEXT_PUBLIC_API_URL}register`, formData).then((response) => {
-      console.log(response.status)
-    })
+    axios
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/register`, formData)
+      .then((response) => {
+        if (response?.data?.jwt) {
+          localStorage.setItem("jwt", response.data.jwt)
+        } else {
+          console.error("Backend didn't send JWT token")
+        }
+      })
+      .catch((error) => console.error("Error:", error))
   }
 
   return (

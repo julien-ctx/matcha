@@ -1,6 +1,10 @@
 import express from "express"
 import pool from "../database/db.js"
 import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import dotenv from "dotenv"
+
+dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
 
@@ -27,9 +31,24 @@ router.post("/register", async (req, res) => {
 
     try {
       const { rows } = await pool.query(query, values)
+      const user = rows[0]
+
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" },
+      )
+
       res.status(201).send({
         message: "User registered successfully",
-        user: rows[0],
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+        },
+        jwt: token,
       })
     } catch (dbError) {
       console.error(dbError)
