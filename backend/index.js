@@ -3,12 +3,12 @@ import express from "express"
 import auth from "./routes/auth.js"
 import cors from "cors"
 
-dotenv.config()
+dotenv.config({ path: "../.env" })
 
 const app = express()
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin: process.env.FRONT_URL,
   }),
 )
 app.use(express.json())
