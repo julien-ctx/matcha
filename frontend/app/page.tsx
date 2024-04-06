@@ -1,13 +1,30 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { useRequireAuth } from "./auth/RequireAuth"
 
 export default function Home() {
-  useRequireAuth()
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const token = useRequireAuth()
+
+  useEffect(() => {
+    if (token) {
+      setIsLoading(false)
+    }
+  }, [token])
 
   return (
     <>
-      <h1>Index</h1>
+      {isLoading && (
+        <>
+          <h1>Loading...</h1>
+        </>
+      )}
+     {!isLoading && (
+        <>
+          <h1>Index</h1>
+        </>
+      )}
     </>
   )
 }
