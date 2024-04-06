@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useContext, useState } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import AuthContext from "./AuthContext"
 
 interface Props {
@@ -16,7 +16,7 @@ export const useAuth = () => {
 }
 
 const AuthProvider = ({ children }: Props) => {
-  const [token, setAuthToken] = useState<string | null>(localStorage.getItem("jwt"))
+  const [token, setAuthToken] = useState<string | null | undefined>(undefined)
 
   const login = (newToken: string) => {
     localStorage.setItem("jwt", newToken)
@@ -27,6 +27,12 @@ const AuthProvider = ({ children }: Props) => {
     localStorage.removeItem("jwt")
     setAuthToken(null)
   }
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setAuthToken(localStorage.getItem("jwt"))
+    }
+  }, [])
 
   return <AuthContext.Provider value={{ token, login, logout }}>{children}</AuthContext.Provider>
 }

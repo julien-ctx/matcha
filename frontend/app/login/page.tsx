@@ -1,10 +1,11 @@
 "use client"
 
 import axios from "axios"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import React from "react"
 import { useAuth } from "../auth/AuthProvider"
 import Link from "next/link"
+import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
 
 export default function Login() {
   const [formData, setFormData] = useState({
@@ -12,8 +13,18 @@ export default function Login() {
     password: "",
   })
   const { login } = useAuth()
+  const router = useRouter()
+  const searchParams: ReadonlyURLSearchParams = useSearchParams()
+  const redirectPath: string | null = searchParams.get("redirect")
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    const jwt = localStorage.getItem("jwt")
+    if (jwt) {
+      router.replace("/")
+    }
+  }, [])
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = event.target
     setFormData((prevState) => ({
       ...prevState,
@@ -21,18 +32,25 @@ export default function Login() {
     }))
   }
 
-  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/login`, formData)
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
+          if (redirectPath) {
+            router.replace(redirectPath)
+          }
         } else {
           console.error("Backend didn't send JWT token")
         }
       })
       .catch((error) => console.error("Error:", error))
+  }
+
+  const getRegisterPath = (): string => {
+    return `register?redirect=${redirectPath ?? ""}`
   }
 
   return (
@@ -65,7 +83,7 @@ export default function Login() {
         Login
       </button>
 
-      <Link href="/register" replace>
+      <Link href={getRegisterPath()} replace>
         Register instead
       </Link>
     </form>

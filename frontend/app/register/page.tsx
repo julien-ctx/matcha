@@ -1,9 +1,11 @@
 "use client"
 
 import axios from "axios"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import React from "react"
 import { useAuth } from "../auth/AuthProvider"
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -13,7 +15,17 @@ export default function Register() {
     lastName: "",
     password: "",
   })
-  const { login } = useAuth();
+  const { login } = useAuth()
+  const router = useRouter()
+  const searchParams: ReadonlyURLSearchParams = useSearchParams()
+  const redirectPath: string | null = searchParams.get("redirect")
+
+  useEffect(() => {
+    const jwt = localStorage.getItem("jwt")
+    if (jwt) {
+      router.replace("/")
+    }
+  }, [])
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -30,6 +42,9 @@ export default function Register() {
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
+          if (redirectPath) {
+            router.replace(redirectPath)
+          }
         } else {
           console.error("Backend didn't send JWT token")
         }

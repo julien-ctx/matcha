@@ -1,7 +1,7 @@
 import { createContext } from "react"
 
 interface Props {
-  token: string | null
+  token: string | null | undefined
   login: (newToken: string) => void
   logout: () => void
 }
