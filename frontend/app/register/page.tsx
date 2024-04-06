@@ -3,6 +3,7 @@
 import axios from "axios"
 import { useState } from "react"
 import React from "react"
+import { useAuth } from "../auth/AuthProvider"
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ export default function Register() {
     lastName: "",
     password: "",
   })
+  const { login } = useAuth();
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -27,7 +29,7 @@ export default function Register() {
       .post(`${process.env.NEXT_PUBLIC_API_URL}/register`, formData)
       .then((response) => {
         if (response?.data?.jwt) {
-          localStorage.setItem("jwt", response.data.jwt)
+          login(response.data.jwt)
         } else {
           console.error("Backend didn't send JWT token")
         }
