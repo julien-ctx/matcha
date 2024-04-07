@@ -1,11 +1,11 @@
 CREATE TYPE gender AS ENUM ('Male', 'Female', 'Other');
 CREATE TYPE sexual_orientation AS ENUM ('Male', 'Female', 'Both', 'Other');
 
-CREATE TABLE IF NOT EXISTS User (
-    user_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS T_USER (
+    id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     gender gender DEFAULT 'Other',
