@@ -64,7 +64,8 @@ router.post("/login", async (req, res) => {
 
   if (!identifier || !password) {
     return res.status(400).send({
-      message: "Please provide both an identifier (username or email) and a password.",
+      message:
+        "Please provide both an identifier (username or email) and a password.",
     })
   }
 
@@ -100,10 +101,10 @@ router.post("/login", async (req, res) => {
       message: "Logged in successfully",
       user: {
         id: user.id,
-          email: user.email,
-          username: user.username,
-          firstName: user.first_name,
-          lastName: user.last_name,
+        email: user.email,
+        username: user.username,
+        firstName: user.first_name,
+        lastName: user.last_name,
       },
       jwt: token,
     })
@@ -113,6 +114,31 @@ router.post("/login", async (req, res) => {
       .status(500)
       .send({ message: "An error occurred during the login process" })
   }
+})
+
+router.post("/jwt-status", async (req, res) => {
+  const { token } = req.body
+
+  if (!token) {
+    return res.status(400).send({
+      valid: false,
+      message: "No token provided.",
+    })
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
+    if (error) {
+      return res.status(401).send({
+        valid: false,
+        message: "Token is invalid.",
+      })
+    }
+
+    res.status(200).send({
+      valid: true,
+      message: "Token is valid.",
+    })
+  })
 })
 
 export default router

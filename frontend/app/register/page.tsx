@@ -15,17 +15,30 @@ export default function Register() {
     lastName: "",
     password: "",
   })
-  const { login } = useAuth()
+  const { token, login } = useAuth()
   const router = useRouter()
   const searchParams: ReadonlyURLSearchParams = useSearchParams()
+  const [isValidating, setIsValidating] = useState<boolean>(true)
   const redirectPath: string | null = searchParams.get("redirect")
 
   useEffect(() => {
-    const jwt = localStorage.getItem("jwt")
-    if (jwt) {
-      router.replace("/")
+    if (token) {
+      axios
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
+        .then((response) => {
+          if (response?.data?.valid) {
+            router.replace(redirectPath ?? "/account")
+          } else {
+            setIsValidating(false)
+          }
+        })
+        .catch((error) => {
+          setIsValidating(false)
+        })
+    } else if (token === null) {
+      setIsValidating(false)
     }
-  }, [])
+  }, [token, router])
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -42,9 +55,6 @@ export default function Register() {
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
-          if (redirectPath) {
-            router.replace(redirectPath)
-          }
         } else {
           console.error("Backend didn't send JWT token")
         }
@@ -53,70 +63,79 @@ export default function Register() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="email">Email:</label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          className="bg-slate-100"
-        />
-      </div>
-      <div>
-        <label htmlFor="username">Username:</label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          value={formData.username}
-          onChange={handleChange}
-          required
-          className="bg-slate-100"
-        />
-      </div>
-      <div>
-        <label htmlFor="firstName">First Name:</label>
-        <input
-          type="text"
-          id="firstName"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
-          required
-          className="bg-slate-100"
-        />
-      </div>
-      <div>
-        <label htmlFor="lastName">Last Name:</label>
-        <input
-          type="text"
-          id="lastName"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
-          required
-          className="bg-slate-100"
-        />
-      </div>
-      <div>
-        <label htmlFor="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          className="bg-slate-100"
-        />
-      </div>
-      <button type="submit" className="bg-slate-100">
-        Register
-      </button>
-    </form>
+    <>
+      {isValidating && (
+        <>
+          <h1>Loading...</h1>
+        </>
+      )}
+      {!isValidating && (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="bg-slate-100"
+            />
+          </div>
+          <div>
+            <label htmlFor="username">Username:</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              className="bg-slate-100"
+            />
+          </div>
+          <div>
+            <label htmlFor="firstName">First Name:</label>
+            <input
+              type="text"
+              id="firstName"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+              className="bg-slate-100"
+            />
+          </div>
+          <div>
+            <label htmlFor="lastName">Last Name:</label>
+            <input
+              type="text"
+              id="lastName"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+              className="bg-slate-100"
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="bg-slate-100"
+            />
+          </div>
+          <button type="submit" className="bg-slate-100">
+            Register
+          </button>
+        </form>
+      )}
+    </>
   )
 }

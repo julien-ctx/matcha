@@ -1,8 +1,9 @@
 "use client"
 
-import { useRequireAuth } from "./auth/RequireAuth"
+import React from "react"
+import { useRequireAuth } from "../auth/RequireAuth"
 
-export default function Home() {
+export default function Account() {
   const { isValidating } = useRequireAuth()
 
   return (
@@ -14,7 +15,7 @@ export default function Home() {
       )}
       {!isValidating && (
         <>
-          <h1>Index</h1>
+          <h1>Account</h1>
         </>
       )}
     </>

@@ -12,17 +12,30 @@ export default function Login() {
     identifier: "",
     password: "",
   })
-  const { login } = useAuth()
+  const { token, login } = useAuth()
   const router = useRouter()
   const searchParams: ReadonlyURLSearchParams = useSearchParams()
+  const [isValidating, setIsValidating] = useState<boolean>(true)
   const redirectPath: string | null = searchParams.get("redirect")
 
   useEffect(() => {
-    const jwt = localStorage.getItem("jwt")
-    if (jwt) {
-      router.replace("/")
+    if (token) {
+      axios
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
+        .then((response) => {
+          if (response?.data?.valid) {
+            router.replace(redirectPath ?? "/account")
+          } else {
+            setIsValidating(false)
+          }
+        })
+        .catch((error) => {
+          setIsValidating(false)
+        })
+    } else if (token === null) {
+      setIsValidating(false)
     }
-  }, [])
+  }, [token, router])
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = event.target
@@ -39,9 +52,6 @@ export default function Login() {
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
-          if (redirectPath) {
-            router.replace(redirectPath)
-          }
         } else {
           console.error("Backend didn't send JWT token")
         }
@@ -50,42 +60,51 @@ export default function Login() {
   }
 
   const getRegisterPath = (): string => {
-    return `register?redirect=${redirectPath ?? ""}`
+    return `register?redirect=${redirectPath ?? "/"}`
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="identifier">Email or username:</label>
-        <input
-          type="identifier"
-          id="identifier"
-          name="identifier"
-          value={formData.identifier}
-          onChange={handleChange}
-          required
-          className="bg-slate-100"
-        />
-      </div>
-      <div>
-        <label htmlFor="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          className="bg-slate-100"
-        />
-      </div>
-      <button type="submit" className="bg-slate-100">
-        Login
-      </button>
+    <>
+      {isValidating && (
+        <>
+          <h1>Loading...</h1>
+        </>
+      )}
+      {!isValidating && (
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="identifier">Email or username:</label>
+            <input
+              type="identifier"
+              id="identifier"
+              name="identifier"
+              value={formData.identifier}
+              onChange={handleChange}
+              required
+              className="bg-slate-100"
+            />
+          </div>
+          <div>
+            <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="bg-slate-100"
+            />
+          </div>
+          <button type="submit" className="bg-slate-100">
+            Login
+          </button>
 
-      <Link href={getRegisterPath()} replace>
-        Register instead
-      </Link>
-    </form>
+          <Link href={getRegisterPath()} replace>
+            Register instead
+          </Link>
+        </form>
+      )}
+    </>
   )
 }
