@@ -3,10 +3,20 @@ import pool from "../database/db.js"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
+import nodemailer from "nodemailer"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
+
+const transporter = nodemailer.createTransport({
+  host: "sandbox.smtp.mailtrap.io",
+  port: 2525,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+})
 
 router.post("/register", async (req, res) => {
   const { email, username, firstName, lastName, password } = req.body
@@ -33,11 +43,25 @@ router.post("/register", async (req, res) => {
       const { rows } = await pool.query(query, values)
       const user = rows[0]
 
-      const token = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET,
+      const authToken = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.AUTH_JWT_SECRET,
         { expiresIn: "24h" },
       )
+
+      const verificationToken = jwt.sign(
+        { id: user.id, email: user.email },
+        process.env.SMTP_JWT_SECRET,
+        { expiresIn: "15m" },
+      )
+
+      const verificationUrl = `${process.env.FRONT_URL}/verify?token=${verificationToken}`
+      await transporter.sendMail({
+        from: process.env.SMTP_SENDER_EMAIL,
+        to: email,
+        subject: "Verify your account",
+        html: `<p>Please click the following link to verify your account: <a href="${verificationUrl}">Verify now</a></p>`,
+      })
 
       res.status(201).send({
         message: "Registered successfully",
@@ -48,7 +72,7 @@ router.post("/register", async (req, res) => {
           firstName: user.first_name,
           lastName: user.last_name,
         },
-        jwt: token,
+        jwt: authToken,
       })
     } catch (dbError) {
       console.error(dbError)
@@ -92,8 +116,8 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET,
+      { id: user.id, email: user.email },
+      process.env.AUTH_JWT_SECRET,
       { expiresIn: "24h" },
     )
 
@@ -126,7 +150,7 @@ router.post("/jwt-status", async (req, res) => {
     })
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
+  jwt.verify(token, process.env.AUTH_JWT_SECRET, (error) => {
     if (error) {
       return res.status(401).send({
         valid: false,
@@ -139,6 +163,47 @@ router.post("/jwt-status", async (req, res) => {
       message: "Token is valid.",
     })
   })
+})
+
+router.post("/verify", async (req, res) => {
+  const { token } = req.body
+
+  if (!token) {
+    return res.status(400).send({
+      message: "No verification token provided.",
+    })
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.SMTP_JWT_SECRET)
+    const id = decoded.id
+
+    const query = `
+      UPDATE T_USER
+      SET account_verified = TRUE
+      WHERE id = $1;
+    `
+
+    await pool.query(query, [id])
+
+    res.status(200).send({
+      message: "Account verified successfully.",
+    })
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).send({
+        message: "Verification token is expired.",
+      })
+    } else if (error.name === "JsonWebTokenError") {
+      return res.status(401).send({
+        message: "Verification token is invalid.",
+      })
+    } else {
+      return res.status(500).send({
+        message: "An error occurred during the verification process.",
+      })
+    }
+  }
 })
 
 export default router
