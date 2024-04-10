@@ -22,12 +22,8 @@ export default function Login() {
     if (token) {
       axios
         .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
-        .then((response) => {
-          if (response?.data?.valid) {
-            router.replace(redirectPath ?? "/account")
-          } else {
-            setIsValidating(false)
-          }
+        .then(() => {
+          router.replace(redirectPath ?? "/account")
         })
         .catch((error) => {
           setIsValidating(false)
@@ -103,6 +99,8 @@ export default function Login() {
           <Link href={getRegisterPath()} replace>
             Register instead
           </Link>
+
+          <button onClick={() => router.replace("/recover-password")}>Recover password</button>
         </form>
       )}
     </>

@@ -5,11 +5,20 @@ import { useAuth } from "./AuthProvider"
 import { usePathname, useRouter } from "next/navigation"
 import axios from "axios"
 
+interface User {
+  id: number,
+  email: string,
+  username: string,
+  firstName: string,
+  lastName: string
+}
+
 export const useRequireAuth = (redirectUrl = "/login") => {
   const { token, logout } = useAuth()
   const router = useRouter()
   const currentPath = usePathname()
   const [isValidating, setIsValidating] = useState<boolean>(true)
+  const [user, setUser] = useState<User | undefined>(undefined)
 
   useEffect(() => {
     const checkJWT = async () => {
@@ -17,10 +26,9 @@ export const useRequireAuth = (redirectUrl = "/login") => {
         await axios
           .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
           .then((response) => {
-            if (response?.data?.valid) {
+            if (response?.data?.user) {
+              setUser(response.data.user)
               setIsValidating(false)
-            } else {
-              logout()
             }
           })
           .catch((error) => {
@@ -34,5 +42,5 @@ export const useRequireAuth = (redirectUrl = "/login") => {
     checkJWT()
   }, [token, router, redirectUrl])
 
-  return { token, isValidating }
+  return { token, isValidating, user }
 }
