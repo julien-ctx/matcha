@@ -25,12 +25,8 @@ export default function Register() {
     if (token) {
       axios
         .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
-        .then((response) => {
-          if (response?.data?.valid) {
-            router.replace(redirectPath ?? "/account")
-          } else {
-            setIsValidating(false)
-          }
+        .then(() => {
+          router.replace(redirectPath ?? "/account")
         })
         .catch((error) => {
           setIsValidating(false)
