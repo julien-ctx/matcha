@@ -24,7 +24,7 @@ export const useRequireAuth = (redirectUrl = "/login") => {
     const checkJWT = async () => {
       if (token) {
         await axios
-          .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
+          .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
           .then((response) => {
             if (response?.data?.user) {
               setUser(response.data.user)
