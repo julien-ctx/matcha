@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
+import './globals.css'
+import '@picocss/pico'
 import AuthProvider from "./auth/AuthProvider"
-
-const inter = Inter({ subsets: ["latin"] })
+import Header from "./header/Header"
 
 export const metadata: Metadata = {
   title: "Matcha",
@@ -17,9 +16,14 @@ export default function RootLayout({
 }>) {
   return (
     <AuthProvider>
-      <html lang="en">
-        <body className={inter.className}>{children}</body>
-      </html>
+    <html lang="en">
+      <body>
+      <Header />
+      <main>
+        {children}
+      </main>
+      </body>
+    </html>
     </AuthProvider>
   )
 }

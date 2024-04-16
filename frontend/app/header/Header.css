@@ -1,0 +1,3 @@
+header {
+    @apply bg-red-300 h-24 flex justify-between items-center w-full; 
+}

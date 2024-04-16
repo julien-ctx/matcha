@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { useAuth } from "./AuthProvider"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import axios from "axios"
+import { AuthStatus } from "./authTypes"
 
 export const useRequireAuth = (redirectUrl = "/login") => {
   const { token, logout } = useAuth()
   const router = useRouter()
-  const currentPath = usePathname()
-  const [isValidating, setIsValidating] = useState<boolean>(true)
+  const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.Validating);
 
   useEffect(() => {
     const checkJWT = async () => {
@@ -18,8 +18,9 @@ export const useRequireAuth = (redirectUrl = "/login") => {
           .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
           .then((response) => {
             if (response?.data?.valid) {
-              setIsValidating(false)
+              setAuthStatus(AuthStatus.Validated);
             } else {
+              setAuthStatus(AuthStatus.NotValidated);
               logout()
             }
           })
@@ -27,12 +28,14 @@ export const useRequireAuth = (redirectUrl = "/login") => {
             logout()
           })
       } else if (token === null) {
-        router.replace(`${redirectUrl}?redirect=${currentPath}`)
+        console.log('token is null')
+        setAuthStatus(AuthStatus.NotValidated);
+        // router.replace(`${redirectUrl}?redirect=${currentPath}`)
       }
     }
 
     checkJWT()
   }, [token, router, redirectUrl])
 
-  return { token, isValidating }
+  return { token, authStatus }
 }
