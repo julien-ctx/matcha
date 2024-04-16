@@ -15,7 +15,7 @@ const authenticateJWT = (req, res, next) => {
     return res.sendStatus(401)
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (error, user) => {
+  jwt.verify(token, process.env.AUTH_JWT_SECRET, (error, user) => {
     if (error) {
       console.log("Error:", error)
       return res.sendStatus(403)
