@@ -12,8 +12,7 @@ CREATE TABLE IF NOT EXISTS T_USER (
     sexual_orientation sexual_orientation DEFAULT 'Both',
     bio TEXT,
     interests TEXT,
-    profile_picture VARCHAR(255),
-    additional_pictures TEXT,
+    pictures TEXT[] CHECK (array_length(pictures, 1) <= 5),
     fame_rating INTEGER DEFAULT 0,
     gps_location VARCHAR(255),
     last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -21,4 +20,20 @@ CREATE TABLE IF NOT EXISTS T_USER (
     account_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS T_VIEW (
+    id SERIAL PRIMARY KEY,
+    viewer_id INTEGER NOT NULL REFERENCES T_USER(id),
+    viewed_id INTEGER NOT NULL REFERENCES T_USER(id),
+    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(viewer_id, viewed_id, viewed_at)
+);
+
+CREATE TABLE IF NOT EXISTS T_LIKE (
+    id SERIAL PRIMARY KEY,
+    liker_id INTEGER NOT NULL REFERENCES T_USER(id),
+    liked_id INTEGER NOT NULL REFERENCES T_USER(id),
+    liked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(liker_id, liked_id)
 );
