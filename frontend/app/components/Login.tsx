@@ -7,7 +7,11 @@ import { useAuth } from "../auth/AuthProvider"
 import Link from "next/link"
 import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
 
-export default function Login() {
+interface LoginProps {
+  setModalOpen: (value: boolean) => void
+}
+
+export default function Login({ setModalOpen }: LoginProps) {
   const [formData, setFormData] = useState({
     identifier: "",
     password: "",
@@ -100,7 +104,9 @@ export default function Login() {
             Login
           </button>
 
-          <Link href={getRegisterPath()} replace>
+          <Link href={getRegisterPath()} replace onClick={() => {
+            setModalOpen(false);
+          }}>
             Register instead
           </Link>
         </form>

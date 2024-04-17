@@ -20,7 +20,7 @@ const Header : React.FC = () => {
                     setModalOpen(false)
                 }}
             >
-                <Login />
+                <Login setModalOpen={setModalOpen}/>
             </Modal>
 
         </header>

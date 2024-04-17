@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import './globals.css'
-import '@picocss/pico'
 import AuthProvider from "./auth/AuthProvider"
 import Header from "./header/Header"
 
@@ -18,10 +17,10 @@ export default function RootLayout({
     <AuthProvider>
     <html lang="en">
       <body>
-      <Header />
-      <main>
-        {children}
-      </main>
+        <Header />
+        <main>
+          {children}
+        </main>
       </body>
     </html>
     </AuthProvider>

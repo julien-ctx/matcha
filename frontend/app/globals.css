@@ -18,5 +18,5 @@ html, body {
 }
 
 main {
-    @apply flex w-full h-full justify-center items-center z-0;
+    @apply flex w-full h-full justify-center items-center z-0 m-0 pt-16;
 }
