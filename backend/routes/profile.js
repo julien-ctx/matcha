@@ -98,6 +98,7 @@ router.put("/details", authenticateJWT, async (req, res) => {
     await pool.query(query, values)
     res.send({ message: "Profile updated successfully" })
   } catch (error) {
+    console.error("Database error:", error)
     res
       .status(500)
       .send({ message: "Failed to update profile", error: error.message })
@@ -115,6 +116,7 @@ router.post("/:userId/view", authenticateJWT, async (req, res) => {
     const result = await pool.query(query, [viewerId, viewedId])
     res.status(200).send({ message: "Profile view recorded" })
   } catch (error) {
+    console.error("Database error:", error)
     res.status(500).send({ message: "Failed to record profile view" })
   }
 })
@@ -130,7 +132,7 @@ router.post("/:userId/like", authenticateJWT, async (req, res) => {
     const result = await pool.query(query, [likerId, likedId])
     res.status(200).send({ message: "Profile like recorded" })
   } catch (error) {
-    console.error(error)
+    console.error("Database error:", error)
     res.status(500).send({ message: "Failed to record profile like" })
   }
 })
@@ -170,6 +172,26 @@ router.get("/views", authenticateJWT, async (req, res) => {
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to retrieve views" })
+  }
+})
+
+/* Route to get history of profiles viewed by the currently authenticated user */
+router.get("/view-history", authenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const query = `
+            SELECT v.viewed_id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+            FROM T_VIEW v
+            JOIN T_USER u ON u.id = v.viewed_id
+            WHERE v.viewer_id = $1
+            ORDER BY v.viewed_at DESC;
+        `
+    const result = await pool.query(query, [userId])
+    res.json(result.rows)
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({ message: "Failed to retrieve viewed profiles" })
   }
 })
 

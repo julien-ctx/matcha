@@ -145,7 +145,7 @@ router.post("/login", async (req, res) => {
       jwt: token,
     })
   } catch (error) {
-    console.error(error)
+    console.error("Database error:", error)
     res
       .status(500)
       .send({ message: "An error occurred during the login process" })
@@ -169,11 +169,12 @@ router.post("/jwt-status", async (req, res) => {
         email: decoded.email,
         username: decoded.email,
         firstName: decoded.firstName,
-        lastName: decoded.lastName
+        lastName: decoded.lastName,
       },
       message: "Token is valid",
     })
   } catch (error) {
+    console.error("Database error:", error)
     return res.status(401).send({
       message: "Token is invalid.",
     })
@@ -205,6 +206,7 @@ router.post("/verify", async (req, res) => {
       message: "Account verified successfully.",
     })
   } catch (error) {
+    console.error("Database error:", error)
     if (error.name === "TokenExpiredError") {
       return res.status(401).send({
         message: "Verification token is expired.",
@@ -268,6 +270,7 @@ router.post("/password-recovery-email", async (req, res) => {
         "If that email address is in our system, we've sent a password recovery link.",
     })
   } catch (error) {
+    console.error("Database error:", error)
     return res.status(500).send({
       message:
         "An error occurred while trying to send the password recovery email.",
@@ -305,6 +308,7 @@ router.post("/update-password", async (req, res) => {
       })
     })
   } catch (error) {
+    console.error("Database error:", error)
     if (error.name === "TokenExpiredError") {
       return res.status(401).send({
         message: "Recovery token is expired.",
