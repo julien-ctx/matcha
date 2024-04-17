@@ -28,7 +28,18 @@ router.get("/details/:userId?", authenticateJWT, async (req, res) => {
 /* Update the details of the currently authenticated user. */
 router.put("/details", authenticateJWT, async (req, res) => {
   const userId = req.user.id
-  const { email, firstName, lastName, bio, pictures, gpsLocation } = req.body
+  const {
+    email,
+    firstName,
+    lastName,
+    gender,
+    sexualOrientation,
+    bio,
+    tags,
+    pictures,
+    gpsLocation,
+    isOnline,
+  } = req.body
 
   try {
     const updates = []
@@ -47,9 +58,21 @@ router.put("/details", authenticateJWT, async (req, res) => {
       updates.push(`last_name = $${paramIndex++}`)
       values.push(lastName)
     }
+    if (gender) {
+      updates.push(`gender = $${paramIndex++}`)
+      values.push(gender)
+    }
+    if (sexualOrientation) {
+      updates.push(`sexual_orientation = $${paramIndex++}`)
+      values.push(sexualOrientation)
+    }
     if (bio) {
       updates.push(`bio = $${paramIndex++}`)
       values.push(bio)
+    }
+    if (tags) {
+      updates.push(`tags = $${paramIndex++}`)
+      values.push(tags)
     }
     if (pictures) {
       updates.push(`pictures = $${paramIndex++}`)
@@ -58,6 +81,10 @@ router.put("/details", authenticateJWT, async (req, res) => {
     if (gpsLocation) {
       updates.push(`gps_location = $${paramIndex++}`)
       values.push(gpsLocation)
+    }
+    if (isOnline !== undefined) {
+      updates.push(`is_online = $${paramIndex++}`)
+      values.push(isOnline)
     }
 
     if (updates.length === 0) {
