@@ -77,13 +77,14 @@ router.put("/details", authenticateJWT, async (req, res) => {
   }
 })
 
+/* Save who the currently authenticated user has viewed */
 router.post("/:userId/view", authenticateJWT, async (req, res) => {
   const viewerId = req.user.id
   const viewedId = req.params.userId
 
   try {
     const query =
-      "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW()) ON CONFLICT (viewer_id, viewed_id) DO NOTHING"
+      "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW());"
     const result = await pool.query(query, [viewerId, viewedId])
     res.status(200).send({ message: "Profile view recorded" })
   } catch (error) {
@@ -91,18 +92,57 @@ router.post("/:userId/view", authenticateJWT, async (req, res) => {
   }
 })
 
+/* Save who the currently authenticated user has liked */
 router.post("/:userId/like", authenticateJWT, async (req, res) => {
   const likerId = req.user.id
   const likedId = req.params.userId
 
   try {
     const query =
-      "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
+      "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW());"
     const result = await pool.query(query, [likerId, likedId])
     res.status(200).send({ message: "Profile like recorded" })
   } catch (error) {
     console.error(error)
     res.status(500).send({ message: "Failed to record profile like" })
+  }
+})
+
+/* Retrieve an array of people who likes the currently authenticated user */
+router.get("/likes", authenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const query = `
+            SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+            FROM T_USER u
+            JOIN T_LIKE l ON l.liker_id = u.id
+            WHERE l.liked_id = $1;
+        `
+    const result = await pool.query(query, [userId])
+    res.json(result.rows)
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({ message: "Failed to retrieve likes" })
+  }
+})
+
+/* Retrieve an array of people who viewed the currently authenticated user */
+router.get("/views", authenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const query = `
+            SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+            FROM T_USER u
+            JOIN T_VIEW v ON v.viewer_id = u.id
+            WHERE v.viewed_id = $1;
+        `
+    const result = await pool.query(query, [userId])
+    res.json(result.rows)
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({ message: "Failed to retrieve views" })
   }
 })
 
