@@ -1,0 +1,76 @@
+.popup-container {
+    position: relative;
+    text-align: center;
+}
+
+.popup-button {
+    margin: 20px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.popup-content {
+    position: absolute;
+    top: 100%; /* Position below the button */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    visibility: hidden; /* Hide by default */
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.popup-container:focus-within .popup-content {
+    visibility: visible; /* Show on hover */
+    opacity: 1;
+}
+
+.popup-content::before {
+    content: "";
+    position: absolute;
+    top: -20px; /* Position above the popup */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 10px; /* Adjust size as needed */
+    border-style: solid;
+    border-color: transparent transparent #f9f9f9 transparent; /* Bottom border visible, pointing upwards */
+}
+
+.profile-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-image {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.menu-content {
+    position: absolute;
+    top: 100%; /* Adjust based on your layout */
+    left: 0;
+    width: 150px; /* Adjust width as needed */
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    display: none; /* Hide by default */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-menu-container:focus-within .menu-content {
+    display: block;
+    opacity: 1;
+}

@@ -25,6 +25,7 @@ export const useRequireAuth = (redirectUrl = "/login") => {
             }
           })
           .catch((error) => {
+            setAuthStatus(AuthStatus.NotValidated);
             logout()
           })
       } else if (token === null) {
