@@ -128,12 +128,31 @@ router.post("/:userId/like", authenticateJWT, async (req, res) => {
 
   try {
     const query =
-      "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW());"
+      "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
     const result = await pool.query(query, [likerId, likedId])
     res.status(200).send({ message: "Profile like recorded" })
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to record profile like" })
+  }
+})
+
+/* Remove a like from the authenticated user to another user */
+router.delete("/:userId/unlike", authenticateJWT, async (req, res) => {
+  const likerId = req.user.id
+  const likedId = req.params.userId
+
+  try {
+    const query = "DELETE FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2"
+    const result = await pool.query(query, [likerId, likedId])
+    if (result.rowCount === 0) {
+      res.status(404).send({ message: "Like not found or already removed" })
+    } else {
+      res.status(200).send({ message: "Profile unlike successful" })
+    }
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({ message: "Failed to remove like" })
   }
 })
 
