@@ -1,5 +1,5 @@
 import Chat from "./Chat"
-import Match from "./Matcha"
+import Match from "./Match"
 
 export default function MySpace() {
     return (
