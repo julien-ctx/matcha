@@ -64,51 +64,58 @@ export default function Login({ setModalOpen }: LoginProps) {
   }
 
   return (
-    <>
+    <div className="p-0 h-72 flex justify-center items-center flex-col gap-2">
+      <h1 className="text-4xl">Get Started</h1>
       {isValidating && (
         <>
           <h1>Loading...</h1>
         </>
       )}
       {!isValidating && (
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="identifier">Email or username:</label>
-            <input
-              type="identifier"
-              id="identifier"
-              name="identifier"
-              value={formData.identifier}
-              onChange={handleChange}
-              required
-              className="bg-slate-100"
-            />
+        <div className="w-full flex flex-col justify-center items-center p-2">
+          <form onSubmit={handleSubmit} className=" w-full flex flex-col gap-2 p-2 items-center">
+            <div className="w-full flex justify-center">
+              <label className="w-1/3 text-end pr-2" htmlFor="identifier">Email / Username:</label>
+              <input
+                type="identifier"
+                id="identifier"
+                name="identifier"
+                value={formData.identifier}
+                onChange={handleChange}
+                required
+                className="bg-slate-100 h-7 w-2/5"
+              />
+            </div>
+            <div className="w-full flex justify-center">
+              <label className="w-1/3 text-end pr-2" htmlFor="password">Password:</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className="bg-slate-100 h-7 w-2/5"
+              />
+            </div>
+            <button type="submit" className="bg-slate-200 hover:brightness-90 px-3 py-1">
+              Login
+            </button>
+          </form>
+          <div className="flex flex-col text-sm justify-center items-center"> 
+            <button className="bg-white hover:brightness-90 px-2 " onClick={() => {
+              setModalOpen(false);
+              router.replace("/recover-password");
+            }}>I forgot the password</button>
+            <Link className="bg-white hover:brightness-90 px-2" href={getRegisterPath()} replace onClick={() => {
+              setModalOpen(false);
+            }}>
+              Register
+            </Link>
           </div>
-          <div>
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="bg-slate-100"
-            />
-          </div>
-          <button type="submit" className="bg-slate-100">
-            Login
-          </button>
+        </div>
 
-          <Link href={getRegisterPath()} replace onClick={() => {
-            setModalOpen(false);
-          }}>
-            Register instead
-          </Link>
-
-          <button onClick={() => router.replace("/recover-password")}>Recover password</button>
-        </form>
       )}
-    </>
+    </div>
   )
 }

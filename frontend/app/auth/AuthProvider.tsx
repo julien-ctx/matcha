@@ -3,18 +3,11 @@
 import React, { useContext, useEffect, useState } from "react"
 import AuthContext from "./AuthContext"
 import axios from "axios"
-import { AuthStatus } from "./authTypes"
+import { AuthStatus, User } from "./authTypes"
+import Header from "../header/Header"
 
 interface Props {
   children: React.ReactNode
-}
-
-interface User {
-  id: number,
-  email: string,
-  username: string,
-  firstName: string,
-  lastName: string
 }
 
 export const useAuth = () => {
@@ -28,7 +21,7 @@ export const useAuth = () => {
 const AuthProvider = ({ children }: Props) => {
   const [token, setAuthToken] = useState<string | null | undefined>(undefined)
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.Validating);
-  // const [user, setUser] = useState<User | undefined>(undefined)
+  const [user, setUser] = useState<User | undefined>(undefined)
 
   const login = (newToken: string) => {
     localStorage.setItem("jwt", newToken)
@@ -49,24 +42,23 @@ const AuthProvider = ({ children }: Props) => {
     
     setAuthStatus(AuthStatus.Validated)
 
-    // if (storedToken) {
-    //   axios.post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token: storedToken })
-    //     .then((response) => {
-    //       if (response?.data?.user) {
-              // setUser(response.data.user)
-    //         setAuthStatus(AuthStatus.Validated);
-    //       } else {
-    //         logout();
-    //       }
-    //     })
-    //     .catch(logout);
-    // } else {
-    //   console.log("here");
-    //   logout();
-    // }
+    if (storedToken) {
+      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token: storedToken })
+        .then((response) => {
+          if (response?.data?.user) {
+              setUser(response.data.user)
+            setAuthStatus(AuthStatus.Validated);
+          } else {
+            logout();
+          }
+        })
+        .catch(logout);
+    } else {
+      logout();
+    }
   }, []);
 
-  return <AuthContext.Provider value={{ token, login, logout, authStatus }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ token, login, logout, authStatus, user }}>{children}</AuthContext.Provider>
   // return { token, isValidating, user }
 }
 

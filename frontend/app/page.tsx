@@ -10,11 +10,7 @@ export default function Home() {
 
   return (
     <div className="w-full h-full">
-      {authStatus === AuthStatus.Validating ? (
-        <>
-          <h1>Loading...</h1>
-        </>
-      ) : authStatus === AuthStatus.NotValidated ? (
+      {authStatus === AuthStatus.NotValidated ? (
         <PublicHome />
       ) : authStatus === AuthStatus.Validated ? (
         <MySpace />

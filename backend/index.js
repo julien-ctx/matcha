@@ -15,10 +15,11 @@ app.use(
 )
 app.use(express.json())
 
+app.use("/auth", auth)
+app.use("/profile", profile)
+app.use("/social", social)
+
 app.listen(3000, () => {
   console.log(`Server Started at ${3000}`)
 })
 
-app.use("/auth", auth)
-app.use("/profile", profile)
-app.use("/social", social)

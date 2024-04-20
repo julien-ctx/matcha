@@ -18,7 +18,10 @@ const enum Gender {
 }
 
 const interestsList = [
-    '#travel', '#food', '#music', '#sports', '#movies', '#books', '#art', '#photography', '#fashion', '#gaming', '#tech', '#fitness', '#cooking', '#nature', '#animals', '#science', '#history', '#politics', '#philosophy', '#religion', '#languages', '#culture', '#education', '#business', '#finance', '#health', '#lifestyle', '#beauty', '#parenting', '#relationships', '#self-improvement', '#spirituality', '#social-issues', '#environment', '#sustainability', '#human-rights'
+    'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
+    'musician', 'foodie', 'gamer', 'nature lover', 'fitness enthusiast',
+    'traveler', 'bookworm', 'movie buff', 'science nerd', 'fashionista',
+    'social butterfly', 'homebody', 'pet lover', 'diy enthusiast'
 ]
 
 export default function Details() {

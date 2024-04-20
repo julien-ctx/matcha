@@ -8,11 +8,13 @@ export default function PublicHeader() {
     const [isModalOpen, setModalOpen] = useState(false);
 
     return (
-        <div className="w-full">
-            <h1>Matcha</h1>
-            <button onClick={() => {
+        <div className="relative w-full">
+            <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl">Matcha</h1>
+            <button 
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-slate-400 px-4 hover:brightness-75 text-white"
+                onClick={() => {
                 setModalOpen(true);
-            }}>login</button>
+            }}>Log in</button>
                 <Modal 
                     isOpen={isModalOpen}
                     onClose={() => {
@@ -21,7 +23,6 @@ export default function PublicHeader() {
                 >
                     <Login setModalOpen={setModalOpen}/>
                 </Modal>
-
         </div>
     )
 }

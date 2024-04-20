@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html, body {
-    @apply w-screen h-screen m-0 p-0;
+    @apply w-screen h-screen m-0 p-0 select-none;
 }
 
 main {

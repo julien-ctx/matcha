@@ -1,7 +1,7 @@
 export default function PublicHome() {
     return (
-        <div>
-            <h1>public home page</h1>
+        <div className="h-full w-full pt-20 flex justify-center items-center">
+            <h1>Find your love</h1>
         </div>
     )
 }
