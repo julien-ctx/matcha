@@ -3,6 +3,7 @@ import express from "express"
 import auth from "./routes/auth.js"
 import profile from "./routes/profile.js"
 import social from "./routes/social.js"
+import explore from "./routes/explore.js"
 import cors from "cors"
 
 dotenv.config({ path: "../.env" })
@@ -22,3 +23,4 @@ app.listen(3000, () => {
 app.use("/auth", auth)
 app.use("/profile", profile)
 app.use("/social", social)
+app.use("/explore", explore)
