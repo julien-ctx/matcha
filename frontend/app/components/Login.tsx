@@ -25,13 +25,9 @@ export default function Login({ setModalOpen }: LoginProps) {
   useEffect(() => {
     if (token) {
       axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
-        .then((response) => {
-          if (response?.data?.valid) {
-            router.replace(redirectPath ?? "/account")
-          } else {
-            setIsValidating(false)
-          }
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
+        .then(() => {
+          router.replace(redirectPath ?? "/account")
         })
         .catch((error) => {
           setIsValidating(false)
@@ -52,7 +48,7 @@ export default function Login({ setModalOpen }: LoginProps) {
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
     axios
-      .post(`${process.env.NEXT_PUBLIC_API_URL}/login`, formData)
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, formData)
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
@@ -109,6 +105,8 @@ export default function Login({ setModalOpen }: LoginProps) {
           }}>
             Register instead
           </Link>
+
+          <button onClick={() => router.replace("/recover-password")}>Recover password</button>
         </form>
       )}
     </>

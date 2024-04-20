@@ -44,14 +44,20 @@ router.post("/register", async (req, res) => {
       const user = rows[0]
 
       const authToken = jwt.sign(
-        { id: user.id, email: user.email },
+        {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstName: user.first_name,
+          lastName: user.last_name,
+        },
         process.env.AUTH_JWT_SECRET,
         { expiresIn: "24h" },
       )
 
       const verificationToken = jwt.sign(
         { id: user.id, email: user.email },
-        process.env.SMTP_JWT_SECRET,
+        process.env.VERIF_JWT_SECRET,
         { expiresIn: "15m" },
       )
 
@@ -95,7 +101,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const query = `
-      SELECT id, email, username, password
+      SELECT id, email, username, first_name, last_name, password
       FROM T_USER
       WHERE email = $1 OR username = $1;
     `
@@ -116,7 +122,13 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.id, email: user.email },
+      {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      },
       process.env.AUTH_JWT_SECRET,
       { expiresIn: "24h" },
     )
@@ -133,7 +145,7 @@ router.post("/login", async (req, res) => {
       jwt: token,
     })
   } catch (error) {
-    console.error(error)
+    console.error("Database error:", error)
     res
       .status(500)
       .send({ message: "An error occurred during the login process" })
@@ -145,24 +157,28 @@ router.post("/jwt-status", async (req, res) => {
 
   if (!token) {
     return res.status(400).send({
-      valid: false,
       message: "No token provided.",
     })
   }
 
-  jwt.verify(token, process.env.AUTH_JWT_SECRET, (error) => {
-    if (error) {
-      return res.status(401).send({
-        valid: false,
-        message: "Token is invalid.",
-      })
-    }
-
-    res.status(200).send({
-      valid: true,
-      message: "Token is valid.",
+  try {
+    const decoded = jwt.verify(token, process.env.AUTH_JWT_SECRET)
+    return res.status(200).send({
+      user: {
+        id: decoded.id,
+        email: decoded.email,
+        username: decoded.email,
+        firstName: decoded.firstName,
+        lastName: decoded.lastName,
+      },
+      message: "Token is valid",
     })
-  })
+  } catch (error) {
+    console.error("Database error:", error)
+    return res.status(401).send({
+      message: "Token is invalid.",
+    })
+  }
 })
 
 router.post("/verify", async (req, res) => {
@@ -175,7 +191,7 @@ router.post("/verify", async (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.SMTP_JWT_SECRET)
+    const decoded = jwt.verify(token, process.env.VERIF_JWT_SECRET)
     const id = decoded.id
 
     const query = `
@@ -190,6 +206,7 @@ router.post("/verify", async (req, res) => {
       message: "Account verified successfully.",
     })
   } catch (error) {
+    console.error("Database error:", error)
     if (error.name === "TokenExpiredError") {
       return res.status(401).send({
         message: "Verification token is expired.",
@@ -201,6 +218,108 @@ router.post("/verify", async (req, res) => {
     } else {
       return res.status(500).send({
         message: "An error occurred during the verification process.",
+      })
+    }
+  }
+})
+
+router.post("/password-recovery-email", async (req, res) => {
+  const { email } = req.body
+
+  if (!email) {
+    return res.status(400).send({
+      message: "Please provide an email.",
+    })
+  }
+
+  try {
+    const query = `
+      SELECT id, email
+      FROM T_USER
+      WHERE email = $1;
+    `
+    const values = [email]
+
+    const { rows } = await pool.query(query, values)
+
+    if (rows.length === 0) {
+      return res.status(200).send({
+        message:
+          "If that email address is in our system, we've sent a password recovery link.",
+      })
+    }
+
+    const user = rows[0]
+
+    const verificationToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.RECOVERY_JWT_SECRET,
+      { expiresIn: "15m" },
+    )
+
+    const recoverUrl = `${process.env.FRONT_URL}/update-password?token=${verificationToken}`
+    await transporter.sendMail({
+      from: process.env.SMTP_SENDER_EMAIL,
+      to: user.email,
+      subject: "Recover your password",
+      html: `<p>Please click the following link to recover your password: <a href="${recoverUrl}">Recover now</a></p>`,
+    })
+
+    return res.status(200).send({
+      message:
+        "If that email address is in our system, we've sent a password recovery link.",
+    })
+  } catch (error) {
+    console.error("Database error:", error)
+    return res.status(500).send({
+      message:
+        "An error occurred while trying to send the password recovery email.",
+    })
+  }
+})
+
+router.post("/update-password", async (req, res) => {
+  const { token, password } = req.body
+
+  if (!token || !password) {
+    return res.status(400).send({
+      message: "Please provide a new password and a JWT token",
+    })
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.RECOVERY_JWT_SECRET)
+    const id = decoded.id
+
+    bcrypt.hash(password, 10, async (error, hashedPassword) => {
+      if (error) {
+        return res.status(500).send({ message: "Error hashing password" })
+      }
+
+      const query = `
+        UPDATE T_USER
+        SET password = $2
+        WHERE id = $1;
+      `
+
+      await pool.query(query, [id, hashedPassword])
+      res.status(200).send({
+        message: "Password edited successfully successfully.",
+      })
+    })
+  } catch (error) {
+    console.error("Database error:", error)
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).send({
+        message: "Recovery token is expired.",
+      })
+    } else if (error.name === "JsonWebTokenError") {
+      return res.status(401).send({
+        message: "Recovery token is invalid.",
+      })
+    } else {
+      return res.status(500).send({
+        message: "An error occurred during the recovery process.",
       })
     }
   }
