@@ -5,7 +5,7 @@ export default function PrivateHeader() {
         <nav className="relative w-full">
             <div className="profile-menu-container -translate-x-7 ">
                 <button className="profile-image w-24 h-24">
-                    <img className="object-cover rounded-full aspect-square" src="girl.jpeg" alt="test"/>
+                    <img className="object-cover rounded-full aspect-square" src="tchoupi.jpg" alt="test"/>
                 </button>
                 <div className="menu-content">
                     <a href="/settings">Settings</a>

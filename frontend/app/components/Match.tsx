@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 
 import Modal from "./Modal"
 import ProfileCard from "./ProfileCard"
+import ChatRoom from "./ChatRoom"
 
 const initialTestProfiles = [
     {
@@ -84,7 +85,6 @@ export default function Match() {
                     <ProfileCard key={profile.id} profile={profile} />
                 ))} */}
             </div>
-
 
             <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div>
