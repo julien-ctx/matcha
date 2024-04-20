@@ -62,12 +62,11 @@ export default function Match() {
 
 
     return (
-        <div className="relative h-full bg-blue-300 w-3/4 min-w-48 flex justify-center items-center">
-            {/* <button onClick={() => setModalOpen(true)}>
+        <div className="relative h-full bg-white w-3/4 min-w-48 flex justify-center items-center z-0 pt-20">
+            <button className="absolute top-28 right-12" onClick={() => setModalOpen(true)}>
                 <img className="w-14 h-14" src="parameters.svg" alt="parameters" />
             </button>
-            */}
-
+           
             <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
                 <div className="absolute rounded-full bg-white w-40 h-40 -left-16 top-1/2 flex justify-center items-center">
                     <button className="text-7xl text-red-400" onClick={() => handleDecision(false)}>X</button>

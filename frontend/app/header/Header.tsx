@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState } from 'react';
-import './Header.css';
 import { AuthStatus } from "../auth/authTypes"
 import PublicHeader from './PublicHeader';
 import PrivateHeader from './PrivateHeader';
@@ -11,7 +10,7 @@ const Header : React.FC = () => {
     const { authStatus } = useAuth();
 
     return (
-        <header>
+        <header className="absolute bg-none h-20 flex w-full bg-rose-200 z-30">
             {authStatus === AuthStatus.NotValidated ? (
                 <PublicHeader />
             ) : authStatus === AuthStatus.Validated ? (

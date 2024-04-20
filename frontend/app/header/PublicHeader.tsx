@@ -8,7 +8,7 @@ export default function PublicHeader() {
     const [isModalOpen, setModalOpen] = useState(false);
 
     return (
-        <>
+        <div className="w-full">
             <h1>Matcha</h1>
             <button onClick={() => {
                 setModalOpen(true);
@@ -22,6 +22,6 @@ export default function PublicHeader() {
                     <Login setModalOpen={setModalOpen}/>
                 </Modal>
 
-        </>
+        </div>
     )
 }

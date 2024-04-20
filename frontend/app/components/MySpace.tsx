@@ -17,7 +17,7 @@ const testChat = [
                 img: "/toto.jpg"
             }, {
                 id: 7,
-                name: "oui",
+                name: "Michelle",
                 img: "/girl.jpeg"
             }
         ],
@@ -60,8 +60,8 @@ export default function MySpace() {
             <Match />
 
             {currentChatRoom !== null && (
-                <div className="absolute top-0 right-0 w-3/4 h-full bg-white">
-                    <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)} setCurrentRoom={setCurrentChatRoom}/>
+                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10">
+                    <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)[0]} setCurrentRoom={setCurrentChatRoom}/>
                 </div>
             )}
         </div>
