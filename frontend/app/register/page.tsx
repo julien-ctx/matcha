@@ -24,7 +24,7 @@ export default function Register() {
   useEffect(() => {
     if (token) {
       axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
         .then(() => {
           router.replace(redirectPath ?? "/account")
         })
@@ -47,7 +47,7 @@ export default function Register() {
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
     axios
-      .post(`${process.env.NEXT_PUBLIC_API_URL}/register`, formData)
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, formData)
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)

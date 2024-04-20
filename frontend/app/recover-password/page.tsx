@@ -20,7 +20,7 @@ export default function RecoverPassword() {
     event.preventDefault()
     if (formData.email) {
       await axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/password-recovery-email`, {
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/password-recovery-email`, {
           email: formData.email,
         })
         .then((response) => {

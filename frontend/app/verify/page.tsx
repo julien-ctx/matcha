@@ -14,7 +14,7 @@ export default function Verify() {
   useEffect(() => {
     if (!isValidating && token) {
       axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/verify`, { token: verificationToken })
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, { token: verificationToken })
         .then((response) => {
           setDisplayMessage("Successfully verified")
         })

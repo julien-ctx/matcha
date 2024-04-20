@@ -21,7 +21,7 @@ export default function Login() {
   useEffect(() => {
     if (token) {
       axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token })
+        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
         .then(() => {
           router.replace(redirectPath ?? "/account")
         })
@@ -44,7 +44,7 @@ export default function Login() {
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
     axios
-      .post(`${process.env.NEXT_PUBLIC_API_URL}/login`, formData)
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, formData)
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)

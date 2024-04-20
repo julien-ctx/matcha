@@ -26,7 +26,7 @@ export default function UpdatePassword() {
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
     axios
-      .post(`${process.env.NEXT_PUBLIC_API_URL}/update-password`, {
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-password`, {
         token: verificationToken,
         password: formData.firstPassword,
       })

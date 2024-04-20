@@ -10,7 +10,7 @@ export default function Account() {
   const handlePasswordChange = async () => {
     if (user && user.email) {
       await axios
-      .post(`${process.env.NEXT_PUBLIC_API_URL}/password-recovery-email`, { email: user.email })
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/password-recovery-email`, { email: user.email })
       .then((response) => {
           // inform the user that the email has been sent
         
