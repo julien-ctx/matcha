@@ -20,13 +20,14 @@ CREATE TABLE IF NOT EXISTS T_USER (
     tags tag[] DEFAULT '{}',
     pictures TEXT[] CHECK (array_length(pictures, 1) <= 5),
     fame_rating INTEGER DEFAULT 0,
-    gps_location VARCHAR(255),
     last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     is_online BOOLEAN DEFAULT FALSE,
     account_verified BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    date_of_birth DATE
+    date_of_birth DATE,
+    latitude DECIMAL(9,6),
+    longitude DECIMAL(9,6)
 );
 
 CREATE TABLE IF NOT EXISTS T_VIEW (
