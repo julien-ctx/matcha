@@ -1,14 +1,15 @@
 // Todo
-// Add check that min cannot be > max of age
-// Limit the limit!
-// Order by location distance
 // fix gender and sexual orientation null
 // duplicate tag generation with sql
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
 import authenticateJWT from "../middleware/auth.js"
-import { getGenderQuery, getOffset, getOrderClause } from "../queries/explore.js"
+import {
+  getGenderQuery,
+  getOffset,
+  getOrderClause,
+} from "../queries/explore.js"
 
 dotenv.config({ path: "../../.env" })
 
@@ -39,6 +40,13 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     return res.status(400).send({
       message:
         "order parameter should be one of the following values: asc, desc, rand.",
+    })
+  }
+
+  if (ageMax < ageMin) {
+    return res.status(400).send({
+      message:
+        "ageMax cannot be less than ageMin",
     })
   }
 
