@@ -6,7 +6,8 @@ interface Props {
   login: (newToken: string) => void
   logout: () => void,
   authStatus: AuthStatus,
-  user: User | undefined
+  user: User | undefined,
+  socket: any | null // TODO type this
 }
 
 const AuthContext = createContext<Props | null>(null)

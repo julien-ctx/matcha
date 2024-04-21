@@ -4,7 +4,8 @@ import React, { useContext, useEffect, useState } from "react"
 import AuthContext from "./AuthContext"
 import axios from "axios"
 import { AuthStatus, User } from "./authTypes"
-import Header from "../header/Header"
+// import { usePathname, useRouter } from "next/navigation"
+import io from 'socket.io-client';
 
 interface Props {
   children: React.ReactNode
@@ -20,8 +21,13 @@ export const useAuth = () => {
 
 const AuthProvider = ({ children }: Props) => {
   const [token, setAuthToken] = useState<string | null | undefined>(undefined)
+  const [socket, setSocket] = useState<any>(null) // TODO type this
+
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.Validating);
   const [user, setUser] = useState<User | undefined>(undefined)
+
+  // const router = useRouter()
+  // const currentPath = usePathname()
 
   const login = (newToken: string) => {
     localStorage.setItem("jwt", newToken)
@@ -33,6 +39,18 @@ const AuthProvider = ({ children }: Props) => {
     localStorage.removeItem("jwt")
     setAuthToken(null)
     setAuthStatus(AuthStatus.NotValidated)
+    setUser(undefined)
+    setSocket(null)
+  }
+
+  function connectSocket() {
+    const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
+      auth: {
+        token: token
+      }
+    });
+    setSocket(newSocket);
+    console.log('Socket connection request sent.');
   }
 
   useEffect(() => {
@@ -43,11 +61,12 @@ const AuthProvider = ({ children }: Props) => {
     setAuthStatus(AuthStatus.Validated)
 
     if (storedToken) {
-      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/jwt-status`, { token: storedToken })
+      axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token: storedToken })
         .then((response) => {
           if (response?.data?.user) {
               setUser(response.data.user)
             setAuthStatus(AuthStatus.Validated);
+            connectSocket();
           } else {
             logout();
           }
@@ -58,8 +77,7 @@ const AuthProvider = ({ children }: Props) => {
     }
   }, []);
 
-  return <AuthContext.Provider value={{ token, login, logout, authStatus, user }}>{children}</AuthContext.Provider>
-  // return { token, isValidating, user }
-}
+  return <AuthContext.Provider value={{ token, login, logout, authStatus, user, socket }}>{children}</AuthContext.Provider>
+} 
 
 export default AuthProvider

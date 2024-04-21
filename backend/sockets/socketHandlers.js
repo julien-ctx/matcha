@@ -2,12 +2,17 @@ import jwt from 'jsonwebtoken';
 
 export function setupSocketEvents(io) {
     io.use((socket, next) => {
+        console.log('allo')
         const token = socket.handshake.auth.token;
-        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-            if (err) return next(new Error('Authentication error'));
-            socket.decoded = decoded;  // Store decoded user data in socket session
-            next();
-        });
+
+        // TODO jwt verification, call next() if token is valid
+        // jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        //     if (err) return next(new Error('Authentication error'));
+        //     socket.decoded = decoded;  // Store decoded user data in socket session
+        //     next();
+        // });
+
+        next();
     });
     
     io.on('connection', socket => {
@@ -22,4 +27,6 @@ export function setupSocketEvents(io) {
             socket.emit('testRes', { status: true });
         });
     });
+
+    console.log('Socket events setup complete')
 }

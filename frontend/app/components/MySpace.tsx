@@ -43,8 +43,8 @@ const testChat = [
                 img: "/toto.jpg"
             }, {
                 id: 7,
-                name: "oui",
-                img: "/oui.jpg"
+                name: "Léna",
+                img: "/lena.png"
             }
         ],
         messages: []
