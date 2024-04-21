@@ -11,14 +11,36 @@ const router = express.Router()
 router.get("/details/:userId?", authenticateJWT, async (req, res) => {
   const userId = req.params.userId || req.user.id
 
+  const query = `
+  SELECT
+      id,
+      email,
+      username,
+      first_name,
+      last_name,
+      gender,
+      sexual_orientation,
+      bio,
+      tags,
+      pictures,
+      fame_rating,
+      last_login,
+      is_online,
+      account_verified,
+      created_at,
+      updated_at,
+      date_of_birth,
+      latitude,
+      longitude
+      FROM T_USER
+      WHERE id = $1
+  `
   try {
-    const query = await pool.query("SELECT * FROM T_USER WHERE id = $1", [
-      userId,
-    ])
-    if (query.rows.length === 0) {
+    const queryResult = await pool.query(query, [userId])
+    if (queryResult.rows.length === 0) {
       return res.status(404).send({ message: "User not found" })
     }
-    res.json(query.rows[0])
+    res.json(queryResult.rows[0])
   } catch (error) {
     console.error("Database error:", error)
     res.sendStatus(500)
