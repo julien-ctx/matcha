@@ -92,12 +92,32 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     }
 
     const baseQuery = `
-			SELECT *
-			FROM T_USER
+    SELECT
+      id,
+      email,
+      username,
+      first_name,
+      last_name,
+      gender,
+      sexual_orientation,
+      bio,
+      tags,
+      pictures,
+      fame_rating,
+      last_login,
+      is_online,
+      account_verified,
+      created_at,
+      updated_at,
+      date_of_birth,
+      latitude,
+      longitude
+      FROM T_USER
       WHERE ${conditions}
       ${getOrderClause(sortBy, order, latitude, longitude)}
       LIMIT $${paramCount} OFFSET $${paramCount + 1};
-		`
+    `
+
 
     params.push(limit, offset)
 
