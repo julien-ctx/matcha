@@ -1,6 +1,3 @@
-// Todo
-// fix gender and sexual orientation null
-// duplicate tag generation with sql
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"

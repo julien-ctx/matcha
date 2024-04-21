@@ -18,13 +18,19 @@ DECLARE
     account_verified BOOLEAN;
     random_latitude DOUBLE PRECISION;
     random_longitude DOUBLE PRECISION;
+    candidate_tag tag;
 BEGIN
     FOR i IN 1..500 LOOP
         num_tags := (random() * 5 + 1)::int;
         random_tags := '{}';
 
         FOR j IN 1..num_tags LOOP
-            random_tags := array_append(random_tags, tag_list[(random() * array_length(tag_list, 1))::int % array_length(tag_list, 1) + 1]);
+            candidate_tag := tag_list[floor(random() * array_length(tag_list, 1)) + 1];
+            IF NOT candidate_tag = ANY(random_tags) THEN
+                random_tags := array_append(random_tags, candidate_tag);
+            ELSE
+                j := j - 1;
+            END IF;
         END LOOP;
 
         random_age := (CURRENT_DATE - (INTERVAL '1 year' * (18 + (random() * 42)::int)));
