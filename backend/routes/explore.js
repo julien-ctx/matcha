@@ -8,7 +8,7 @@ import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
 import authenticateJWT from "../middleware/auth.js"
-import { getGenderQuery, getOffset } from "../query.js"
+import { getGenderQuery, getOffset, getOrderClause } from "../queries/explore.js"
 
 dotenv.config({ path: "../../.env" })
 
@@ -24,7 +24,23 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     tags = [],
     page = 1,
     limit = 25,
+    sortBy = "distance",
+    order = "asc",
   } = req.query
+
+  if (!["distance", "fameRating", "age"].includes(sortBy)) {
+    return res.status(400).send({
+      message:
+        "sortBy parameter should be one of the following values: distance, fameRating, age.",
+    })
+  }
+
+  if (!["asc", "desc", "rand"].includes(order)) {
+    return res.status(400).send({
+      message:
+        "order parameter should be one of the following values: asc, desc, rand.",
+    })
+  }
 
   const offset = getOffset(page, limit)
 
@@ -73,8 +89,9 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     const baseQuery = `
 			SELECT *
 			FROM T_USER
-            WHERE ${conditions}
-            LIMIT $${paramCount} OFFSET $${paramCount + 1};
+      WHERE ${conditions}
+      ${getOrderClause(sortBy, order, latitude, longitude)}
+      LIMIT $${paramCount} OFFSET $${paramCount + 1};
 		`
 
     params.push(limit, offset)
