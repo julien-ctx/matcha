@@ -114,11 +114,22 @@ router.put("/details", authenticateJWT, async (req, res) => {
     }
 
     updates.push(`updated_at = now()`)
-    const query = `UPDATE T_USER SET ${updates.join(", ")} WHERE id = $${paramIndex}`
+    const query = `
+      UPDATE T_USER
+      SET ${updates.join(", ")}
+      WHERE id = $${paramIndex}
+      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude;
+    `
     values.push(userId)
+    const { rows } = await pool.query(query, values);
 
-    await pool.query(query, values)
-    res.send({ message: "Profile updated successfully" })
+    res.send({
+      message: "Profile updated successfully",
+      user: {
+        ...rows[0],
+        password: undefined
+      }
+    });
   } catch (error) {
     console.error("Database error:", error)
     res

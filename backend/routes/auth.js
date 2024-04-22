@@ -21,8 +21,6 @@ const transporter = nodemailer.createTransport({
 router.post("/register", async (req, res) => {
   const { email, username, firstName, lastName, password } = req.body
 
-  console.log('bonjour', email, username, firstName, lastName, password)
-
   if (!email || !username || !firstName || !lastName || !password) {
     return res.status(400).send({
       message: "One or several fields are missing",
@@ -37,7 +35,7 @@ router.post("/register", async (req, res) => {
     const query = `
       INSERT INTO T_USER (email, username, first_name, last_name, password)
       VALUES($1, $2, $3, $4, $5)
-      RETURNING id, email, username, first_name, last_name;
+      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude;
     `
     const values = [email, username, firstName, lastName, hashedPassword]
 
@@ -73,13 +71,7 @@ router.post("/register", async (req, res) => {
 
       res.status(201).send({
         message: "Registered successfully",
-        user: {
-          id: user.id,
-          email: user.email,
-          username: user.username,
-          firstName: user.first_name,
-          lastName: user.last_name,
-        },
+        user,
         jwt: authToken,
       })
     } catch (dbError) {
@@ -103,7 +95,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const query = `
-      SELECT id, email, username, first_name, last_name, password
+      SELECT *
       FROM T_USER
       WHERE email = $1 OR username = $1;
     `
@@ -138,11 +130,8 @@ router.post("/login", async (req, res) => {
     res.status(200).send({
       message: "Logged in successfully",
       user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        ...user,
+        password: undefined
       },
       jwt: token,
     })
