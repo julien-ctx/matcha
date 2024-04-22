@@ -5,7 +5,7 @@ import React, { useState } from 'react'
 import Chat from "./Chat"
 import Match from "./Match"
 import ChatRoom from './ChatRoom'
-
+import Profile from './Profile'
 
 const testChat = [
     {
@@ -53,15 +53,22 @@ const testChat = [
 
 export default function MySpace() {
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
+    const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
 
     return (
         <div className="w-full h-full flex">
-            <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom}/ >
-            <Match />
+            <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+            <Match setCurrentProfile={setCurrentProfile} />
 
             {currentChatRoom !== null && (
                 <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10">
-                    <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)[0]} setCurrentRoom={setCurrentChatRoom}/>
+                    <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)[0]} 
+                        setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+                </div>
+            )}
+            {currentProfile !== null && (
+                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 flex justify-center">
+                    <Profile profile={currentProfile} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
         </div>

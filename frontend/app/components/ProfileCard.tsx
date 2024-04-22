@@ -13,7 +13,12 @@ interface Profile {
     img: string[];
 }
 
-export default function ProfileCard({ profile }: { profile: Profile }) {
+interface Props {
+    profile: Profile,
+    setCurrentProfile: (profile: Profile) => void;
+}
+
+export default function ProfileCard({ profile, setCurrentProfile }: Props){
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     function prevImage() {
@@ -29,16 +34,21 @@ export default function ProfileCard({ profile }: { profile: Profile }) {
     };
 
     return (
-        <div className="w-80 left-1/2 -translate-x-1/2 absolute h-full bg-white shadow-md rounded-lg p-2">
+        <div className="w-80 left-1/2 -translate-x-1/2 absolute h-full bg-white shadow-md rounded-lg p-2 overflow-y-auto">
             <div className="relative w-full h-full">
-                {profile.img.map((img, index) => (
-                    <img 
-                        key={index} 
-                        src={img} 
-                        alt={profile.name}
-                        className={`absolute w-full h-full object-cover transition-opacity duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
-                    />
-                ))}
+                <div className="w-full h-full hover:brightness-90 cursor-pointer"
+                    onClick={() => {
+                        setCurrentProfile(profile);
+                    }}>
+                    {profile.img.map((img, index) => (
+                        <img 
+                            key={index} 
+                            src={img} 
+                            alt={profile.name}
+                            className={`absolute w-full h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
+                        />
+                    ))}
+                </div>
                 <button
                     onClick={prevImage}
                     className="absolute left-0 top-1/2 transform -translate-y-1/2 z-100 p-3 bg-blue-500"

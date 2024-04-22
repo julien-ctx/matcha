@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 
 import Modal from "./Modal"
 import ProfileCard from "./ProfileCard"
-import ChatRoom from "./ChatRoom"
 
 const initialTestProfiles = [
     {
@@ -35,7 +34,11 @@ const initialTestProfiles = [
     }
 ]
 
-export default function Match() {
+interface Props {
+    setCurrentProfile: (profile: any) => void // bring profile type here later
+}
+
+export default function Match({ setCurrentProfile }: Props) {
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState({ min: 18, max: 99 });
     const [kmWithin, setKmWithin] = useState(50); // Default 50 km
@@ -75,14 +78,11 @@ export default function Match() {
                     <button className="text-7xl text-green-300" onClick={() => handleDecision(true)}>O</button>
                 </div>
                 {profiles.length > 0 ? (
-                    <ProfileCard profile={profiles[currentProfileIndex]} />
+                    <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                 ) : (
                     <p>No more profiles</p>
                 )}
 
-                {/* {profiles.map(profile => (
-                    <ProfileCard key={profile.id} profile={profile} />
-                ))} */}
             </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>

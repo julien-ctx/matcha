@@ -64,6 +64,7 @@ const AuthProvider = ({ children }: Props) => {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token: storedToken })
         .then((response) => {
           if (response?.data?.user) {
+              console.log('user info: ', response.data.user);
               setUser(response.data.user)
             setAuthStatus(AuthStatus.Validated);
             connectSocket();

@@ -2,11 +2,12 @@
 interface ChatRoomProp {
     rooms: any[],
     setCurrentRoom: (roomId: number) => void
+    setCurrentProfile: (profile: any) => void
 }
 
 const currentUserId = 42;
 
-export default function Chat({ rooms, setCurrentRoom }: ChatRoomProp) {
+export default function Chat({ rooms, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
     return (
         <div className="h-full bg-green-300 w-1/4 min-w-48 pt-28">
             <ul>
@@ -16,7 +17,10 @@ export default function Chat({ rooms, setCurrentRoom }: ChatRoomProp) {
 
                     return (
                         <li key={room.id} className="flex items-center p-2 cursor-pointer hover:bg-green-200"
-                            onClick={() => setCurrentRoom(room.id)}>
+                            onClick={() => {
+                                setCurrentProfile(null);
+                                setCurrentRoom(room.id);
+                            }}>
                             <img src={otherUser?.img} alt={otherUser?.name} className="w-10 h-10 rounded-full mr-2"/>
                             <div>
                                 <h2 className="text-lg">{otherUser?.name}</h2>
