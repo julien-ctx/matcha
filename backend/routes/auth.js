@@ -21,6 +21,8 @@ const transporter = nodemailer.createTransport({
 router.post("/register", async (req, res) => {
   const { email, username, firstName, lastName, password } = req.body
 
+  console.log('bonjour', email, username, firstName, lastName, password)
+
   if (!email || !username || !firstName || !lastName || !password) {
     return res.status(400).send({
       message: "One or several fields are missing",

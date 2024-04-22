@@ -1,0 +1,28 @@
+.messages-container {
+    padding: 10px;
+    background: #f4f4f8;
+    border: 1px solid #ddd;
+}
+
+.message {
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 10px;
+    background: lightgray;
+    max-width: 80%;
+}
+
+.own {
+    margin-left: auto;
+    background: blue;
+}
+
+.other {
+    margin-right: auto;
+    background: green;
+}
+
+.back-button, .send-button {
+    padding: 5px 10px;
+    cursor: pointer;
+}

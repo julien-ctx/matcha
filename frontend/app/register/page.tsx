@@ -6,6 +6,7 @@ import React from "react"
 import { useAuth } from "../auth/AuthProvider"
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
 import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
+import styles from "./page.module.css"
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -59,15 +60,15 @@ export default function Register() {
   }
 
   return (
-    <>
+    <div className="flex justify-center items-center">
       {isValidating && (
         <>
           <h1>Loading...</h1>
         </>
       )}
       {!isValidating && (
-        <form onSubmit={handleSubmit}>
-          <div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 justify-center items-center bg-red-200 p-12">
+          <div className="flex gap-2 justify-center items-center">
             <label htmlFor="email">Email:</label>
             <input
               type="email"
@@ -76,7 +77,7 @@ export default function Register() {
               value={formData.email}
               onChange={handleChange}
               required
-              className="bg-slate-100"
+              className={styles.registerInput}
             />
           </div>
           <div>
@@ -88,7 +89,7 @@ export default function Register() {
               value={formData.username}
               onChange={handleChange}
               required
-              className="bg-slate-100"
+              className={styles.registerInput}
             />
           </div>
           <div>
@@ -100,7 +101,7 @@ export default function Register() {
               value={formData.firstName}
               onChange={handleChange}
               required
-              className="bg-slate-100"
+              className={styles.registerInput}
             />
           </div>
           <div>
@@ -112,7 +113,7 @@ export default function Register() {
               value={formData.lastName}
               onChange={handleChange}
               required
-              className="bg-slate-100"
+              className={styles.registerInput}
             />
           </div>
           <div>
@@ -124,7 +125,7 @@ export default function Register() {
               value={formData.password}
               onChange={handleChange}
               required
-              className="bg-slate-100"
+              className={styles.registerInput}
             />
           </div>
           <button type="submit" className="bg-slate-100">
@@ -132,6 +133,6 @@ export default function Register() {
           </button>
         </form>
       )}
-    </>
+    </div>
   )
 }
