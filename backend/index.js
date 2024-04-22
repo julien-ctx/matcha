@@ -3,6 +3,7 @@ import express from "express"
 import auth from "./routes/auth.js"
 import profile from "./routes/profile.js"
 import social from "./routes/social.js"
+import explore from "./routes/explore.js"
 import http from "http"
 import { Server as SocketIO} from "socket.io"
 import { setupSocketEvents } from "./sockets/socketHandlers.js"
@@ -30,6 +31,7 @@ app.use(express.json())
 app.use("/auth", auth)
 app.use("/profile", profile)
 app.use("/social", social)
+app.use("/explore", explore)
 
 server.listen(3000, () => {
   console.log(`Server Started at ${3000}`)

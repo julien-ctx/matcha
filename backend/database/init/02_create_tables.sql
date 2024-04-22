@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS T_USER (
     sexual_orientation sexual_orientation DEFAULT 'Both',
     bio TEXT,
     tags tag[] DEFAULT '{}',
-    pictures TEXT[] CHECK (array_length(pictures, 1) <= 5),
+    pictures TEXT[] DEFAULT '{}' CHECK (array_length(pictures, 1) <= 5),
     fame_rating INTEGER DEFAULT 0,
     last_login TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     is_online BOOLEAN DEFAULT FALSE,
