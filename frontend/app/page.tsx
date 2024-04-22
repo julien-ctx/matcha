@@ -1,22 +1,20 @@
 "use client"
 
-import { useRequireAuth } from "./auth/RequireAuth"
+import { useAuth } from "./auth/AuthProvider"
+import { AuthStatus } from "./auth/authTypes"
+import PublicHome from "./components/PublicHome"
+import MySpace from "./components/MySpace"
 
 export default function Home() {
-  const { isValidating } = useRequireAuth()
+  const { authStatus } = useAuth()
 
   return (
-    <>
-      {isValidating && (
-        <>
-          <h1>Loading...</h1>
-        </>
-      )}
-      {!isValidating && (
-        <>
-          <h1>Index</h1>
-        </>
-      )}
-    </>
+    <div className="w-full h-full">
+      {authStatus === AuthStatus.NotValidated ? (
+        <PublicHome />
+      ) : authStatus === AuthStatus.Validated ? (
+        <MySpace />
+      ) : null}
+    </div>
   )
 }
