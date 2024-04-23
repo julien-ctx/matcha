@@ -3,7 +3,7 @@ import pool from "../database/db.js"
 import dotenv from "dotenv"
 import authenticateJWT from "../middleware/auth.js"
 import {
-  getGenderQuery,
+  getSexualPreferences,
   getOffset,
   getOrderClause,
 } from "../queries/explore.js"
@@ -19,6 +19,7 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     ageMax,
     locationRadius,
     minFameRating,
+    maxFameRating,
     tags = [],
     page = 1,
     limit = 25,
@@ -42,8 +43,13 @@ router.get("/browse", authenticateJWT, async (req, res) => {
 
   if (ageMax < ageMin) {
     return res.status(400).send({
-      message:
-        "ageMax cannot be less than ageMin",
+      message: "ageMax cannot be less than ageMin",
+    })
+  }
+
+  if (maxFameRating < minFameRating) {
+    return res.status(400).send({
+      message: "ageMax cannot be less than ageMin",
     })
   }
 
@@ -57,11 +63,12 @@ router.get("/browse", authenticateJWT, async (req, res) => {
       return res.status(404).json({ message: "User not found" })
     }
 
-    const { latitude, longitude, sexual_orientation } = currentUser.rows[0]
+    const { latitude, longitude, sexual_orientation, gender } =
+      currentUser.rows[0]
 
-    const genderQuery = getGenderQuery(sexual_orientation)
+    const sexualPreferences = getSexualPreferences(sexual_orientation, gender)
 
-    let conditions = `id != $1 AND (${genderQuery})`
+    let conditions = `id != $1 AND (${sexualPreferences})`
     let params = [userId]
     let paramCount = 2
 
@@ -84,6 +91,11 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     if (minFameRating) {
       conditions += ` AND fame_rating >= $${paramCount++}`
       params.push(minFameRating)
+    }
+
+    if (maxFameRating) {
+      conditions += ` AND fame_rating <= $${paramCount++}`
+      params.push(maxFameRating)
     }
 
     if (tags.length > 0) {
@@ -117,8 +129,6 @@ router.get("/browse", authenticateJWT, async (req, res) => {
       ${getOrderClause(sortBy, order, latitude, longitude)}
       LIMIT $${paramCount} OFFSET $${paramCount + 1};
     `
-
-
     params.push(limit, offset)
 
     const suggestions = await pool.query(baseQuery, params)
