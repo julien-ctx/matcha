@@ -3,9 +3,100 @@
 @tailwind utilities;
 
 html, body {
-    @apply w-screen h-screen m-0 p-0 select-none;
+    @apply w-screen h-screen m-0 p-0 select-none font-jersey10;
 }
 
 main {
     @apply flex w-full h-full justify-center items-center m-0;
+}
+
+@font-face {
+    font-family: 'Jersey10';
+    src: url('/fonts/Jersey10-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jersey10Charted';
+    src: url('/fonts/Jersey10Charted-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jersey15';
+    src: url('/fonts/Jersey15-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jersey15Charted';
+    src: url('/fonts/Jersey15Charted-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jersey20';
+    src: url('/fonts/Jersey20-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jersey20Charted';
+    src: url('/fonts/Jersey20Charted-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Jersey25';
+    src: url('/fonts/Jersey25-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Micro5Charted';
+    src: url('/fonts/Micro5Charted-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Yarndings12';
+    src: url('/fonts/Yarndings12-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Yarndings12Charted';
+    src: url('/fonts/Yarndings12Charted-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Yarndings20';
+    src: url('/fonts/Yarndings20-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Yarndings20Charted';
+    src: url('/fonts/Yarndings20Charted-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'JacqaurdaBastarda9Charted';
+    src: url('/fonts/JacqaurdaBastarda9Charted-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }

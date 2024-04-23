@@ -1,7 +1,7 @@
 "use client"
 
 import React, { ReactNode, useState } from 'react';
-import styles from './page.module.css';
+import styles from './Details.css';
 
 const enum CurrentDetail {
     Gender,
@@ -56,7 +56,7 @@ export default function Details() {
       };
       
     return (
-        <div className="relative w-2/3 h-2/3 bg-yellow-300 flex items-center justify-center flex-col">
+        <div className="relative w-full h-full bg-yellow-300 flex items-center justify-center flex-col">
             {currentDetail === CurrentDetail.Gender && <div>
                 <h1>You are...</h1>
                 <label><input type="radio" name="gender" value={Gender.Male} checked={gender === Gender.Male} onChange={(e) => setGender(Gender.Male)} /> Male</label>

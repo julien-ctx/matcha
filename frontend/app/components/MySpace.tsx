@@ -1,11 +1,13 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import Chat from "./Chat"
 import Match from "./Match"
 import ChatRoom from './ChatRoom'
 import Profile from './Profile'
+import { useAuth } from "../auth/AuthProvider"
+import Details from './Details'
 
 const testChat = [
     {
@@ -52,10 +54,18 @@ const testChat = [
 ]
 
 export default function MySpace() {
+    const { user } = useAuth();
+    const [isProfileReady, setProfileReady] = useState(false);
+
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
 
-    return (
+    useEffect(() => {
+        if (!user?.birthday) return;
+        setProfileReady(true);
+    }, [user])
+
+    return isProfileReady ? (
         <div className="w-full h-full flex">
             <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             <Match setCurrentProfile={setCurrentProfile} />
@@ -71,6 +81,10 @@ export default function MySpace() {
                     <Profile profile={currentProfile} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
+        </div>
+    ) : (
+        <div className="w-full h-full">
+            <Details />
         </div>
     )
 }
