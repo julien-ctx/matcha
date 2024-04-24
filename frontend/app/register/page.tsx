@@ -60,78 +60,76 @@ export default function Register() {
   }
 
   return (
-    <div className="flex justify-center items-center">
-      {isValidating && (
-        <>
-          <h1>Loading...</h1>
-        </>
-      )}
+    <div className="flex flex-col justify-center items-center bg-black w-full h-full">
       {!isValidating && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2 justify-center items-center bg-red-200 p-12">
-          <div className="flex gap-2 justify-center items-center">
-            <label htmlFor="email">Email:</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className={styles.registerInput}
-            />
-          </div>
-          <div>
-            <label htmlFor="username">Username:</label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              className={styles.registerInput}
-            />
-          </div>
-          <div>
-            <label htmlFor="firstName">First Name:</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-              className={styles.registerInput}
-            />
-          </div>
-          <div>
-            <label htmlFor="lastName">Last Name:</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              required
-              className={styles.registerInput}
-            />
-          </div>
-          <div>
-            <label htmlFor="password">Password:</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className={styles.registerInput}
-            />
-          </div>
-          <button type="submit" className="bg-slate-100">
-            Register
-          </button>
-        </form>
+        <div className="flex flex-col bg-gray-200 p-12 rouned-md rouned-sm justify-center items-center">
+          <h1 className="text-4xl font-jersey25">Join us</h1>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2 justify-center items-center">
+            <div className="flex gap-2 justify-center items-center">
+              <label className="w-1/5 text-end" htmlFor="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className={styles.registerInput}
+              />
+            </div>
+            <div>
+              <label className="w-1/5 text-end" htmlFor="username">Username:</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                className={styles.registerInput}
+              />
+            </div>
+            <div>
+              <label className="w-1/5 text-end" htmlFor="firstName">First Name:</label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                className={styles.registerInput}
+              />
+            </div>
+            <div>
+              <label className="w-1/5 text-end" htmlFor="lastName">Last Name:</label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                className={styles.registerInput}
+              />
+            </div>
+            <div>
+              <label className="w-1/5 text-end" htmlFor="password">Password:</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className={styles.registerInput}
+              />
+            </div>
+            <button type="submit" className="bg-slate-100">
+              Register
+            </button>
+          </form>
+        </div>
       )}
     </div>
   )

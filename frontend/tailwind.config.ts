@@ -9,9 +9,8 @@ const config: Config = {
   theme: {
     extend: {
       backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+        'gradient-to-r-main': 'linear-gradient(to right, #de6262, #ffb88c)',
+        'gradient-to-r-secondary': 'linear-gradient(to right, #dae2f8, #d6a4a4)',
       },
       fontFamily: {
         'jersey10': ['Jersey10', 'sans-serif'], 

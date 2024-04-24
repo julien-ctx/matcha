@@ -10,6 +10,10 @@ main {
     @apply flex w-full h-full justify-center items-center m-0;
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+  
 @font-face {
     font-family: 'Jersey10';
     src: url('/fonts/Jersey10-Regular.ttf') format('truetype');
