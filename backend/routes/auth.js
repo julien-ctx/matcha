@@ -131,7 +131,7 @@ router.post("/login", async (req, res) => {
       message: "Logged in successfully",
       user: {
         ...user,
-        password: undefined
+        password: undefined,
       },
       jwt: token,
     })
@@ -154,18 +154,26 @@ router.post("/jwt-status", async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.AUTH_JWT_SECRET)
+    const userId = decoded.id
+
+    const query = `
+      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude
+      FROM T_USER
+      WHERE id = $1;
+    `
+    const { rows } = await pool.query(query, [userId])
+    if (rows.length === 0) {
+      return res.status(404).send({ message: "User not found." })
+    }
+
+    const user = rows[0]
+
     return res.status(200).send({
-      user: {
-        id: decoded.id,
-        email: decoded.email,
-        username: decoded.email,
-        firstName: decoded.firstName,
-        lastName: decoded.lastName,
-      },
+      user: user,
       message: "Token is valid",
     })
   } catch (error) {
-    console.error("Database error:", error)
+    console.error("JWT or Database error:", error)
     return res.status(401).send({
       message: "Token is invalid.",
     })
