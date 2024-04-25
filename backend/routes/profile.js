@@ -62,6 +62,7 @@ router.put("/details", authenticateJWT, async (req, res) => {
     lastLogin,
     isOnline,
     accountVerified,
+    dateOfBirth,
     latitude,
     longitude,
   } = req.body
@@ -114,6 +115,10 @@ router.put("/details", authenticateJWT, async (req, res) => {
     if (accountVerified !== undefined) {
       updates.push(`account_verified = $${paramIndex++}`)
       values.push(accountVerified)
+    }
+    if (dateOfBirth) {
+      updates.push(`date_of_birth = $${paramIndex++}`)
+      values.push(dateOfBirth)
     }
     if (latitude) {
       updates.push(`latitude = $${paramIndex++}`)
