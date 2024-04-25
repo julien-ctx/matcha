@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS T_FILTER (
     age_max INTEGER,
     location_radius INTEGER,
     min_fame_rating INTEGER,
+    max_fame_rating INTEGER,
     tags TEXT[],
     page_number INTEGER DEFAULT 1,
     limit_number INTEGER DEFAULT 25,
