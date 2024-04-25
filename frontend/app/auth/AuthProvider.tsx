@@ -5,7 +5,7 @@ import AuthContext from "./AuthContext"
 import axios from "axios"
 import { AuthStatus, User } from "./authTypes"
 // import { usePathname, useRouter } from "next/navigation"
-import io from 'socket.io-client';
+import { SocketClient } from "../socket/SocketClient"
 
 interface Props {
   children: React.ReactNode
@@ -19,9 +19,11 @@ export const useAuth = () => {
   return context
 }
 
+
+
 const AuthProvider = ({ children }: Props) => {
-  const [token, setAuthToken] = useState<string | null | undefined>(undefined)
-  const [socket, setSocket] = useState<any>(null) // TODO type this
+  const [token, setAuthToken] = useState<string | null | undefined>(undefined);
+  const [socket, setSocket] = useState<SocketClient | null>(null);
 
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.Validating);
   const [user, setUser] = useState<User | undefined>(undefined)
@@ -43,16 +45,6 @@ const AuthProvider = ({ children }: Props) => {
     setSocket(null)
   }
 
-  function connectSocket() {
-    const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
-      auth: {
-        token: token
-      }
-    });
-    setSocket(newSocket);
-    console.log('Socket connection request sent.');
-  }
-
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -64,10 +56,20 @@ const AuthProvider = ({ children }: Props) => {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token: storedToken })
         .then((response) => {
           if (response?.data?.user) {
-              console.log('user info: ', response.data.user);
-              setUser(response.data.user)
+              setAuthToken(storedToken);
+              axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/details/`, {
+                headers: {
+                  Authorization: `Bearer ${storedToken}`
+                }
+              })
+              .then((response) => {
+                console.log('user details: ', response.data);
+                setUser(response.data)
+              });
             setAuthStatus(AuthStatus.Validated);
-            connectSocket();
+            if (response.data.user.date_of_birth) {
+              setSocket(new SocketClient(storedToken));
+            }
           } else {
             logout();
           }

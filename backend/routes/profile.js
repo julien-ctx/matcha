@@ -54,6 +54,7 @@ router.put("/details", authenticateJWT, async (req, res) => {
     email,
     firstName,
     lastName,
+    dateOfBirth,
     gender,
     sexualOrientation,
     bio,
@@ -80,13 +81,18 @@ router.put("/details", authenticateJWT, async (req, res) => {
       updates.push(`last_name = $${paramIndex++}`)
       values.push(lastName)
     }
+    if (dateOfBirth) {
+      updates.push(`date_of_birth = $${paramIndex++}`);
+      values.push(new Date(dateOfBirth));
+    }
     if (gender) {
       updates.push(`gender = $${paramIndex++}`)
       values.push(gender)
     }
     if (sexualOrientation) {
       updates.push(`sexual_orientation = $${paramIndex++}`)
-      values.push(sexualOrientation)
+      //todo change
+      values.push(sexualOrientation[0])
     }
     if (bio) {
       updates.push(`bio = $${paramIndex++}`)
@@ -108,7 +114,6 @@ router.put("/details", authenticateJWT, async (req, res) => {
       updates.push(`is_online = $${paramIndex++}`)
       values.push(isOnline)
     }
-
     if (updates.length === 0) {
       return res.status(400).send({ message: "No updates provided" })
     }

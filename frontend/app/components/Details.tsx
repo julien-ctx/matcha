@@ -1,9 +1,13 @@
 "use client"
 
 import React, { ReactNode, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import axios from "axios"
 import './Details.css';
+import { useAuth } from '../auth/AuthProvider';
 
 const enum CurrentDetail {
+    Birthday,
     Gender,
     Orientation,
     Photos,
@@ -17,6 +21,8 @@ const enum Gender {
     Other
 }
 
+const GenderList = ['Male', 'Female', 'Other'] //TODO make it simpler
+
 const interestsList = [
     'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
     'musician', 'foodie', 'gamer', 'nature lover', 'fitness enthusiast',
@@ -25,8 +31,12 @@ const interestsList = [
 ]
 
 export default function Details() {
-    const [currentDetail, setCurrentDetail] = useState<CurrentDetail>(CurrentDetail.Gender)
+    const { token } = useAuth();
+    const router = useRouter();
 
+    const [currentDetail, setCurrentDetail] = useState<CurrentDetail>(CurrentDetail.Birthday)
+
+    const [birthday, setBirthday] = useState<Date | null>(null);
     const [gender, setGender] = useState<Gender | null>(null);
     const [orientation, setOrientation] = useState<Gender[]>([]);
     const [photos, setPhotos] = useState<any>([]); // TODO type set
@@ -36,6 +46,28 @@ export default function Details() {
     function nextDetail() { setCurrentDetail((prev) => (prev < CurrentDetail.Interests ? prev + 1 : prev)); }
     function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Gender ? prev - 1 : prev)); }
     
+    function handleSubmit() {
+        console.log('here token', token, localStorage.getItem('jwt'))
+        axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
+            dateOfBirth: birthday,
+            gender: GenderList[gender],
+            sexualOrientation: orientation.map(g => GenderList[g]),
+            bio: bio,
+            tags: interests,
+            pictures: photos
+        }, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+            }
+        }).then(res => {
+            console.log('details return', res.data);
+            // TODO loading then reedirect (timeOut 1500 for example)
+            window.location.reload();
+        }).catch(e => {
+            console.log('error:', e);
+        })
+    }
+
     function handleOrientationChange(gender: Gender) : void{
         setOrientation((prev) => 
             prev.includes(gender) ? prev.filter(item => item !== gender) : [...prev, gender]
@@ -69,6 +101,8 @@ export default function Details() {
 
     const canMoveNext = () => {
         switch (currentDetail) {
+            case CurrentDetail.Birthday:
+                return birthday !== null;
             case CurrentDetail.Gender:
                 return gender !== null;
             case CurrentDetail.Orientation:
@@ -96,6 +130,17 @@ export default function Details() {
                 <p className="rotate-90 -translate-x-1/2 translate-y-32 absolute top-2 left-2 text-2xl text-black font-yarndings12">adehijlmnqSTa</p>
                 <p className="absolute bottom-2 left-2 text-2xl text-black font-yarndings12">adehijlmnqSTadehijlmnq</p> */}
                 {/* <div className="bg-red-200 w-full absolute top-0 left-0">l</div> */}
+                {currentDetail === CurrentDetail.Birthday && <div className="flex flex-col items-center">
+                        <h1 className="detail-title mb-8">When were you born?</h1>
+                        <input
+                            type="date"
+                            className="text-2xl"
+                            onChange={(e) => setBirthday(new Date(e.target.value))}
+                            max={new Date().toISOString().split('T')[0]}
+                        />
+                    </div>
+                }
+                
                 {currentDetail === CurrentDetail.Gender && <div>
                     <h1 className="detail-title mb-8">You are...</h1>
                     <div className="flex flex-col gap-1 items-center">
@@ -236,9 +281,7 @@ export default function Details() {
                     </div>
                     <button className="bg-gradient-to-r-main text-white px-4 py-2 rounded-xl duration-500
                         disabled:bg-none disabled:text-slate-400 disabled:cursor-not-allowed disabled:opacity-50 disabled:border-slate-400 disabled:border-2"
-                    onClick={() => {
-                        console.log('send to server');
-                    }}
+                    onClick={handleSubmit}
                     disabled={!canMoveNext()}
                     >Start your journey with Matcha</button>
                 </div>}

@@ -61,7 +61,7 @@ export default function MySpace() {
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
 
     useEffect(() => {
-        if (!user?.birthday) return;
+        if (!user?.date_of_birth) return;
         setProfileReady(true);
     }, [user])
 

@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 
 export function setupSocketEvents(io) {
     io.use((socket, next) => {
-        console.log('allo')
         const token = socket.handshake.auth.token;
 
         // TODO jwt verification, call next() if token is valid

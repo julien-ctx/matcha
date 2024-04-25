@@ -52,6 +52,7 @@ export default function Login({ setModalOpen }: LoginProps) {
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
+          console.log('login', response.data.user)
         } else {
           console.error("Backend didn't send JWT token")
         }
