@@ -58,3 +58,19 @@ CREATE TABLE IF NOT EXISTS T_BLOCK (
     block_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (blocker_id, blocked_id)
 );
+
+CREATE TABLE IF NOT EXISTS T_FILTER (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    age_min INTEGER,
+    age_max INTEGER,
+    location_radius INTEGER,
+    min_fame_rating INTEGER,
+    tags TEXT[],
+    page_number INTEGER DEFAULT 1,
+    limit_number INTEGER DEFAULT 25,
+    sort_by VARCHAR(50) DEFAULT 'distance',
+    order_by VARCHAR(10) DEFAULT 'asc',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES T_USER(id)
+);
