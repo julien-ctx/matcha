@@ -1,27 +1,27 @@
 /**
- * Generates a SQL condition string based on a user's sexual orientation.
- * @param {string} sexualOrientation - The sexual orientation of the user.
- * @returns {string} A SQL condition string that filters users based on the specified orientation.
+ * Generates a SQL condition string based on a user's gender and their sexual orientation preferences.
+ * @param {string} sexualOrientation - The sexual orientation preference of the user to match against.
+ * @param {string} gender - The gender of the user.
+ * @returns {string} A SQL condition string that filters users based on the specified orientation and gender.
  */
-export const getGenderQuery = (sexualOrientation) => {
-  let orientationQuery = ""
-  switch (sexualOrientation) {
-    case "Male":
-      orientationQuery = "gender = 'Male'"
-      break
-    case "Female":
-      orientationQuery = "gender = 'Female'"
-      break
-    case "Both":
-      orientationQuery = "gender IN ('Male', 'Female')"
-      break
-    case "Other":
-      orientationQuery = "gender = 'Other'"
-      break
-    default:
-      orientationQuery = "1=1"
-  }
-  return orientationQuery
+
+export const getSexualPreferences = (sexualOrientation, gender) => {
+  const genderQuery =
+    {
+      Male: "gender = 'Male'",
+      Female: "gender = 'Female'",
+      Both: "gender IN ('Male', 'Female')",
+      Other: "gender = 'Other'",
+    }[sexualOrientation] || "1=1"
+
+  const orientationQuery =
+    {
+      Male: "sexual_orientation = 'Male' OR sexual_orientation = 'Both'",
+      Female: "sexual_orientation = 'Female' OR sexual_orientation = 'Both'",
+      Other: "sexual_orientation = 'Other'",
+    }[gender] || "1=1"
+
+  return `${genderQuery} AND ${orientationQuery}`
 }
 
 /**
