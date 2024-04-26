@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html, body {
-    @apply w-screen h-screen m-0 p-0 select-none font-jersey10;
+    @apply w-screen h-screen m-0 p-0 select-none font-jersey10 overflow-hidden;
 }
 
 main {

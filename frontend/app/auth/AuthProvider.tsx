@@ -31,17 +31,6 @@ const AuthProvider = ({ children }: Props) => {
   // const router = useRouter()
   // const currentPath = usePathname()
 
-  function getLocation() {
-    if (navigator.geolocation) {
-        console.log('geoloc trying')
-        navigator.geolocation.getCurrentPosition(
-
-          );
-    } else {
-        console.error('Geolocation is not supported by this browser.');
-    }
-}
-
   function connectSocket() {
     const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
       auth: {

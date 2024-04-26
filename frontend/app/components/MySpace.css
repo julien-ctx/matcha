@@ -1,0 +1,12 @@
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%); /* Start from off the right of the screen */
+    }
+    to {
+        transform: translateX(0); /* End at the current position */
+    }
+}
+
+.slide-in-right {
+    animation: slideInRight 0.3s forwards; /* Adjust duration to control speed */
+}

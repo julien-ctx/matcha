@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react';
+import { ProfileType } from './profileTypes'
 
 interface ProfileProps {
-    profile: any; // set type later
-    setCurrentProfile: (profile: any) => void; // set type later
+    profile: ProfileType; 
+    setCurrentProfile: (profile: ProfileType | null) => void; 
 }
 
 
@@ -18,7 +19,7 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
     }
 
     function nextImage() {
-        if (currentImageIndex === profile.img.length - 1) return;
+        if (currentImageIndex === profile.pictures.length - 1) return;
 
         setCurrentImageIndex((prevIndex) => (prevIndex + 1));
     };
@@ -35,11 +36,11 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                     onClick={() => {
                         setCurrentProfile(profile);
                     }}>
-                    {profile.img.map((img, index) => (
+                    {profile.pictures.map((img, index) => (
                         <img 
                             key={index} 
                             src={img} 
-                            alt={profile.name}
+                            alt={profile.first_name}
                             className={`absolute top-0 w-full h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
                         />
                     ))}
@@ -60,17 +61,17 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                 </div>
             </div>
             <div className="flex">
-                <h1 className="text-2xl text-start w-full">{profile.name}, {profile.age}</h1>
+                <h1 className="text-2xl text-start w-full">{profile.first_name}, {profile.age}</h1>
             </div>
             <p>{profile.bio}</p>
 
             <div className="flex">
-                <h1 className="text-2xl text-start w-full">{profile.name}, {profile.age}</h1>
+                <h1 className="text-2xl text-start w-full">{profile.first_name}, {profile.age}</h1>
             </div>
             <p>{profile.bio}</p>
 
             <div className="flex">
-                <h1 className="text-2xl text-start w-full">{profile.name}, {profile.age}</h1>
+                <h1 className="text-2xl text-start w-full">{profile.first_name}, {profile.age}</h1>
             </div>
             <p>{profile.bio}</p>
 

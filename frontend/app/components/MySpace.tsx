@@ -8,6 +8,7 @@ import ChatRoom from './ChatRoom'
 import Profile from './Profile'
 import { useAuth } from "../auth/AuthProvider"
 import Details from './Details'
+import "./MySpace.css"
 
 const testChat = [
     {
@@ -61,23 +62,24 @@ export default function MySpace() {
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
 
     useEffect(() => {
+        console.log('here we go', user)
         if (!user?.date_of_birth) return;
         setProfileReady(true);
     }, [user])
 
     return isProfileReady ? (
-        <div className="w-full h-full flex">
+        <div className="w-full h-full flex fixed overflow-hidden">
             <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             <Match setCurrentProfile={setCurrentProfile} />
 
             {currentChatRoom !== null && (
-                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10">
+                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 slide-in-right">
                     <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)[0]} 
                         setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
             {currentProfile !== null && (
-                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 flex justify-center">
+                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 flex justify-center slide-in-right">
                     <Profile profile={currentProfile} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}

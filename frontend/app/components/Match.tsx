@@ -1,57 +1,29 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
+import { ProfileType } from './profileTypes'
 
 import Modal from "./Modal"
 import ProfileCard from "./ProfileCard"
 import axios from 'axios'
-import goeip from 'geoip-lite'
 
-const initialTestProfiles = [
-    {
-        id: 1,
-        name: "Danielle",
-        age: 20,
-        bio: 'je cherche un plan chaud',
-        fameRating: 3,
-        interests: ["Gaming", "Reading", "Coding"],
-        distance: 10,
-        img: [
-            "/danielle1.jpeg",
-            "/danielle2.jpeg"
-        ]
-    }, {
-        id: 3,
-        name: "Wonyoung",
-        age: 20,
-        bio: 'je cherche un plan serieux',
-        fameRating: 4,
-        interests: ["Gaming", "Reading", "Coding"],
-        distance: 20,
-        img: [
-            "/wonyoung1.jpeg",
-            "/wonyoung2.jpeg",
-            "/wonyoung3.webp"
-        ]
-    }
-]
+import './Match.css'
+
 
 interface Props {
-    setCurrentProfile: (profile: any) => void // bring profile type here later
+    setCurrentProfile: (profile: ProfileType) => void
 }
 
 export default function Match({ setCurrentProfile }: Props) {
     
-
-
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState({ min: 18, max: 99 });
     const [kmWithin, setKmWithin] = useState(50); // Default 50 km
     const [fameRating, setFameRating] = useState(1); // Default rating 1
     const [sameInterests, setSameInterests] = useState(false);
 
-    const [profiles, setProfiles] = useState(initialTestProfiles);
-    const [currentProfileIndex, setCurrentProfileIndex] = useState(initialTestProfiles.length - 1);
+    const [profiles, setProfiles] = useState([]);
+    const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
 
     function browseProfile() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
@@ -71,7 +43,7 @@ export default function Match({ setCurrentProfile }: Props) {
 
     useEffect(() => {
         sendLocation();
-        // browseProfile();
+        browseProfile();
     }, [])
 
     function sendLocation() {
@@ -125,7 +97,16 @@ export default function Match({ setCurrentProfile }: Props) {
     };
 
     const handleDecision = (accept: boolean) => {
-        // TODO send decision to backend
+        // TODO Protection needed
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+            }}).then(res => {
+                console.log(res.data);
+            }).catch(err => {
+                console.error(err);
+            }
+        )
 
         setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
         setCurrentProfileIndex(prev => Math.max(0, prev - 1));
@@ -134,17 +115,16 @@ export default function Match({ setCurrentProfile }: Props) {
 
     return (
         <div className="relative h-full bg-white w-3/4 min-w-48 flex justify-center items-center z-0 pt-20">
-            <button className="absolute top-28 right-12" onClick={() => setModalOpen(true)}>
-                <img className="w-14 h-14" src="parameters.svg" alt="parameters" />
-            </button>
            
             <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
-                <div className="absolute rounded-full bg-white w-40 h-40 -left-16 top-1/2 flex justify-center items-center">
-                    <button className="text-7xl text-red-400" onClick={() => handleDecision(false)}>X</button>
-                </div>
-                <div className="absolute rounded-full bg-white w-40 h-40 -right-16 top-1/2 flex justify-center items-center">
-                    <button className="text-7xl text-green-300" onClick={() => handleDecision(true)}>O</button>
-                </div>
+                <button className="absolute -top-8 right-20 bg-gray-200 hover:bg-red-300 duration-200 py-1 px-4 rounded-t-2xl" onClick={() => setModalOpen(true)}>
+                    <div className="text-white flex gap-2 items-center justify-center">
+                        <img className="w-5 h-5" src="parameters.svg" alt="parameters" />
+                        <p>Settings</p>
+                    </div>
+                </button>
+                <button className="likeOrNotButton text-red-400 bg-red-50 -left-16" onClick={() => handleDecision(false)}>X</button>
+                <button className="likeOrNotButton text-green-300 bg-green-50 -right-16" onClick={() => handleDecision(true)}>O</button>
                 {profiles.length > 0 ? (
                     <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                 ) : (
