@@ -54,14 +54,17 @@ router.put("/details", authenticateJWT, async (req, res) => {
     email,
     firstName,
     lastName,
-    dateOfBirth,
     gender,
     sexualOrientation,
     bio,
     tags,
     pictures,
-    gpsLocation,
+    lastLogin,
     isOnline,
+    accountVerified,
+    dateOfBirth,
+    latitude,
+    longitude,
   } = req.body
 
   try {
@@ -106,14 +109,31 @@ router.put("/details", authenticateJWT, async (req, res) => {
       updates.push(`pictures = $${paramIndex++}`)
       values.push(pictures)
     }
-    if (gpsLocation) {
-      updates.push(`gps_location = $${paramIndex++}`)
-      values.push(gpsLocation)
+    if (lastLogin) {
+      updates.push(`last_login = $${paramIndex++}`)
+      values.push(lastLogin)
     }
     if (isOnline !== undefined) {
       updates.push(`is_online = $${paramIndex++}`)
       values.push(isOnline)
     }
+    if (accountVerified !== undefined) {
+      updates.push(`account_verified = $${paramIndex++}`)
+      values.push(accountVerified)
+    }
+    if (dateOfBirth) {
+      updates.push(`date_of_birth = $${paramIndex++}`)
+      values.push(dateOfBirth)
+    }
+    if (latitude) {
+      updates.push(`latitude = $${paramIndex++}`)
+      values.push(latitude)
+    }
+    if (longitude) {
+      updates.push(`longitude = $${paramIndex++}`)
+      values.push(longitude)
+    }
+
     if (updates.length === 0) {
       return res.status(400).send({ message: "No updates provided" })
     }
@@ -126,15 +146,15 @@ router.put("/details", authenticateJWT, async (req, res) => {
       RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude;
     `
     values.push(userId)
-    const { rows } = await pool.query(query, values);
+    const { rows } = await pool.query(query, values)
 
     res.send({
       message: "Profile updated successfully",
       user: {
         ...rows[0],
-        password: undefined
-      }
-    });
+        password: undefined,
+      },
+    })
   } catch (error) {
     console.error("Database error:", error)
     res
