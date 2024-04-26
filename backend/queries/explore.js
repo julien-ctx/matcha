@@ -40,23 +40,23 @@ export const getOffset = (page, limit) => {
  * ordering, it modifies the order parameter to incorporate randomness.
  *
  * @param {string} sortBy - The field to sort by ("age", "distance", "fameRating").
- * @param {string} order - The ordering direction ("asc", "desc") or "rand" for random.
+ * @param {string} orderBy - The ordering direction ("asc", "desc") or "rand" for random.
  * @param {number} latitude - The latitude value to use for distance calculations.
  * @param {number} longitude - The longitude value to use for distance calculations.
  * @returns {string} The SQL ORDER BY clause.
  */
-export const getOrderClause = (sortBy, order, latitude, longitude) => {
+export const getOrderClause = (sortBy, orderBy, latitude, longitude) => {
   let orderClause = ""
-  if (order === "rand") order = "* RANDOM()"
+  if (orderBy === "rand") orderBy = "* RANDOM()"
   switch (sortBy) {
     case "age":
-      orderClause = `ORDER BY EXTRACT(YEAR FROM AGE(CURRENT_DATE, date_of_birth)) ${order}`
+      orderClause = `ORDER BY EXTRACT(YEAR FROM AGE(CURRENT_DATE, date_of_birth)) ${orderBy}`
       break
     case "distance":
-      orderClause = `ORDER BY earth_distance(ll_to_earth(latitude, longitude), ll_to_earth(${latitude}, ${longitude})) ${order}`
+      orderClause = `ORDER BY earth_distance(ll_to_earth(latitude, longitude), ll_to_earth(${latitude}, ${longitude})) ${orderBy}`
       break
     case "fameRating":
-      orderClause = `ORDER BY fame_rating ${order}`
+      orderClause = `ORDER BY fame_rating ${orderBy}`
       break
   }
   return orderClause

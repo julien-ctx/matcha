@@ -24,7 +24,7 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     page = 1,
     limit = 25,
     sortBy = "distance",
-    order = "asc",
+    orderBy = "asc",
   } = req.query
 
   if (!["distance", "fameRating", "age"].includes(sortBy)) {
@@ -34,10 +34,10 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     })
   }
 
-  if (!["asc", "desc", "rand"].includes(order)) {
+  if (!["asc", "desc", "rand"].includes(orderBy)) {
     return res.status(400).send({
       message:
-        "order parameter should be one of the following values: asc, desc, rand.",
+        "orderBy parameter should be one of the following values: asc, desc, rand.",
     })
   }
 
@@ -126,7 +126,7 @@ router.get("/browse", authenticateJWT, async (req, res) => {
       longitude
       FROM T_USER
       WHERE ${conditions}
-      ${getOrderClause(sortBy, order, latitude, longitude)}
+      ${getOrderClause(sortBy, orderBy, latitude, longitude)}
       LIMIT $${paramCount} OFFSET $${paramCount + 1};
     `
     params.push(limit, offset)
