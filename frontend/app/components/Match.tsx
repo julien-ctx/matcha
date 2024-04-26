@@ -114,7 +114,7 @@ export default function Match({ setCurrentProfile }: Props) {
 
 
     return (
-        <div className="relative h-full bg-white w-3/4 min-w-48 flex justify-center items-center z-0 pt-20">
+        <div className="h-full bg-white w-full flex justify-center items-center z-0 pt-20">
            
             <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
                 <button className="absolute -top-8 right-20 bg-gray-200 hover:bg-red-300 duration-200 py-1 px-4 rounded-t-2xl" onClick={() => setModalOpen(true)}>

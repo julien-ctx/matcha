@@ -60,27 +60,16 @@ const AuthProvider = ({ children }: Props) => {
 
     const storedToken = localStorage.getItem('jwt');
     
-    setAuthStatus(AuthStatus.Validated)
-
-    // TODO change when get jcacuhet's modif on jwt-status
     if (storedToken) {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token: storedToken })
         .then((response) => {
           if (response?.data?.user) {
               setAuthToken(storedToken);
-              axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/details/`, {
-                headers: {
-                  Authorization: `Bearer ${storedToken}`
-                }
-              })
-              .then((response) => {
-                console.log('user details: ', response.data);
-                setUser(response.data)
-                if (response.data.date_of_birth) {
-                  connectSocket();
-                  console.log('Socket connection established.')
-                }
-              });
+              setUser(response.data.user)
+              if (response.data.user.date_of_birth) {
+                connectSocket();
+                console.log('Socket connection established.')
+              }
             setAuthStatus(AuthStatus.Validated);
           } else {
             logout();

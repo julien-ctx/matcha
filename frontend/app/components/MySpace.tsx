@@ -62,6 +62,7 @@ export default function MySpace() {
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
 
     useEffect(() => {
+        // TODO should fix authprovider
         console.log('here we go', user)
         if (!user?.date_of_birth) return;
         setProfileReady(true);
@@ -69,8 +70,12 @@ export default function MySpace() {
 
     return isProfileReady ? (
         <div className="w-full h-full flex fixed overflow-hidden">
-            <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
-            <Match setCurrentProfile={setCurrentProfile} />
+            <div className="w-1/4 relative ">
+                <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+            </div>
+            <div className="w-3/4 relative border-l-red-100 border-2">
+                <Match setCurrentProfile={setCurrentProfile} />
+            </div>
 
             {currentChatRoom !== null && (
                 <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 slide-in-right">

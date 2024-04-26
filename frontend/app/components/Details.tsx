@@ -23,6 +23,15 @@ const enum Gender {
 
 const GenderList = ['Male', 'Female', 'Other'] //TODO make it simpler
 
+const enum Orientation {
+    Male,
+    Female,
+    Both,
+    Other
+}
+
+const OrientationList = ['Male', 'Female', 'Both', 'Other']
+
 const interestsList = [
     'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
     'musician', 'foodie', 'gamer', 'nature lover', 'fitness enthusiast',
@@ -38,7 +47,7 @@ export default function Details() {
 
     const [birthday, setBirthday] = useState<Date | null>(null);
     const [gender, setGender] = useState<Gender | null>(null);
-    const [orientation, setOrientation] = useState<Gender[]>([]);
+    const [orientation, setOrientation] = useState<Orientation | null>(null);
     const [photos, setPhotos] = useState<any>([]); // TODO type set
     const [bio, setBio] = useState<string>('');
     const [interests, setInterests] = useState<string[]>([]);
@@ -51,7 +60,7 @@ export default function Details() {
         axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
             dateOfBirth: birthday,
             gender: GenderList[gender],
-            sexualOrientation: orientation.map(g => GenderList[g]),
+            sexualOrientation: OrientationList[orientation],
             bio: bio,
             tags: interests,
             pictures: photos
@@ -106,7 +115,7 @@ export default function Details() {
             case CurrentDetail.Gender:
                 return gender !== null;
             case CurrentDetail.Orientation:
-                return orientation.length > 0;
+                return orientation !== null;
             case CurrentDetail.Photos:
                 return photos.length > 0;
             case CurrentDetail.Bio:
@@ -121,6 +130,51 @@ export default function Details() {
     const isFirstDetail = currentDetail === CurrentDetail.Gender;
     const isLastDetail = currentDetail === CurrentDetail.Interests;
 
+
+    const orientationOptions = [
+        { id: 'male', value: Orientation.Male, label: 'Male' },
+        { id: 'female', value: Orientation.Female, label: 'Female' },
+        { id: 'both', value: Orientation.Both, label: 'Both' },
+        { id: 'other', value: Orientation.Other, label: 'Other' }
+    ];
+
+    const renderOrientationOption = (option) => (
+        <>
+            <input
+                type="radio"
+                id={`orientation-${option.id}`}
+                name="orientation"
+                className="radio-input"
+                checked={orientation === option.value}
+                onChange={() => setOrientation(option.value)}
+            />
+            <label htmlFor={`orientation-${option.id}`} className="radio-label">
+                {option.label}
+            </label>
+        </>
+    );
+
+    const genderOptions = [
+        { id: 'male', value: Gender.Male, label: 'Male' },
+        { id: 'female', value: Gender.Female, label: 'Female' },
+        { id: 'other', value: Gender.Other, label: 'Other' }
+    ];
+
+    const renderGenderOption = (option) => (
+        <>
+            <input
+                type="radio"
+                id={`gender-${option.id}`}
+                name="gender"
+                className="radio-input"
+                checked={gender === option.value}
+                onChange={() => setGender(option.value)}
+            />
+            <label htmlFor={`gender-${option.id}`} className="radio-label">
+                {option.label}
+            </label>
+        </>
+    );
       
     return (
         <div className="relative w-full h-full bg-white flex items-center justify-center flex-col fadeInAnimation"
@@ -144,81 +198,13 @@ export default function Details() {
                 {currentDetail === CurrentDetail.Gender && <div>
                     <h1 className="detail-title mb-8">You are...</h1>
                     <div className="flex flex-col gap-1 items-center">
-                        <input
-                        type="radio"
-                        id="male"
-                        name="gender"
-                        value={Gender.Male}
-                        className="radio-input"
-                        checked={gender === Gender.Male}
-                        onChange={() => setGender(Gender.Male)}
-                    />
-                    <label htmlFor="male" className="radio-label">
-                        Male
-                    </label>
-
-                    <input
-                        type="radio"
-                        id="female"
-                        name="gender"
-                        value={Gender.Female}
-                        className="radio-input"
-                        checked={gender === Gender.Female}
-                        onChange={() => setGender(Gender.Female)}
-                    />
-                    <label htmlFor="female" className="radio-label">
-                        Female
-                    </label>
-
-                    <input
-                        type="radio"
-                        id="other"
-                        name="gender"
-                        value={Gender.Other}
-                        className="radio-input"
-                        checked={gender === Gender.Other}
-                        onChange={() => setGender(Gender.Other)}
-                    />
-                    <label htmlFor="other" className="radio-label">
-                        Other
-                    </label>
+                    {genderOptions.map(option => renderGenderOption(option))}
                     </div>
                 </div>}
                 {currentDetail === CurrentDetail.Orientation && <div>
                     <h2 className="detail-title mb-8">I'm looking for...</h2>
                     <div className="flex flex-col gap-1 items-center">
-                        <input
-                            type="checkbox"
-                            id="orientation-male"
-                            className="checkbox-input"
-                            checked={orientation.includes(Gender.Male)}
-                            onChange={() => handleOrientationChange(Gender.Male)}
-                        />
-                        <label htmlFor="orientation-male" className="checkbox-label">
-                            Male
-                        </label>
-
-                        <input
-                            type="checkbox"
-                            id="orientation-female"
-                            className="checkbox-input"
-                            checked={orientation.includes(Gender.Female)}
-                            onChange={() => handleOrientationChange(Gender.Female)}
-                        />
-                        <label htmlFor="orientation-female" className="checkbox-label">
-                            Female
-                        </label>
-
-                        <input
-                            type="checkbox"
-                            id="orientation-other"
-                            className="checkbox-input"
-                            checked={orientation.includes(Gender.Other)}
-                            onChange={() => handleOrientationChange(Gender.Other)}
-                        />
-                        <label htmlFor="orientation-other" className="checkbox-label">
-                            Other
-                        </label>
+                    {orientationOptions.map(option => renderOrientationOption(option))}
                     </div>
                 </div>}
                 {currentDetail === CurrentDetail.Photos && <div className="flex flex-col items-center justify-center h-full">

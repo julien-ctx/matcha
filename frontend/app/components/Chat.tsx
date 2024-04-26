@@ -9,7 +9,7 @@ const currentUserId = 42;
 
 export default function Chat({ rooms, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
     return (
-        <div className="h-full bg-green-300 w-1/4 min-w-48 pt-28">
+        <div className="h-full bg-white w-full pt-28 fixed">
             <ul>
                 {rooms.map(room => {
                     const otherUser = room.users.find(user => user.id !== currentUserId);

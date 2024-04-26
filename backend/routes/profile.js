@@ -84,18 +84,13 @@ router.put("/details", authenticateJWT, async (req, res) => {
       updates.push(`last_name = $${paramIndex++}`)
       values.push(lastName)
     }
-    if (dateOfBirth) {
-      updates.push(`date_of_birth = $${paramIndex++}`);
-      values.push(new Date(dateOfBirth));
-    }
     if (gender) {
       updates.push(`gender = $${paramIndex++}`)
       values.push(gender)
     }
     if (sexualOrientation) {
       updates.push(`sexual_orientation = $${paramIndex++}`)
-      //todo change
-      values.push(sexualOrientation[0])
+      values.push(sexualOrientation)
     }
     if (bio) {
       updates.push(`bio = $${paramIndex++}`)

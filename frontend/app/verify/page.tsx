@@ -1,18 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRequireAuth } from "../auth/RequireAuth"
+import { useAuth } from "../auth/AuthProvider"
 import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation"
 import axios from "axios"
+import { AuthStatus } from "../auth/authTypes"
 
 export default function Verify() {
-  const { token, isValidating } = useRequireAuth()
+  const { token, authStatus } = useAuth()
   const searchParams: ReadonlyURLSearchParams = useSearchParams()
   const verificationToken: string | null = searchParams.get("token")
   const [displayMessage, setDisplayMessage] = useState<string>("")
 
   useEffect(() => {
-    if (!isValidating && token) {
+    if (authStatus !== AuthStatus.Validating && token) {
       axios
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, { token: verificationToken })
         .then((response) => {
@@ -22,16 +23,16 @@ export default function Verify() {
           setDisplayMessage(error?.response?.data?.message ?? "")
         })
     }
-  }, [isValidating])
+  }, [authStatus])
 
   return (
     <>
-      {isValidating && (
+      {authStatus === AuthStatus.Validating && (
         <>
           <h1>Loading...</h1>
         </>
       )}
-      {!isValidating && displayMessage && (
+      {authStatus !== AuthStatus.Validating && displayMessage && (
         <>
           <h1>{displayMessage}</h1>
         </>
