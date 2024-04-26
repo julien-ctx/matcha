@@ -158,4 +158,183 @@ router.put("/details", authenticateJWT, async (req, res) => {
   }
 })
 
+/* Retrieves the filter settings of the currently authenticated user. */
+router.get("/filter", authenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  const query = `
+    SELECT *
+    FROM T_FILTER
+    WHERE user_id = $1
+  `
+
+  try {
+    const queryResult = await pool.query(query, [userId])
+    if (queryResult.rows.length === 0) {
+      return res
+        .status(404)
+        .send({ message: "Filter settings not found for the user." })
+    }
+    res.json(queryResult.rows[0])
+  } catch (error) {
+    console.error("Database error:", error)
+    res.sendStatus(500)
+  }
+})
+
+/* Update the filter settings of the currently authenticated user. */
+router.put("/filter", authenticateJWT, async (req, res) => {
+  const userId = req.user.id
+  const {
+    ageMin,
+    ageMax,
+    locationRadius,
+    minFameRating,
+    maxFameRating,
+    tags,
+    pageNumber,
+    limitNumber,
+    sortBy,
+    orderBy,
+  } = req.body
+
+  try {
+    const updates = []
+    const values = []
+    let paramIndex = 1
+
+    if (ageMin !== undefined) {
+      updates.push(`age_min = $${paramIndex++}`)
+      values.push(ageMin)
+    }
+    if (ageMax !== undefined) {
+      updates.push(`age_max = $${paramIndex++}`)
+      values.push(ageMax)
+    }
+    if (locationRadius !== undefined) {
+      updates.push(`location_radius = $${paramIndex++}`)
+      values.push(locationRadius)
+    }
+    if (minFameRating !== undefined) {
+      updates.push(`min_fame_rating = $${paramIndex++}`)
+      values.push(minFameRating)
+    }
+    if (maxFameRating !== undefined) {
+      updates.push(`max_fame_rating = $${paramIndex++}`)
+      values.push(maxFameRating)
+    }
+    if (tags !== undefined) {
+      updates.push(`tags = $${paramIndex++}`)
+      values.push(tags)
+    }
+    if (pageNumber !== undefined) {
+      updates.push(`page_number = $${paramIndex++}`)
+      values.push(pageNumber)
+    }
+    if (limitNumber !== undefined) {
+      updates.push(`limit_number = $${paramIndex++}`)
+      values.push(limitNumber)
+    }
+    if (sortBy !== undefined) {
+      updates.push(`sort_by = $${paramIndex++}`)
+      values.push(sortBy)
+    }
+    if (orderBy !== undefined) {
+      updates.push(`order_by = $${paramIndex++}`)
+      values.push(orderBy)
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).send({ message: "No updates provided" })
+    }
+
+    const query = `
+      UPDATE T_FILTER
+      SET ${updates.join(", ")}
+      WHERE user_id = $${paramIndex}
+      RETURNING *;
+    `
+    values.push(userId)
+
+    const { rows } = await pool.query(query, values)
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .send({ message: "Filter settings not found for the user." })
+    }
+    res.send({
+      message: "Filter settings updated successfully",
+      filter: rows[0],
+    })
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({
+      message: "Failed to update filter settings",
+      error: error.message,
+    })
+  }
+})
+
+/* Create new filter settings for the currently authenticated user with optional fields. */
+router.post("/filter", authenticateJWT, async (req, res) => {
+  const userId = req.user.id
+  const {
+    ageMin = 18,
+    ageMax = 99,
+    locationRadius = 100,
+    minFameRating = 1,
+    maxFameRating = 100,
+    tags = [],
+    pageNumber = 1,
+    limitNumber = 25,
+    sortBy = "distance",
+    orderBy = "asc",
+  } = req.body
+
+  const query = `
+    INSERT INTO T_FILTER (
+      user_id,
+      age_min,
+      age_max,
+      location_radius,
+      min_fame_rating,
+      max_fame_rating,
+      tags,
+      page_number,
+      limit_number,
+      sort_by,
+      order_by
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    RETURNING *;
+  `
+
+  const values = [
+    userId,
+    ageMin,
+    ageMax,
+    locationRadius,
+    minFameRating,
+    maxFameRating,
+    tags,
+    pageNumber,
+    limitNumber,
+    sortBy,
+    orderBy,
+  ]
+
+  try {
+    const { rows } = await pool.query(query, values)
+    res.status(201).send({
+      message: "Filter settings created successfully",
+      filter: rows[0],
+    })
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({
+      message: "Failed to create filter settings",
+      error: error.message,
+    })
+  }
+})
+
 export default router
