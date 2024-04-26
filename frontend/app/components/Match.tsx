@@ -1,9 +1,11 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import Modal from "./Modal"
 import ProfileCard from "./ProfileCard"
+import axios from 'axios'
+import goeip from 'geoip-lite'
 
 const initialTestProfiles = [
     {
@@ -39,6 +41,9 @@ interface Props {
 }
 
 export default function Match({ setCurrentProfile }: Props) {
+    
+
+
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState({ min: 18, max: 99 });
     const [kmWithin, setKmWithin] = useState(50); // Default 50 km
@@ -47,6 +52,69 @@ export default function Match({ setCurrentProfile }: Props) {
 
     const [profiles, setProfiles] = useState(initialTestProfiles);
     const [currentProfileIndex, setCurrentProfileIndex] = useState(initialTestProfiles.length - 1);
+
+    function browseProfile() {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+            }
+            
+        })
+        .then((response) => {
+            console.log('profiles: ', response.data)
+            setProfiles(response.data);
+        })
+        .catch((error) => {
+            console.error(error);
+        });
+    }
+
+    useEffect(() => {
+        sendLocation();
+        // browseProfile();
+    }, [])
+
+    function sendLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
+                        latitude,
+                        longitude
+                    }, {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                        }
+                    }).then(response => {
+                        console.log("Location updated successfully", response.data);
+                    }).catch(error => {
+                        console.error("Error updating location", error);
+                    });
+                },
+                error => {
+                    console.error('Error getting location:', error);
+                    axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
+                        latitude: 999,
+                        longitude: 999
+                    }, {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                        }
+                    }).then(response => {
+                        console.log("Null location updated successfully", response.data);
+                    }).catch(error => {
+                        console.error("Error updating null location", error);
+                    });
+
+                }
+            );
+        } else {
+            console.error('Geolocation is not supported by this browser.');
+        }
+    }
 
     const handleAgeMinChange = (event) => {
         setAgeRange({ ...ageRange, min: parseInt(event.target.value) });

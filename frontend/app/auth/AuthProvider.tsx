@@ -5,7 +5,7 @@ import AuthContext from "./AuthContext"
 import axios from "axios"
 import { AuthStatus, User } from "./authTypes"
 // import { usePathname, useRouter } from "next/navigation"
-import { SocketClient } from "../socket/SocketClient"
+import { io } from "socket.io-client"
 
 interface Props {
   children: React.ReactNode
@@ -23,13 +23,34 @@ export const useAuth = () => {
 
 const AuthProvider = ({ children }: Props) => {
   const [token, setAuthToken] = useState<string | null | undefined>(undefined);
-  const [socket, setSocket] = useState<SocketClient | null>(null);
+  const [socket, setSocket] = useState<any | null>(null); // TODO type set
 
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.Validating);
   const [user, setUser] = useState<User | undefined>(undefined)
 
   // const router = useRouter()
   // const currentPath = usePathname()
+
+  function getLocation() {
+    if (navigator.geolocation) {
+        console.log('geoloc trying')
+        navigator.geolocation.getCurrentPosition(
+
+          );
+    } else {
+        console.error('Geolocation is not supported by this browser.');
+    }
+}
+
+  function connectSocket() {
+    const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
+      auth: {
+        token: token
+      }
+    });
+    setSocket(newSocket);
+    console.log('Socket connection request sent.');
+  }
 
   const login = (newToken: string) => {
     localStorage.setItem("jwt", newToken)
@@ -52,6 +73,7 @@ const AuthProvider = ({ children }: Props) => {
     
     setAuthStatus(AuthStatus.Validated)
 
+    // TODO change when get jcacuhet's modif on jwt-status
     if (storedToken) {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token: storedToken })
         .then((response) => {
@@ -65,11 +87,12 @@ const AuthProvider = ({ children }: Props) => {
               .then((response) => {
                 console.log('user details: ', response.data);
                 setUser(response.data)
+                if (response.data.date_of_birth) {
+                  connectSocket();
+                  console.log('Socket connection established.')
+                }
               });
             setAuthStatus(AuthStatus.Validated);
-            if (response.data.user.date_of_birth) {
-              setSocket(new SocketClient(storedToken));
-            }
           } else {
             logout();
           }

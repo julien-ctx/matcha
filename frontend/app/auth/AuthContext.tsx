@@ -8,7 +8,7 @@ interface Props {
   logout: () => void,
   authStatus: AuthStatus,
   user: User | undefined,
-  socket: SocketClient | null
+  socket: any | null // TODO type set
 }
 
 const AuthContext = createContext<Props | null>(null)
