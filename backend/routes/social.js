@@ -197,4 +197,28 @@ router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
   }
 })
 
+/* Retrieve all matches for the authenticated user. */
+router.get("/matches", authenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  const query = `
+    SELECT u.id, u.username, u.email, u.first_name, u.last_name
+    FROM T_USER u
+    JOIN T_LIKE AS l1 ON u.id = l1.liker_id
+    JOIN T_LIKE AS l2 ON l1.liker_id = l2.liked_id AND l1.liked_id = l2.liker_id
+    WHERE l1.liked_id = $1 AND l1.liker_id = l2.liked_id
+  `
+
+  try {
+    const result = await pool.query(query, [userId])
+    res.json(result.rows)
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({
+      message: "Failed to retrieve matches",
+      error: error.message,
+    })
+  }
+})
+
 export default router
