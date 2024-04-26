@@ -2,6 +2,7 @@ import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
 import authenticateJWT from "../middleware/auth.js"
+import { getLocationWithoutPermission } from "../queries/profile.js"
 
 dotenv.config({ path: "../../.env" })
 
@@ -120,13 +121,23 @@ router.put("/details", authenticateJWT, async (req, res) => {
       updates.push(`date_of_birth = $${paramIndex++}`)
       values.push(dateOfBirth)
     }
-    if (latitude) {
-      updates.push(`latitude = $${paramIndex++}`)
-      values.push(latitude)
-    }
-    if (longitude) {
-      updates.push(`longitude = $${paramIndex++}`)
-      values.push(longitude)
+    if (latitude === 999 && longitude === 999) {
+      const location = await getLocationWithoutPermission()
+      if (location && location.latitude && location.longitude) {
+        updates.push(`latitude = $${paramIndex++}`)
+        values.push(location.latitude)
+        updates.push(`longitude = $${paramIndex++}`)
+        values.push(location.longitude)
+      }
+    } else {
+      if (latitude) {
+        updates.push(`latitude = $${paramIndex++}`)
+        values.push(latitude)
+      }
+      if (longitude) {
+        updates.push(`longitude = $${paramIndex++}`)
+        values.push(longitude)
+      }
     }
 
     if (updates.length === 0) {
