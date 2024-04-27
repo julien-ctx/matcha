@@ -1,11 +1,14 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import Chat from "./Chat"
 import Match from "./Match"
 import ChatRoom from './ChatRoom'
-
+import Profile from './Profile'
+import { useAuth } from "../auth/AuthProvider"
+import Details from './Details'
+import "./MySpace.css"
 
 const testChat = [
     {
@@ -52,18 +55,43 @@ const testChat = [
 ]
 
 export default function MySpace() {
-    const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
+    const { user } = useAuth();
+    const [isProfileReady, setProfileReady] = useState(false);
 
-    return (
-        <div className="w-full h-full flex">
-            <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom}/ >
-            <Match />
+    const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
+    const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
+
+    useEffect(() => {
+        // TODO should fix authprovider
+        console.log('here we go', user)
+        if (!user?.date_of_birth) return;
+        setProfileReady(true);
+    }, [user])
+
+    return isProfileReady ? (
+        <div className="w-full h-full flex fixed overflow-hidden">
+            <div className="w-1/4 relative ">
+                <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+            </div>
+            <div className="w-3/4 relative border-l-red-100 border-2">
+                <Match setCurrentProfile={setCurrentProfile} />
+            </div>
 
             {currentChatRoom !== null && (
-                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10">
-                    <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)[0]} setCurrentRoom={setCurrentChatRoom}/>
+                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 slide-in-right">
+                    <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)[0]} 
+                        setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
+            {currentProfile !== null && (
+                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 flex justify-center slide-in-right">
+                    <Profile profile={currentProfile} setCurrentProfile={setCurrentProfile}/>
+                </div>
+            )}
+        </div>
+    ) : (
+        <div className="w-full h-full">
+            <Details />
         </div>
     )
 }

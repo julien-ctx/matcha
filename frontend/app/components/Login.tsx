@@ -52,6 +52,7 @@ export default function Login({ setModalOpen }: LoginProps) {
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
+          console.log('login', response.data.user)
         } else {
           console.error("Backend didn't send JWT token")
         }
@@ -83,7 +84,7 @@ export default function Login({ setModalOpen }: LoginProps) {
                 value={formData.identifier}
                 onChange={handleChange}
                 required
-                className="bg-slate-100 h-7 w-2/5"
+                className="bg-slate-100 h-7 w-2/5 px-2"
               />
             </div>
             <div className="w-full flex justify-center">
@@ -95,7 +96,7 @@ export default function Login({ setModalOpen }: LoginProps) {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="bg-slate-100 h-7 w-2/5"
+                className="bg-slate-100 h-7 w-2/5 px-2"
               />
             </div>
             <button type="submit" className="bg-slate-200 hover:brightness-90 px-3 py-1">

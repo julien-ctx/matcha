@@ -1,0 +1,94 @@
+.detailButton {
+    @apply border-2 bg-gradient-to-r-main rounded-sm px-3 py-1 text-lg flex items-center absolute top-1/4 text-white border-white;
+}
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fadeInAnimation {
+    animation: fadein 4s ease-out forwards;
+}
+
+.radio-input {
+    display: none;
+}
+
+.radio-label {
+    @apply w-32 border-2 border-black py-2 cursor-pointer text-center duration-150;
+}
+
+.radio-input:checked + .radio-label {
+    @apply text-white bg-gradient-to-r-main border-0;
+}
+
+.checkbox-input {
+    display: none;
+}
+  
+.checkbox-label {
+    @apply w-32 border-2 border-black py-2 cursor-pointer text-center duration-150;
+    line-height: 0.2;
+}
+  
+.checkbox-input:checked + .checkbox-label {
+    @apply text-white bg-gradient-to-r-main border-0;
+}
+
+.detail-title {
+    @apply text-5xl;
+}
+
+.photo-grid {
+    @apply gap-1;
+    width: 90%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    border: 1px solid #ccc; /* Optional: adds border around the whole grid */
+}
+
+.photo-grid-item {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9; /* Light background for empty cells */
+}
+
+.photo-grid-item.large {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 2;
+}
+
+.photo-grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    padding: 5px;
+}
+
+.photo-grid-item .photo-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+}
+
+.photo-grid-item:hover .photo-remove {
+    display: block; /* Show remove button on hover */
+}
+
+.custom-file-upload {
+    @apply text-6xl text-slate-100 bg-slate-300 px-5 aspect-square flex justify-center items-center rounded-2xl;
+    cursor: pointer;
+}
+
+.file-input {
+    display: none;
+}

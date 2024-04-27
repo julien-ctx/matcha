@@ -1,3 +1,0 @@
-.detailButton {
-    @apply border-2 border-black rounded-full p-3 w-12 h-12 text-lg flex items-center absolute top-2;
-}

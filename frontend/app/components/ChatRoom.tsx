@@ -6,12 +6,13 @@ import Modal from './Modal';
 
 interface ChatRoomProp {
     room: any[],
-    setCurrentRoom: (roomId: number | null) => void
+    setCurrentRoom: (roomId: number | null) => void,
+    setCurrentProfile: (profile: any) => void
 }
 
 const currentUserId = 42; //TODO redux
 
-export default function ChatRoom({ room, setCurrentRoom }: ChatRoomProp) {
+export default function ChatRoom({ room, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
     const [isModalOpen, setModalOpen] = useState(false);
 
     const [newMessage, setNewMessage] = useState('');
@@ -39,11 +40,15 @@ export default function ChatRoom({ room, setCurrentRoom }: ChatRoomProp) {
     return (
         <div className="flex flex-col h-full w-full pt-20">
             <div className="relative w-full h-14 bg-blue-200 flex items-center">
-                <button onClick={() => setCurrentRoom(null)} className="mr-4 p-3 px-4 hover:brightness-75 h-full bg-blue-500">
+                <button onClick={() => setCurrentRoom(null)} className="p-3 px-4 hover:brightness-90 h-full bg-blue-500">
                     &#8592;
                 </button>
-                <img className="h-10 w-10 object-cover rounded-full" src={room.users.find(user => user.id !== currentUserId)?.img} alt="mini-chat-profile" />
-                <h1 className="ml-2">{room.users.find(user => user.id !== currentUserId)?.name}</h1>
+                <div className="flex items-center h-full hover:brightness-75 bg-blue-200 px-4 cursor-pointer"
+                    // TODO onClick={() => setCurrentProfile(room.users.find(user => user.id !== currentUserId))}
+                >
+                    <img className="h-10 w-10 object-cover rounded-full" src={room.users.find(user => user.id !== currentUserId)?.img} alt="mini-chat-profile" />
+                    <h1 className="ml-2">{room.users.find(user => user.id !== currentUserId)?.name}</h1>
+                </div>
                 <button className="absolute right-4 h-full"
                     onClick={() => setModalOpen(true)}>
                     <img className="h-5 w-5" src="three-dots.svg" alt="menu" />
