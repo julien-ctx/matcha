@@ -2,6 +2,11 @@ import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
 import authenticateJWT from "../middleware/auth.js"
+import {
+  getLocationFromLatitudeLongitude,
+  getLocationWithoutPermission,
+} from "../queries/location.js"
+import { getName } from "country-list"
 
 dotenv.config({ path: "../../.env" })
 
@@ -31,7 +36,9 @@ router.get("/details/:userId?", authenticateJWT, async (req, res) => {
       updated_at,
       date_of_birth,
       latitude,
-      longitude
+      longitude,
+      city,
+      country
       FROM T_USER
       WHERE id = $1
   `
@@ -120,13 +127,39 @@ router.put("/details", authenticateJWT, async (req, res) => {
       updates.push(`date_of_birth = $${paramIndex++}`)
       values.push(dateOfBirth)
     }
-    if (latitude) {
+    if (latitude === 999 && longitude === 999) {
+      const location = await getLocationWithoutPermission()
+      if (
+        location &&
+        location.latitude &&
+        location.longitude &&
+        location.city &&
+        location.country
+      ) {
+        updates.push(`latitude = $${paramIndex++}`)
+        updates.push(`longitude = $${paramIndex++}`)
+        updates.push(`city = $${paramIndex++}`)
+        updates.push(`country = $${paramIndex++}`)
+        values.push(
+          location.latitude,
+          location.longitude,
+          location.city,
+          getName(location.country) ?? location.country,
+        )
+      }
+    } else if (latitude !== undefined && longitude !== undefined) {
       updates.push(`latitude = $${paramIndex++}`)
-      values.push(latitude)
-    }
-    if (longitude) {
       updates.push(`longitude = $${paramIndex++}`)
-      values.push(longitude)
+      values.push(latitude, longitude)
+      const location = await getLocationFromLatitudeLongitude(
+        latitude,
+        longitude,
+      )
+      if (location) {
+        updates.push(`city = $${paramIndex++}`)
+        updates.push(`country = $${paramIndex++}`)
+        values.push(location.city, location.country)
+      }
     }
 
     if (updates.length === 0) {
@@ -138,7 +171,7 @@ router.put("/details", authenticateJWT, async (req, res) => {
       UPDATE T_USER
       SET ${updates.join(", ")}
       WHERE id = $${paramIndex}
-      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude;
+      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
     `
     values.push(userId)
     const { rows } = await pool.query(query, values)

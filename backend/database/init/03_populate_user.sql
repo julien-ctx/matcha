@@ -59,7 +59,9 @@ BEGIN
             created_at,
             updated_at,
             latitude,
-            longitude
+            longitude,
+            city,
+            country
         ) VALUES (
             'user' || i || '@example.com',
             'user' || i,
@@ -77,7 +79,9 @@ BEGIN
             NOW(),
             NOW(),
             random_latitude,
-            random_longitude
+            random_longitude,
+            'Paris',
+            'France'
         );
     END LOOP;
 END $$;

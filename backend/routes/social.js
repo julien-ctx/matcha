@@ -15,7 +15,7 @@ router.post("/view/:userId", authenticateJWT, async (req, res) => {
   try {
     const query =
       "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW());"
-    const result = await pool.query(query, [viewerId, viewedId])
+    await pool.query(query, [viewerId, viewedId])
     res.status(200).send({ message: "Profile view recorded" })
   } catch (error) {
     console.error("Database error:", error)
@@ -31,7 +31,7 @@ router.post("/like/:userId", authenticateJWT, async (req, res) => {
   try {
     const query =
       "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
-    const result = await pool.query(query, [likerId, likedId])
+    await pool.query(query, [likerId, likedId])
     res.status(200).send({ message: "Profile like recorded" })
   } catch (error) {
     console.error("Database error:", error)
@@ -64,11 +64,11 @@ router.get("/likes", authenticateJWT, async (req, res) => {
 
   try {
     const query = `
-			  SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
-			  FROM T_USER u
-			  JOIN T_LIKE l ON l.liker_id = u.id
-			  WHERE l.liked_id = $1;
-		  `
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      FROM T_USER u
+      JOIN T_LIKE l ON l.liker_id = u.id
+      WHERE l.liked_id = $1;
+    `
     const result = await pool.query(query, [userId])
     res.json(result.rows)
   } catch (error) {
@@ -83,11 +83,11 @@ router.get("/views", authenticateJWT, async (req, res) => {
 
   try {
     const query = `
-			  SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
-			  FROM T_USER u
-			  JOIN T_VIEW v ON v.viewer_id = u.id
-			  WHERE v.viewed_id = $1;
-		  `
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      FROM T_USER u
+      JOIN T_VIEW v ON v.viewer_id = u.id
+      WHERE v.viewed_id = $1;
+    `
     const result = await pool.query(query, [userId])
     res.json(result.rows)
   } catch (error) {
@@ -102,12 +102,12 @@ router.get("/view-history", authenticateJWT, async (req, res) => {
 
   try {
     const query = `
-			  SELECT v.viewed_id, u.username, u.first_name, u.last_name, u.bio, u.pictures
-			  FROM T_VIEW v
-			  JOIN T_USER u ON u.id = v.viewed_id
-			  WHERE v.viewer_id = $1
-			  ORDER BY v.viewed_at DESC;
-		  `
+      SELECT v.viewed_id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      FROM T_VIEW v
+      JOIN T_USER u ON u.id = v.viewed_id
+      WHERE v.viewer_id = $1
+      ORDER BY v.viewed_at DESC;
+    `
     const result = await pool.query(query, [userId])
     res.json(result.rows)
   } catch (error) {
@@ -157,10 +157,10 @@ router.post("/block/:userId", authenticateJWT, async (req, res) => {
 
   try {
     const query = `
-            INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
-            VALUES ($1, $2, NOW())
-            ON CONFLICT DO NOTHING;
-        `
+        INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT DO NOTHING;
+    `
     const result = await pool.query(query, [blockerId, blockedId])
     if (result.rowCount === 0) {
       res.status(409).send({ message: "User is already blocked" })
@@ -180,9 +180,9 @@ router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
 
   try {
     const query = `
-            DELETE FROM T_BLOCK
-            WHERE blocker_id = $1 AND blocked_id = $2;
-        `
+      DELETE FROM T_BLOCK
+      WHERE blocker_id = $1 AND blocked_id = $2;
+    `
     const result = await pool.query(query, [blockerId, blockedId])
     if (result.rowCount === 0) {
       res

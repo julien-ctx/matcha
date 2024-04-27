@@ -27,7 +27,9 @@ CREATE TABLE IF NOT EXISTS T_USER (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     date_of_birth DATE,
     latitude DECIMAL(9,6),
-    longitude DECIMAL(9,6)
+    longitude DECIMAL(9,6),
+    city VARCHAR(50),
+    country VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS T_VIEW (
