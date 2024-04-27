@@ -36,7 +36,9 @@ router.get("/details/:userId?", authenticateJWT, async (req, res) => {
       updated_at,
       date_of_birth,
       latitude,
-      longitude
+      longitude,
+      city,
+      country
       FROM T_USER
       WHERE id = $1
   `
@@ -153,13 +155,10 @@ router.put("/details", authenticateJWT, async (req, res) => {
         latitude,
         longitude,
       )
-      if (location && location.city && location.country) {
+      if (location) {
         updates.push(`city = $${paramIndex++}`)
-        updates.push(`country = $${paramIndex ++}`)
-        values.push(
-          location.city,
-          getName(location.country) ?? location.country,
-        )
+        updates.push(`country = $${paramIndex++}`)
+        values.push(location.city, location.country)
       }
     }
 

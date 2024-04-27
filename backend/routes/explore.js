@@ -123,7 +123,9 @@ router.get("/browse", authenticateJWT, async (req, res) => {
       updated_at,
       date_of_birth,
       latitude,
-      longitude
+      longitude,
+      city,
+      country
       FROM T_USER
       WHERE ${conditions}
       ${getOrderClause(sortBy, orderBy, latitude, longitude)}
