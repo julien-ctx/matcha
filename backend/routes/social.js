@@ -1,14 +1,14 @@
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
-import authenticateJWT from "../middleware/auth.js"
+import { httpAuthenticateJWT } from "../middleware/auth.js"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
 
 /* Save who the currently authenticated user has viewed */
-router.post("/view/:userId", authenticateJWT, async (req, res) => {
+router.post("/view/:userId", httpAuthenticateJWT, async (req, res) => {
   const viewerId = req.user.id
   const viewedId = req.params.userId
 
@@ -24,7 +24,7 @@ router.post("/view/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Save who the currently authenticated user has liked */
-router.post("/like/:userId", authenticateJWT, async (req, res) => {
+router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likerId = req.user.id
   const likedId = req.params.userId
 
@@ -40,7 +40,7 @@ router.post("/like/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Remove a like from the authenticated user to another user */
-router.delete("/unlike/:userId", authenticateJWT, async (req, res) => {
+router.delete("/unlike/:userId", httpAuthenticateJWT, async (req, res) => {
   const likerId = req.user.id
   const likedId = req.params.userId
 
@@ -59,7 +59,7 @@ router.delete("/unlike/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve an array of people who likes the currently authenticated user */
-router.get("/likes", authenticateJWT, async (req, res) => {
+router.get("/likes", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
@@ -78,7 +78,7 @@ router.get("/likes", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve an array of people who viewed the currently authenticated user */
-router.get("/views", authenticateJWT, async (req, res) => {
+router.get("/views", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
@@ -97,7 +97,7 @@ router.get("/views", authenticateJWT, async (req, res) => {
 })
 
 /* Route to get history of profiles viewed by the currently authenticated user */
-router.get("/view-history", authenticateJWT, async (req, res) => {
+router.get("/view-history", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
@@ -117,7 +117,7 @@ router.get("/view-history", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user reports another user */
-router.post("/report/:userId", authenticateJWT, async (req, res) => {
+router.post("/report/:userId", httpAuthenticateJWT, async (req, res) => {
   const reporterId = req.user.id
   const reportedId = req.params.userId
   const { reason } = req.body
@@ -147,7 +147,7 @@ router.post("/report/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user blocks another user */
-router.post("/block/:userId", authenticateJWT, async (req, res) => {
+router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
   const blockedId = req.params.userId
 
@@ -174,7 +174,7 @@ router.post("/block/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user unblocks another user */
-router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
+router.delete("/unblock/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
   const blockedId = req.params.userId
 
@@ -198,7 +198,7 @@ router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve all matches for the authenticated user. */
-router.get("/matches", authenticateJWT, async (req, res) => {
+router.get("/matches", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   const query = `

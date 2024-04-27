@@ -1,18 +1,18 @@
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
-import authenticateJWT from "../middleware/auth.js"
 import {
   getSexualPreferences,
   getOffset,
   getOrderClause,
 } from "../queries/explore.js"
+import { httpAuthenticateJWT } from "../middleware/auth.js"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
 
-router.get("/browse", authenticateJWT, async (req, res) => {
+router.get("/browse", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
   const {
     ageMin,

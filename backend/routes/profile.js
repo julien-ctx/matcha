@@ -1,19 +1,19 @@
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
-import authenticateJWT from "../middleware/auth.js"
 import {
   getLocationFromLatitudeLongitude,
   getLocationWithoutPermission,
 } from "../queries/location.js"
 import { getName } from "country-list"
+import { httpAuthenticateJWT } from "../middleware/auth.js"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
 
 /* Retrieves the details of a specified user or the current user if no ID is passed. */
-router.get("/details/:userId?", authenticateJWT, async (req, res) => {
+router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
   const userId = req.params.userId || req.user.id
 
   const query = `
@@ -55,7 +55,7 @@ router.get("/details/:userId?", authenticateJWT, async (req, res) => {
 })
 
 /* Update the details of the currently authenticated user. */
-router.put("/details", authenticateJWT, async (req, res) => {
+router.put("/details", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
   const {
     email,
@@ -192,7 +192,7 @@ router.put("/details", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieves the filter settings of the currently authenticated user. */
-router.get("/filter", authenticateJWT, async (req, res) => {
+router.get("/filter", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   const query = `
@@ -216,7 +216,7 @@ router.get("/filter", authenticateJWT, async (req, res) => {
 })
 
 /* Update the filter settings of the currently authenticated user. */
-router.put("/filter", authenticateJWT, async (req, res) => {
+router.put("/filter", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
   const {
     ageMin,
@@ -309,7 +309,7 @@ router.put("/filter", authenticateJWT, async (req, res) => {
 })
 
 /* Create new filter settings for the currently authenticated user with optional fields. */
-router.post("/filter", authenticateJWT, async (req, res) => {
+router.post("/filter", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
   const {
     ageMin = 18,
