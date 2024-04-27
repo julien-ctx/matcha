@@ -55,7 +55,6 @@ export const getLocationFromLatitudeLongitude = async (latitude, longitude) => {
       const components = data.results[0].components
       const city = components.city || components.town || components.village
       const { country } = components
-      console.log(components, city, country)
       return {
         city,
         country,
