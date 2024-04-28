@@ -36,7 +36,7 @@ export function setupSocketEvents(io) {
         if (chatroom.rowCount === 0) {
           chatroom = await pool.query(
             `INSERT INTO T_CHATROOM (user1_id, user2_id) VALUES ($1, $2) RETURNING id;`,
-            [senderId, recipientId],
+            [LEAST(senderId, recipientId), GREATEST(senderId, recipientId)],
           )
         }
 
@@ -61,13 +61,7 @@ export function setupSocketEvents(io) {
           content,
           senderId,
           recipientId,
-        })
-
-        socket.emit("messageSent", {
-          messageId,
-          content,
-          senderId,
-          recipientId,
+          chatroomId,
         })
       } catch (error) {
         await pool.query("ROLLBACK")
