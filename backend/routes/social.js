@@ -221,4 +221,50 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
   }
 })
 
+/* Retrieve all chatrooms for the currently authenticated user with messages. */
+router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const chatroomsResult = await pool.query(
+      `
+      SELECT id, user1_id, user2_id, created_at, updated_at
+      FROM T_CHATROOM
+      WHERE user1_id = $1 OR user2_id = $1;
+    `,
+      [userId],
+    )
+
+    const chatrooms = await Promise.all(
+      chatroomsResult?.rows.map(async (room) => {
+        const messagesResult = await pool.query(
+          `
+            SELECT id, sender_id, content, sent_at, delivered_at, read_at
+            FROM T_MESSAGE
+            WHERE chatroom_id = $1
+            ORDER BY sent_at ASC;
+          `,
+          [room.id],
+        )
+
+        return {
+          id: room.id,
+          user1_id: room.user1_id,
+          user2_id: room.user2_id,
+          created_at: room.created_at,
+          updated_at: room.updated_at,
+          messages: messagesResult.rows,
+        }
+      }),
+    )
+
+    res.json(chatrooms)
+  } catch (error) {
+    console.error("Database error:", error)
+    res
+      .status(500)
+      .send({ message: "Failed to retrieve chatrooms and messages" })
+  }
+})
+
 export default router
