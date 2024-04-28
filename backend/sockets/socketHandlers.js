@@ -24,51 +24,65 @@ export function setupSocketEvents(io) {
         .emit("userStoppedTyping", { userId: socket.userId, chatroomId })
     })
 
-    socket.on("sendMessage", async ({ content, senderId, recipientId }) => {
-      try {
-        await pool.query("BEGIN")
+    socket.on(
+      "sendMessage",
+      async ({ content, senderId, recipientId }, callback) => {
+        try {
+          await pool.query("BEGIN")
 
-        let chatroom = await pool.query(
-          `SELECT id FROM T_CHATROOM WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1);`,
-          [senderId, recipientId],
-        )
-
-        if (chatroom.rowCount === 0) {
-          chatroom = await pool.query(
-            `INSERT INTO T_CHATROOM (user1_id, user2_id) VALUES ($1, $2) RETURNING id;`,
-            [LEAST(senderId, recipientId), GREATEST(senderId, recipientId)],
+          let chatroom = await pool.query(
+            `SELECT id FROM T_CHATROOM WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1);`,
+            [senderId, recipientId],
           )
+
+          let isNewRoom = false
+
+          if (chatroom.rowCount === 0) {
+            chatroom = await pool.query(
+              `INSERT INTO T_CHATROOM (user1_id, user2_id) VALUES ($1, $2) RETURNING id;`,
+              [LEAST(senderId, recipientId), GREATEST(senderId, recipientId)],
+            )
+            isNewRoom = true
+          }
+
+          const chatroomId = chatroom.rows[0].id
+
+          socket.join(chatroomId)
+          const recipientSocketId = userSocketMap.get(recipientId)
+          if (recipientSocketId) {
+            io.sockets.sockets.get(recipientSocketId)?.join(chatroomId)
+          }
+
+          const result = await pool.query(
+            `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id;`,
+            [chatroomId, senderId, content],
+          )
+          const messageId = result.rows[0].id
+
+          await pool.query("COMMIT")
+
+          io.to(chatroomId).emit("newMessage", {
+            messageId,
+            content,
+            senderId,
+            recipientId,
+            chatroomId,
+            isNewRoom,
+          })
+
+          callback({ success: true, messageId, chatroomId, isNewRoom })
+        } catch (error) {
+          await pool.query("ROLLBACK")
+          console.error("Database error:", error)
+          socket.emit("error", { message: "Message could not be sent." })
+
+          callback({
+            success: false,
+            error: "Message could not be sent due to a server error.",
+          })
         }
-
-        const chatroomId = chatroom.rows[0].id
-
-        socket.join(chatroomId)
-        const recipientSocketId = userSocketMap.get(recipientId)
-        if (recipientSocketId) {
-          io.sockets.sockets.get(recipientSocketId)?.join(chatroomId)
-        }
-
-        const result = await pool.query(
-          `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id;`,
-          [chatroomId, senderId, content],
-        )
-        const messageId = result.rows[0].id
-
-        await pool.query("COMMIT")
-
-        io.to(chatroomId).emit("newMessage", {
-          messageId,
-          content,
-          senderId,
-          recipientId,
-          chatroomId,
-        })
-      } catch (error) {
-        await pool.query("ROLLBACK")
-        console.error("Database error:", error)
-        socket.emit("error", { message: "Message could not be sent." })
-      }
-    })
+      },
+    )
 
     socket.on("markMessageAsRead", async ({ messageId }) => {
       try {
