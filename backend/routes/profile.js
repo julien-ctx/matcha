@@ -2,6 +2,7 @@ import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
 import {
+  getDistance,
   getLocationFromLatitudeLongitude,
   getLocationWithoutPermission,
 } from "../queries/location.js"
@@ -14,40 +15,48 @@ const router = express.Router()
 
 /* Retrieves the details of a specified user or the current user if no ID is passed. */
 router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
-  const userId = req.params.userId || req.user.id
+  const requestedUserId = req.params.userId || req.user.id
+  const currentUserId = req.user.id
 
-  const query = `
-  SELECT
-      id,
-      email,
-      username,
-      first_name,
-      last_name,
-      gender,
-      sexual_orientation,
-      bio,
-      tags,
-      pictures,
-      fame_rating,
-      last_login,
-      is_online,
-      account_verified,
-      created_at,
-      updated_at,
-      date_of_birth,
-      latitude,
-      longitude,
-      city,
-      country
-      FROM T_USER
-      WHERE id = $1
-  `
   try {
-    const queryResult = await pool.query(query, [userId])
-    if (queryResult.rows.length === 0) {
+    const usersQuery = `
+      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures,
+      fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
+      FROM T_USER
+      WHERE id IN ($1, $2);
+    `
+    const queryResult = await pool.query(usersQuery, [
+      requestedUserId,
+      currentUserId,
+    ])
+    const users = queryResult.rows
+
+    if (users.length === 0) {
       return res.status(404).send({ message: "User not found" })
     }
-    res.json(queryResult.rows[0])
+
+    const otherUser = users.find((user) => user.id == requestedUserId)
+    const currentUser = users.find((user) => user.id == currentUserId)
+
+    if (!otherUser || !currentUser) {
+      return res.status(404).send({ message: "User not found" })
+    }
+
+    if (requestedUserId === currentUserId) {
+      return res.json(currentUser)
+    }
+
+    const distance = getDistance(
+      currentUser.latitude,
+      currentUser.longitude,
+      otherUser.latitude,
+      otherUser.longitude,
+    )
+
+    res.json({
+      ...otherUser,
+      distance,
+    })
   } catch (error) {
     console.error("Database error:", error)
     res.sendStatus(500)

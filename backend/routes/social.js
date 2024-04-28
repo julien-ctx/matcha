@@ -102,7 +102,7 @@ router.get("/view-history", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT v.viewed_id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      SELECT v.viewed_id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.is_online
       FROM T_VIEW v
       JOIN T_USER u ON u.id = v.viewed_id
       WHERE v.viewer_id = $1
@@ -202,7 +202,28 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   const query = `
-    SELECT u.id, u.username, u.email, u.first_name, u.last_name
+    SELECT 
+    u.id, 
+    u.email, 
+    u.username, 
+    u.first_name, 
+    u.last_name, 
+    u.gender, 
+    u.sexual_orientation, 
+    u.bio, 
+    u.tags, 
+    u.pictures, 
+    u.fame_rating, 
+    u.last_login, 
+    u.is_online, 
+    u.account_verified, 
+    u.created_at, 
+    u.updated_at, 
+    u.date_of_birth, 
+    u.latitude, 
+    u.longitude, 
+    u.city, 
+    u.country
     FROM T_USER u
     JOIN T_LIKE AS l1 ON u.id = l1.liker_id
     JOIN T_LIKE AS l2 ON l1.liker_id = l2.liked_id AND l1.liked_id = l2.liker_id
