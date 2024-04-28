@@ -1,14 +1,14 @@
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
-import authenticateJWT from "../middleware/auth.js"
+import { httpAuthenticateJWT } from "../middleware/auth.js"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
 
 /* Save who the currently authenticated user has viewed */
-router.post("/view/:userId", authenticateJWT, async (req, res) => {
+router.post("/view/:userId", httpAuthenticateJWT, async (req, res) => {
   const viewerId = req.user.id
   const viewedId = req.params.userId
 
@@ -24,7 +24,7 @@ router.post("/view/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Save who the currently authenticated user has liked */
-router.post("/like/:userId", authenticateJWT, async (req, res) => {
+router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likerId = req.user.id
   const likedId = req.params.userId
 
@@ -40,7 +40,7 @@ router.post("/like/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Remove a like from the authenticated user to another user */
-router.delete("/unlike/:userId", authenticateJWT, async (req, res) => {
+router.delete("/unlike/:userId", httpAuthenticateJWT, async (req, res) => {
   const likerId = req.user.id
   const likedId = req.params.userId
 
@@ -59,7 +59,7 @@ router.delete("/unlike/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve an array of people who likes the currently authenticated user */
-router.get("/likes", authenticateJWT, async (req, res) => {
+router.get("/likes", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
@@ -78,7 +78,7 @@ router.get("/likes", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve an array of people who viewed the currently authenticated user */
-router.get("/views", authenticateJWT, async (req, res) => {
+router.get("/views", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
@@ -97,7 +97,7 @@ router.get("/views", authenticateJWT, async (req, res) => {
 })
 
 /* Route to get history of profiles viewed by the currently authenticated user */
-router.get("/view-history", authenticateJWT, async (req, res) => {
+router.get("/view-history", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
@@ -117,7 +117,7 @@ router.get("/view-history", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user reports another user */
-router.post("/report/:userId", authenticateJWT, async (req, res) => {
+router.post("/report/:userId", httpAuthenticateJWT, async (req, res) => {
   const reporterId = req.user.id
   const reportedId = req.params.userId
   const { reason } = req.body
@@ -147,7 +147,7 @@ router.post("/report/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user blocks another user */
-router.post("/block/:userId", authenticateJWT, async (req, res) => {
+router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
   const blockedId = req.params.userId
 
@@ -174,7 +174,7 @@ router.post("/block/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user unblocks another user */
-router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
+router.delete("/unblock/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
   const blockedId = req.params.userId
 
@@ -198,7 +198,7 @@ router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve all matches for the authenticated user. */
-router.get("/matches", authenticateJWT, async (req, res) => {
+router.get("/matches", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   const query = `
@@ -218,6 +218,59 @@ router.get("/matches", authenticateJWT, async (req, res) => {
       message: "Failed to retrieve matches",
       error: error.message,
     })
+  }
+})
+
+/* Retrieve all chatrooms for the currently authenticated user with messages. */
+router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const chatroomsResult = await pool.query(
+      `
+      SELECT cr.id, cr.user1_id, cr.user2_id, cr.created_at, cr.updated_at,
+             u.id AS other_user_id, u.first_name, u.last_name, u.pictures, u.is_online
+      FROM T_CHATROOM cr
+      JOIN T_USER u ON u.id = CASE WHEN cr.user1_id = $1 THEN cr.user2_id ELSE cr.user1_id END
+      WHERE cr.user1_id = $1 OR cr.user2_id = $1;
+    `,
+      [userId],
+    )
+
+    const chatrooms = await Promise.all(
+      chatroomsResult?.rows.map(async (room) => {
+        const messagesResult = await pool.query(
+          `
+            SELECT id, sender_id, content, sent_at, delivered_at, read_at
+            FROM T_MESSAGE
+            WHERE chatroom_id = $1
+            ORDER BY sent_at ASC;
+          `,
+          [room.id],
+        )
+
+        return {
+          id: room.id,
+          created_at: room.created_at,
+          updated_at: room.updated_at,
+          other_user: {
+            id: room.other_user_id,
+            first_name: room.first_name,
+            last_name: room.last_name,
+            profile_picture: room.pictures.length ? room.pictures[0] : null,
+            is_online: room.is_online,
+          },
+          messages: messagesResult.rows,
+        }
+      }),
+    )
+
+    res.json(chatrooms)
+  } catch (error) {
+    console.error("Database error:", error)
+    res
+      .status(500)
+      .send({ message: "Failed to retrieve chatrooms and messages" })
   }
 })
 
