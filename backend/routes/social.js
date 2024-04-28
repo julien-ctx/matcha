@@ -228,9 +228,11 @@ router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
   try {
     const chatroomsResult = await pool.query(
       `
-      SELECT id, user1_id, user2_id, created_at, updated_at
-      FROM T_CHATROOM
-      WHERE user1_id = $1 OR user2_id = $1;
+      SELECT cr.id, cr.user1_id, cr.user2_id, cr.created_at, cr.updated_at,
+             u.id AS other_user_id, u.first_name, u.last_name, u.pictures, u.is_online
+      FROM T_CHATROOM cr
+      JOIN T_USER u ON u.id = CASE WHEN cr.user1_id = $1 THEN cr.user2_id ELSE cr.user1_id END
+      WHERE cr.user1_id = $1 OR cr.user2_id = $1;
     `,
       [userId],
     )
@@ -249,10 +251,15 @@ router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
 
         return {
           id: room.id,
-          user1_id: room.user1_id,
-          user2_id: room.user2_id,
           created_at: room.created_at,
           updated_at: room.updated_at,
+          other_user: {
+            id: room.other_user_id,
+            first_name: room.first_name,
+            last_name: room.last_name,
+            profile_picture: room.pictures.length ? room.pictures[0] : null,
+            is_online: room.is_online,
+          },
           messages: messagesResult.rows,
         }
       }),
