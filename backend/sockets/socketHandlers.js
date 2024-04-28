@@ -1,13 +1,15 @@
 import { socketAuthenticateJWT } from "../middleware/auth.js"
 
 export function setupSocketEvents(io) {
+  const userSocketMap = new Map()
+
   io.use(socketAuthenticateJWT)
 
   io.on("connection", (socket) => {
-    console.log("A user connected", socket.id)
+    userSocketMap.set(socket.userId, socket.id)
 
     socket.on("disconnect", () => {
-      console.log("User disconnected", socket.id)
+      userSocketMap.delete(socket.userId)
     })
 
     socket.on("sendMessage", async ({ content, senderId, recipientId }) => {
@@ -36,10 +38,16 @@ export function setupSocketEvents(io) {
 
         await pool.query("COMMIT")
 
-        io.to(socket.id).emit("messageSent", { content, senderId, recipientId })
-        socket
-          .to(`user-${recipientId}`)
-          .emit("newMessage", { content, senderId, recipientId })
+        socket.emit("messageSent", { content, senderId, recipientId })
+
+        const recipientSocketId = userSocketMap.get(recipientId)
+        if (recipientSocketId) {
+          io.to(recipientSocketId).emit("newMessage", {
+            content,
+            senderId,
+            recipientId,
+          })
+        }
       } catch (error) {
         await pool.query("ROLLBACK")
         console.error("Database error:", error)
