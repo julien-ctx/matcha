@@ -1,0 +1,77 @@
+.main-container {
+    @apply bg-blue-500;
+    /* background-image: ; */
+}
+
+.photo-grid {
+    @apply gap-1;
+    width: 80%;
+    height: 24rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    border: 1px solid #ccc;
+}
+
+.photo-grid-item {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9; /* Light background for empty cells */
+}
+
+.photo-grid-item.large {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 2;
+}
+
+.photo-grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    padding: 5px;
+}
+
+.photo-grid-item .photo-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: none;
+}
+
+.photo-grid-item:hover .photo-remove {
+    display: block; /* Show remove button on hover */
+}
+
+.custom-file-upload {
+    @apply text-6xl text-slate-100 bg-slate-300 px-5 aspect-square flex justify-center items-center rounded-2xl;
+    cursor: pointer;
+}
+
+.file-input {
+    display: none;
+}
+
+.radio-input {
+    display: none;
+}
+
+.radio-label {
+    @apply w-24 border-2 border-black py-2 cursor-pointer text-center duration-150;
+}
+
+.radio-input:checked + .radio-label {
+    @apply text-white bg-gradient-to-r-main border-0;
+}
+
+.save-btn {
+    @apply bg-gradient-to-r-main text-white py-2 px-7 my-5 hover:brightness-95 border-2 rounded-md duration-100;
+}
+
+.section {
+    @apply w-full flex flex-col items-center gap-3 py-4 m-4 border-8;
+}

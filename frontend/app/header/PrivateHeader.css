@@ -18,10 +18,15 @@
 }
 
 .popup-button {
-  @apply p-2 rounded-3xl aspect-square w-14 text-4xl font-yarndings12;
+  @apply p-2 rounded-3xl aspect-square w-14 text-4xl font-yarndings12 duration-200;
 }
 
 .popup-button:focus {
+  background-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.popup-button:hover {
   background-color: rgba(255, 255, 255, 0.4);
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
