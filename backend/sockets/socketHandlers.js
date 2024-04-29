@@ -1,15 +1,41 @@
 import { socketAuthenticateJWT } from "../middleware/auth.js"
 
+/**
+ * Update the user's online status in the database.
+ * @param {number} userId - The ID of the user.
+ * @param {boolean} isOnline - The new online status of the user.
+ */
+export const setOnlineStatus = async (userId, isOnline) => {
+  try {
+    await pool.query("UPDATE T_USER SET is_online = $1 WHERE id = $2;", [
+      isOnline,
+      userId,
+    ])
+  } catch (error) {
+    console.error("Database error setting user online status:", error)
+  }
+}
+
 export function setupSocketEvents(io) {
   const userSocketMap = new Map()
 
   io.use(socketAuthenticateJWT)
 
   io.on("connection", (socket) => {
+    setOnlineStatus(socket.userId, true)
     userSocketMap.set(socket.userId, socket.id)
 
     socket.on("disconnect", () => {
+      setOnlineStatus(socket.userId, false)
       userSocketMap.delete(socket.userId)
+    })
+
+    socket.on("setOnlineStatus", ({ isOnline }) => {
+      setOnlineStatus(socket.userId, isOnline)
+      socket.broadcast.emit("userOnlineStatusChanged", {
+        userId: socket.userId,
+        isOnline,
+      })
     })
 
     socket.on("typing", ({ chatroomId }) => {
