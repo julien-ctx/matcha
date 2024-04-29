@@ -1,0 +1,13 @@
+.chat-container {
+    @apply h-full w-[27.5%] pt-28 fixed shadow-md shadow-white z-40 border-r-2;
+    background-image: linear-gradient(180deg, #f3f5f9, #f2f7fd);
+}
+
+.chat-list {
+    @apply flex gap-2 items-center w-full p-3 py-5 border-b-2  cursor-pointer hover:brightness-110 rounded-lg;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.chat-list:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+}

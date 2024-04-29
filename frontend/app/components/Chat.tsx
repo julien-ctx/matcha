@@ -1,3 +1,4 @@
+import './Chat.css';
 
 interface ChatRoomProp {
     rooms: any[],
@@ -9,22 +10,22 @@ const currentUserId = 42;
 
 export default function Chat({ rooms, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
     return (
-        <div className="h-full bg-white w-full pt-28 fixed">
-            <ul>
+        <div className="chat-container" style={{backgroundColor: "rgba(255, 255, 255, 0.8)"}}>
+            <ul className="flex flex-col ">
                 {rooms.map(room => {
                     const otherUser = room.users.find(user => user.id !== currentUserId);
                     const lastMessage = room.messages[room.messages.length - 1];
 
                     return (
-                        <li key={room.id} className="flex items-center p-2 cursor-pointer hover:bg-green-200"
+                        <li key={room.id} className="chat-list"
                             onClick={() => {
                                 setCurrentProfile(null);
                                 setCurrentRoom(room.id);
                             }}>
-                            <img src={otherUser?.img} alt={otherUser?.name} className="w-10 h-10 rounded-full mr-2"/>
-                            <div>
-                                <h2 className="text-lg">{otherUser?.name}</h2>
-                                <p className="text-sm">{lastMessage ? lastMessage.content : "No messages"}</p>
+                            <img src={otherUser?.img} alt={otherUser?.name} className="w-16 h-16 object-cover rounded-full mr-2"/>
+                            <div className="flex flex-col font-jersey15 w-3/5">
+                                <h2 className="text-xl">{otherUser?.name}</h2>
+                                <p className="text-md text-ellipsis text-nowrap max-w-full overflow-hidden">{lastMessage?.content}</p>
                             </div>
                         </li>
                     );

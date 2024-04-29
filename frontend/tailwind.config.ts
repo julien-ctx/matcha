@@ -10,7 +10,6 @@ const config: Config = {
     extend: {
       backgroundImage: {
         'gradient-to-r-main': 'linear-gradient(to right, #de6262, #ffb88c)',
-        'gradient-to-r-secondary': 'linear-gradient(to right, #dae2f8, #d6a4a4)',
       },
       fontFamily: {
         'jersey10': ['Jersey10', 'sans-serif'], 

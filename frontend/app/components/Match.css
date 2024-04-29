@@ -12,23 +12,22 @@
     
 }
 
-.container::before {
+/* .container::before {
     content: "";
     position: absolute;
-    top: -50%;  /* Start above the container */
-    left: -50%;
-    width: 250%;  /* Cover enough area */
-    height: 250%;
+    top: 0%;  
+    right: 0%;
+    width: 80%;  
+    height: 100%;
     background-image: linear-gradient(
         to right, 
         rgba(255, 255, 255, 0) 0%, 
         rgba(255, 255, 255, 0.25) 50%, 
         rgba(255, 255, 255, 0) 100%
     );
-    /* animation: shine 15s linear infinite; */
-    transform: rotate(90deg); /* Adjust angle of shine */
+    transform: rotate(90deg); 
 }
-
+ */
 @keyframes shine {
     from {
         transform: translateX(-50%) rotate(30deg);

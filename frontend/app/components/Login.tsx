@@ -27,7 +27,7 @@ export default function Login({ setModalOpen }: LoginProps) {
       axios
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
         .then(() => {
-          router.replace(redirectPath ?? "/account")
+          router.replace(redirectPath ?? "/account") // TODO 
         })
         .catch((error) => {
           setIsValidating(false)

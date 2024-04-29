@@ -114,24 +114,23 @@ export default function Match({ setCurrentProfile }: Props) {
 
 
     return (
-        <div className="container h-full bg-white w-full flex justify-center items-center z-0 pt-20">
-           
-            <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
-                <button className="absolute -top-8 right-20 bg-gray-200 hover:bg-red-300 duration-200 py-1 px-4 rounded-t-2xl" onClick={() => setModalOpen(true)}>
-                    <div className="text-white flex gap-2 items-center justify-center">
-                        <img className="w-5 h-5" src="parameters.svg" alt="parameters" />
-                        <p>Settings</p>
-                    </div>
-                </button>
-                <button className="likeOrNotButton text-red-400 bg-red-50 -left-16" onClick={() => handleDecision(false)}>X</button>
-                <button className="likeOrNotButton text-green-300 bg-green-50 -right-16" onClick={() => handleDecision(true)}>O</button>
-                {profiles.length > 0 ? (
-                    <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
-                ) : (
-                    <p>No more profiles</p>
-                )}
+        <div className="fixed top-0 right-0 container h-full w-[72.5%] z-0 pt-20 flex justify-center items-center">
+                <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
+                    <button className="absolute -top-8 right-20 bg-gray-200 hover:bg-red-300 duration-200 py-1 px-4 rounded-t-2xl" onClick={() => setModalOpen(true)}>
+                        <div className="text-white flex gap-2 items-center justify-center">
+                            <img className="w-5 h-5" src="parameters.svg" alt="parameters" />
+                            <p>Settings</p>
+                        </div>
+                    </button>
+                    <button className="likeOrNotButton text-red-400 bg-red-50 -left-16" onClick={() => handleDecision(false)}>X</button>
+                    <button className="likeOrNotButton text-green-300 bg-green-50 -right-16" onClick={() => handleDecision(true)}>O</button>
+                    {profiles.length > 0 ? (
+                        <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
+                    ) : (
+                        <p>No more profiles</p>
+                    )}
 
-            </div>
+                </div>
 
             <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
                 <div>

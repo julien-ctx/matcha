@@ -50,7 +50,14 @@ const testChat = [
                 img: "/lena.png"
             }
         ],
-        messages: []
+        messages: [
+            {
+                id: 405,
+                content: 'asodijaisodjaosdjioasdjiosioadoiasdoajoidjadasdsadsasadadasdasd',
+                senderId: 7,
+                receiverId: 42
+            }
+        ]
     }
 ]
 
@@ -70,21 +77,21 @@ export default function MySpace() {
 
     return isProfileReady ? (
         <div className="w-full h-full flex fixed overflow-hidden">
-            <div className="w-1/4 relative ">
+            <div className="w-1/4 relative">
                 <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             </div>
-            <div className="w-3/4 relative border-l-red-100 border-2">
+            <div className="w-3/4 relative">
                 <Match setCurrentProfile={setCurrentProfile} />
             </div>
 
             {currentChatRoom !== null && (
-                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 slide-in-right">
+                <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 slide-in-right">
                     <ChatRoom room={testChat.filter(room => room.id === currentChatRoom)[0]} 
                         setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
             {currentProfile !== null && (
-                <div className="absolute top-0 right-0 w-3/4 h-full bg-white z-10 flex justify-center slide-in-right">
+                <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 flex justify-center slide-in-right">
                     <Profile profile={currentProfile} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}

@@ -53,7 +53,7 @@ export default function Details() {
     const [interests, setInterests] = useState<string[]>([]);
 
     function nextDetail() { setCurrentDetail((prev) => (prev < CurrentDetail.Interests ? prev + 1 : prev)); }
-    function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Gender ? prev - 1 : prev)); }
+    function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Birthday ? prev - 1 : prev)); }
     
     function handleSubmit() {
         console.log('here token', token, localStorage.getItem('jwt'))
@@ -127,7 +127,7 @@ export default function Details() {
         }
     };
 
-    const isFirstDetail = currentDetail === CurrentDetail.Gender;
+    const isFirstDetail = currentDetail === CurrentDetail.Birthday;
     const isLastDetail = currentDetail === CurrentDetail.Interests;
 
 
@@ -139,7 +139,7 @@ export default function Details() {
     ];
 
     const renderOrientationOption = (option) => (
-        <>
+        <React.Fragment key={`orientation-option-${option.id}`}>
             <input
                 type="radio"
                 id={`orientation-${option.id}`}
@@ -151,7 +151,7 @@ export default function Details() {
             <label htmlFor={`orientation-${option.id}`} className="radio-label">
                 {option.label}
             </label>
-        </>
+        </React.Fragment>
     );
 
     const genderOptions = [
@@ -161,7 +161,7 @@ export default function Details() {
     ];
 
     const renderGenderOption = (option) => (
-        <>
+        <React.Fragment key={`gender-option-${option.id}`}>
             <input
                 type="radio"
                 id={`gender-${option.id}`}
@@ -173,7 +173,7 @@ export default function Details() {
             <label htmlFor={`gender-${option.id}`} className="radio-label">
                 {option.label}
             </label>
-        </>
+        </React.Fragment>
     );
       
     return (
@@ -189,6 +189,7 @@ export default function Details() {
                         <input
                             type="date"
                             className="text-2xl"
+                            value={birthday ? birthday.toISOString().split('T')[0] : ''}
                             onChange={(e) => setBirthday(new Date(e.target.value))}
                             max={new Date().toISOString().split('T')[0]}
                         />
