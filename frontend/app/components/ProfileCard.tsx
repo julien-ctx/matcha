@@ -58,7 +58,7 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
     return (
         <div className="w-80 left-1/2 -translate-x-1/2 absolute h-full bg-white shadow-md rounded-lg p-2 overflow-y-auto border-8">
             <div className="relative w-full h-full">
-                <div className="w-full h-full hover:brightness-90 cursor-pointer"
+                <div className="w-full h-full hover:brightness-90 cursor-pointer duration-150 "
                     onClick={() => {
                         setCurrentProfile(profile);
                         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/view/${profile.id}`, {

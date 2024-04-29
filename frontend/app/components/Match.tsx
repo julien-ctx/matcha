@@ -122,8 +122,8 @@ export default function Match({ setCurrentProfile }: Props) {
                             <p>Settings</p>
                         </div>
                     </button>
-                    <button className="likeOrNotButton text-red-400 bg-red-50 -left-16" onClick={() => handleDecision(false)}>X</button>
-                    <button className="likeOrNotButton text-green-300 bg-green-50 -right-16" onClick={() => handleDecision(true)}>O</button>
+                    <button className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 -left-16" onClick={() => handleDecision(false)}>X</button>
+                    <button className="likeOrNotButton text-green-300 bg-green-50 hover:brightness-105 -right-16" onClick={() => handleDecision(true)}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (

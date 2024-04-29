@@ -61,6 +61,19 @@ const testChat = [
     }
 ]
 
+const testMatch = [
+    {
+        id: 7,
+        name: "Bingo",
+        img: "/bingo.png"
+    }, {
+        id: 7,
+        name: "Nana",
+        img: "/nana.png"
+    }
+]
+
+
 export default function MySpace() {
     const { user } = useAuth();
     const [isProfileReady, setProfileReady] = useState(false);
@@ -78,7 +91,7 @@ export default function MySpace() {
     return isProfileReady ? (
         <div className="w-full h-full flex fixed overflow-hidden">
             <div className="w-1/4 relative">
-                <Chat rooms={testChat} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+                <Chat rooms={testChat} matchList={testMatch} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             </div>
             <div className="w-3/4 relative">
                 <Match setCurrentProfile={setCurrentProfile} />
