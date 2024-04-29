@@ -1,31 +1,34 @@
-/* .popup-container {
+.popup-container {
     position: relative;
     text-align: center;
 }
 
-.popup-button {
-    margin: 20px;
-    padding: 10px 20px;
-    border: none;
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-}
-
 .popup-content {
+    @apply text-slate-600 w-64 rounded-lg py-3 px-5;
     position: absolute;
-    top: 100%;
+    top: 125%;
     left: 50%;
     transform: translateX(-50%);
-    width: 200px;
-    padding: 10px;
     background-color: #f9f9f9;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.3s;
+}
+
+.popup-button {
+  @apply p-2 rounded-3xl aspect-square w-14 text-4xl font-yarndings12 duration-200;
+}
+
+.popup-button:focus {
+  background-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.popup-button:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
 .popup-container:focus-within .popup-content {
@@ -44,33 +47,37 @@
     border-color: transparent transparent #f9f9f9 transparent;
 }
 
-.profile-menu-container {
-    position: relative;
-    display: inline-block;
+
+.menu-items {
+  @apply right-2 shadow-2xl rounded-b-lg;
+  display: none;
+  position: absolute;
+  width: 125%;
+  background-color: #f9f9f9;
+  top: 100%; /* This should start below the label */
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.3s ease-in-out;
+  z-index: 10; /* Ensure it's above other content */
 }
 
-.profile-image {
-    border: none;
-    background: none;
-    padding: 0;
-    cursor: pointer;
+#menu-toggle:checked + .menu-toggle + .menu-items {
+  display: block;
+  transform: scaleY(1);
 }
 
-.menu-content {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 150px;
-    background-color: #f9f9f9;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    display: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+.menu-items button {
+  @apply w-full flex justify-end pr-4 py-3 text-slate-600 hover:bg-slate-200;
+  border-bottom: 1px solid #ddd;
+  text-decoration: none;
 }
 
-.profile-menu-container:focus-within .menu-content {
-    display: block;
-    opacity: 1;
-} */
+.menu-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.4); 
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+#menu-toggle:checked + .menu-toggle {
+  background-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}

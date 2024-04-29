@@ -5,11 +5,11 @@
 }
 
 .message {
+    @apply inline-block;
     padding: 5px 10px;
-    margin: 5px;
     border-radius: 10px;
     background: lightgray;
-    max-width: 80%;
+    max-width: 50%;
 }
 
 .own {
@@ -18,11 +18,23 @@
 }
 
 .other {
+    @apply bg-red-100;
     margin-right: auto;
-    background: green;
 }
 
 .back-button, .send-button {
     padding: 5px 10px;
     cursor: pointer;
+}
+
+.gradient-text {
+    background: linear-gradient(to right, #20BDFF, #A5FECB); /* Example gradient */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent; /* Make text transparent to show the background */
+}
+
+.gradient-background {
+    background: white; /* Same gradient as text */
+    padding: 1rem;
 }
