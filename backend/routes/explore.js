@@ -1,18 +1,19 @@
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
-import authenticateJWT from "../middleware/auth.js"
 import {
   getSexualPreferences,
   getOffset,
   getOrderClause,
 } from "../queries/explore.js"
+import { httpAuthenticateJWT } from "../middleware/auth.js"
+import { getDistance } from "../queries/location.js"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
 
-router.get("/browse", authenticateJWT, async (req, res) => {
+router.get("/browse", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
   const {
     ageMin,
@@ -24,7 +25,7 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     page = 1,
     limit = 25,
     sortBy = "distance",
-    order = "asc",
+    orderBy = "asc",
   } = req.query
 
   if (!["distance", "fameRating", "age"].includes(sortBy)) {
@@ -34,10 +35,10 @@ router.get("/browse", authenticateJWT, async (req, res) => {
     })
   }
 
-  if (!["asc", "desc", "rand"].includes(order)) {
+  if (!["asc", "desc", "rand"].includes(orderBy)) {
     return res.status(400).send({
       message:
-        "order parameter should be one of the following values: asc, desc, rand.",
+        "orderBy parameter should be one of the following values: asc, desc, rand.",
     })
   }
 
@@ -123,17 +124,26 @@ router.get("/browse", authenticateJWT, async (req, res) => {
       updated_at,
       date_of_birth,
       latitude,
-      longitude
+      longitude,
+      city,
+      country
       FROM T_USER
       WHERE ${conditions}
-      ${getOrderClause(sortBy, order, latitude, longitude)}
+      ${getOrderClause(sortBy, orderBy, latitude, longitude)}
       LIMIT $${paramCount} OFFSET $${paramCount + 1};
     `
     params.push(limit, offset)
 
     const suggestions = await pool.query(baseQuery, params)
 
-    res.json(suggestions.rows)
+    const suggestionsWithDistance = suggestions.rows.map(user => {
+      const distance = getDistance(latitude, longitude, user.latitude, user.longitude);
+      return {
+        ...user,
+        distance
+      };
+    });
+    res.json(suggestionsWithDistance);
   } catch (err) {
     console.error("Error fetching suggestions:", err)
     res.status(500).json({ message: "Error fetching profile suggestions" })

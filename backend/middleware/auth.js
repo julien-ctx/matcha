@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 
 dotenv.config({ path: "../../.env" })
 
-const authenticateJWT = (req, res, next) => {
+export const httpAuthenticateJWT = (req, res, next) => {
   const header = req.headers.authorization
   const splitHeader = header?.split(" ")
   if (!splitHeader || splitHeader.length < 2) {
@@ -15,15 +15,31 @@ const authenticateJWT = (req, res, next) => {
     return res.sendStatus(401)
   }
 
-  jwt.verify(token, process.env.AUTH_JWT_SECRET, (error, user) => {
+  jwt.verify(token, process.env.AUTH_JWT_SECRET, (error, decoded) => {
     if (error) {
-      console.log("Error:", error)
+      console.log("Error during HTTP authentication:", error)
       return res.sendStatus(403)
     }
 
-    req.user = user
+    req.user = decoded
     next()
   })
 }
 
-export default authenticateJWT
+export const socketAuthenticateJWT = (socket, next) => {
+  const token = socket.handshake.auth.token
+
+  if (!token) {
+    return next(new Error("Authentication error: Token not provided"))
+  }
+
+  jwt.verify(token, process.env.AUTH_JWT_SECRET, (error, decoded) => {
+    if (error) {
+      console.log("Error during socket authentication:", error)
+      return next(new Error("Authentication error: Invalid token"))
+    }
+
+    socket.user = decoded
+    next()
+  })
+}

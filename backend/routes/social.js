@@ -1,21 +1,21 @@
 import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
-import authenticateJWT from "../middleware/auth.js"
+import { httpAuthenticateJWT } from "../middleware/auth.js"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
 
 /* Save who the currently authenticated user has viewed */
-router.post("/view/:userId", authenticateJWT, async (req, res) => {
+router.post("/view/:userId", httpAuthenticateJWT, async (req, res) => {
   const viewerId = req.user.id
   const viewedId = req.params.userId
 
   try {
     const query =
       "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW());"
-    const result = await pool.query(query, [viewerId, viewedId])
+    await pool.query(query, [viewerId, viewedId])
     res.status(200).send({ message: "Profile view recorded" })
   } catch (error) {
     console.error("Database error:", error)
@@ -24,14 +24,14 @@ router.post("/view/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Save who the currently authenticated user has liked */
-router.post("/like/:userId", authenticateJWT, async (req, res) => {
+router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likerId = req.user.id
   const likedId = req.params.userId
 
   try {
     const query =
       "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
-    const result = await pool.query(query, [likerId, likedId])
+    await pool.query(query, [likerId, likedId])
     res.status(200).send({ message: "Profile like recorded" })
   } catch (error) {
     console.error("Database error:", error)
@@ -40,7 +40,7 @@ router.post("/like/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Remove a like from the authenticated user to another user */
-router.delete("/unlike/:userId", authenticateJWT, async (req, res) => {
+router.delete("/unlike/:userId", httpAuthenticateJWT, async (req, res) => {
   const likerId = req.user.id
   const likedId = req.params.userId
 
@@ -59,16 +59,16 @@ router.delete("/unlike/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve an array of people who likes the currently authenticated user */
-router.get("/likes", authenticateJWT, async (req, res) => {
+router.get("/likes", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
     const query = `
-			  SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
-			  FROM T_USER u
-			  JOIN T_LIKE l ON l.liker_id = u.id
-			  WHERE l.liked_id = $1;
-		  `
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      FROM T_USER u
+      JOIN T_LIKE l ON l.liker_id = u.id
+      WHERE l.liked_id = $1;
+    `
     const result = await pool.query(query, [userId])
     res.json(result.rows)
   } catch (error) {
@@ -78,16 +78,16 @@ router.get("/likes", authenticateJWT, async (req, res) => {
 })
 
 /* Retrieve an array of people who viewed the currently authenticated user */
-router.get("/views", authenticateJWT, async (req, res) => {
+router.get("/views", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
     const query = `
-			  SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
-			  FROM T_USER u
-			  JOIN T_VIEW v ON v.viewer_id = u.id
-			  WHERE v.viewed_id = $1;
-		  `
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      FROM T_USER u
+      JOIN T_VIEW v ON v.viewer_id = u.id
+      WHERE v.viewed_id = $1;
+    `
     const result = await pool.query(query, [userId])
     res.json(result.rows)
   } catch (error) {
@@ -97,17 +97,17 @@ router.get("/views", authenticateJWT, async (req, res) => {
 })
 
 /* Route to get history of profiles viewed by the currently authenticated user */
-router.get("/view-history", authenticateJWT, async (req, res) => {
+router.get("/view-history", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   try {
     const query = `
-			  SELECT v.viewed_id, u.username, u.first_name, u.last_name, u.bio, u.pictures
-			  FROM T_VIEW v
-			  JOIN T_USER u ON u.id = v.viewed_id
-			  WHERE v.viewer_id = $1
-			  ORDER BY v.viewed_at DESC;
-		  `
+      SELECT v.viewed_id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.is_online
+      FROM T_VIEW v
+      JOIN T_USER u ON u.id = v.viewed_id
+      WHERE v.viewer_id = $1
+      ORDER BY v.viewed_at DESC;
+    `
     const result = await pool.query(query, [userId])
     res.json(result.rows)
   } catch (error) {
@@ -117,7 +117,7 @@ router.get("/view-history", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user reports another user */
-router.post("/report/:userId", authenticateJWT, async (req, res) => {
+router.post("/report/:userId", httpAuthenticateJWT, async (req, res) => {
   const reporterId = req.user.id
   const reportedId = req.params.userId
   const { reason } = req.body
@@ -147,7 +147,7 @@ router.post("/report/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user blocks another user */
-router.post("/block/:userId", authenticateJWT, async (req, res) => {
+router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
   const blockedId = req.params.userId
 
@@ -157,10 +157,10 @@ router.post("/block/:userId", authenticateJWT, async (req, res) => {
 
   try {
     const query = `
-            INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
-            VALUES ($1, $2, NOW())
-            ON CONFLICT DO NOTHING;
-        `
+        INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
+        VALUES ($1, $2, NOW())
+        ON CONFLICT DO NOTHING;
+    `
     const result = await pool.query(query, [blockerId, blockedId])
     if (result.rowCount === 0) {
       res.status(409).send({ message: "User is already blocked" })
@@ -174,15 +174,15 @@ router.post("/block/:userId", authenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user unblocks another user */
-router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
+router.delete("/unblock/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
   const blockedId = req.params.userId
 
   try {
     const query = `
-            DELETE FROM T_BLOCK
-            WHERE blocker_id = $1 AND blocked_id = $2;
-        `
+      DELETE FROM T_BLOCK
+      WHERE blocker_id = $1 AND blocked_id = $2;
+    `
     const result = await pool.query(query, [blockerId, blockedId])
     if (result.rowCount === 0) {
       res
@@ -194,6 +194,104 @@ router.delete("/unblock/:userId", authenticateJWT, async (req, res) => {
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to unblock user" })
+  }
+})
+
+/* Retrieve all matches for the authenticated user. */
+router.get("/matches", httpAuthenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  const query = `
+    SELECT 
+    u.id, 
+    u.email, 
+    u.username, 
+    u.first_name, 
+    u.last_name, 
+    u.gender, 
+    u.sexual_orientation, 
+    u.bio, 
+    u.tags, 
+    u.pictures, 
+    u.fame_rating, 
+    u.last_login, 
+    u.is_online, 
+    u.account_verified, 
+    u.created_at, 
+    u.updated_at, 
+    u.date_of_birth, 
+    u.latitude, 
+    u.longitude, 
+    u.city, 
+    u.country
+    FROM T_USER u
+    JOIN T_LIKE AS l1 ON u.id = l1.liker_id
+    JOIN T_LIKE AS l2 ON l1.liker_id = l2.liked_id AND l1.liked_id = l2.liker_id
+    WHERE l1.liked_id = $1 AND l1.liker_id = l2.liked_id
+  `
+
+  try {
+    const result = await pool.query(query, [userId])
+    res.json(result.rows)
+  } catch (error) {
+    console.error("Database error:", error)
+    res.status(500).send({
+      message: "Failed to retrieve matches",
+      error: error.message,
+    })
+  }
+})
+
+/* Retrieve all chatrooms for the currently authenticated user with messages. */
+router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const chatroomsResult = await pool.query(
+      `
+      SELECT cr.id, cr.user1_id, cr.user2_id, cr.created_at, cr.updated_at,
+             u.id AS other_user_id, u.first_name, u.last_name, u.pictures, u.is_online
+      FROM T_CHATROOM cr
+      JOIN T_USER u ON u.id = CASE WHEN cr.user1_id = $1 THEN cr.user2_id ELSE cr.user1_id END
+      WHERE cr.user1_id = $1 OR cr.user2_id = $1;
+    `,
+      [userId],
+    )
+
+    const chatrooms = await Promise.all(
+      chatroomsResult?.rows.map(async (room) => {
+        const messagesResult = await pool.query(
+          `
+            SELECT id, sender_id, content, sent_at, delivered_at, read_at
+            FROM T_MESSAGE
+            WHERE chatroom_id = $1
+            ORDER BY sent_at ASC;
+          `,
+          [room.id],
+        )
+
+        return {
+          id: room.id,
+          created_at: room.created_at,
+          updated_at: room.updated_at,
+          other_user: {
+            id: room.other_user_id,
+            first_name: room.first_name,
+            last_name: room.last_name,
+            profile_picture: room.pictures.length ? room.pictures[0] : null,
+            is_online: room.is_online,
+          },
+          messages: messagesResult.rows,
+        }
+      }),
+    )
+
+    res.json(chatrooms)
+  } catch (error) {
+    console.error("Database error:", error)
+    res
+      .status(500)
+      .send({ message: "Failed to retrieve chatrooms and messages" })
   }
 })
 

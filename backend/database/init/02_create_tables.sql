@@ -27,7 +27,9 @@ CREATE TABLE IF NOT EXISTS T_USER (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     date_of_birth DATE,
     latitude DECIMAL(9,6),
-    longitude DECIMAL(9,6)
+    longitude DECIMAL(9,6),
+    city VARCHAR(50),
+    country VARCHAR(50)
 );
 
 CREATE TABLE IF NOT EXISTS T_VIEW (
@@ -57,4 +59,41 @@ CREATE TABLE IF NOT EXISTS T_BLOCK (
     blocked_id INTEGER NOT NULL REFERENCES T_USER(id),
     block_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (blocker_id, blocked_id)
+);
+
+CREATE TABLE IF NOT EXISTS T_FILTER (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    age_min INTEGER,
+    age_max INTEGER,
+    location_radius INTEGER,
+    min_fame_rating INTEGER,
+    max_fame_rating INTEGER,
+    tags TEXT[],
+    page_number INTEGER DEFAULT 1,
+    limit_number INTEGER DEFAULT 25,
+    sort_by VARCHAR(50) DEFAULT 'distance',
+    order_by VARCHAR(10) DEFAULT 'asc',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES T_USER(id)
+);
+
+CREATE TABLE IF NOT EXISTS T_CHATROOM (
+    id SERIAL PRIMARY KEY,
+    user1_id INTEGER NOT NULL REFERENCES T_USER(id),
+    user2_id INTEGER NOT NULL REFERENCES T_USER(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CHECK (user1_id < user2_id),
+    UNIQUE (user1_id, user2_id)
+);
+
+CREATE TABLE IF NOT EXISTS T_MESSAGE (
+    id SERIAL PRIMARY KEY,
+    chatroom_id INTEGER NOT NULL REFERENCES T_CHATROOM(id),
+    sender_id INTEGER NOT NULL REFERENCES T_USER(id),
+    content TEXT NOT NULL,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    delivered_at TIMESTAMP WITH TIME ZONE,
+    read_at TIMESTAMP WITH TIME ZONE
 );

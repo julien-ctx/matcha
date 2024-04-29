@@ -3,6 +3,7 @@ DECLARE
     i INT := 0;
     j INT;
     num_tags INT;
+    num_pictures INT;
     gender_list gender[] := ARRAY['Male', 'Female', 'Other'];
     orientation_list sexual_orientation[] := ARRAY['Male', 'Female', 'Both', 'Other'];
     tag_list tag[] := ARRAY[
@@ -13,16 +14,20 @@ DECLARE
     ];
     bio TEXT := 'I am happy to do the RNCP';
     random_tags tag[];
+    random_pictures TEXT[];
     random_age DATE;
     fame_rating INTEGER;
     account_verified BOOLEAN;
     random_latitude DOUBLE PRECISION;
     random_longitude DOUBLE PRECISION;
     candidate_tag tag;
+    picture_options TEXT[] := ARRAY['danielle1.jpeg', 'danielle2.jpeg', 'wonyoung1.jpeg', 'wonyoung2.jpeg'];
 BEGIN
     FOR i IN 1..500 LOOP
         num_tags := (random() * 5 + 1)::int;
         random_tags := '{}';
+        num_pictures := (random() * 4 + 1)::int;  -- Randomly choose between 1 and 5 pictures
+        random_pictures := '{}';
 
         FOR j IN 1..num_tags LOOP
             candidate_tag := tag_list[floor(random() * array_length(tag_list, 1)) + 1];
@@ -31,6 +36,10 @@ BEGIN
             ELSE
                 j := j - 1;
             END IF;
+        END LOOP;
+
+        FOR j IN 1..num_pictures LOOP
+            random_pictures := array_append(random_pictures, picture_options[ceil(random() * array_length(picture_options, 1))]);
         END LOOP;
 
         random_age := (CURRENT_DATE - (INTERVAL '1 year' * (18 + (random() * 42)::int)));
@@ -59,7 +68,10 @@ BEGIN
             created_at,
             updated_at,
             latitude,
-            longitude
+            longitude,
+            city,
+            country,
+            pictures
         ) VALUES (
             'user' || i || '@example.com',
             'user' || i,
@@ -77,7 +89,10 @@ BEGIN
             NOW(),
             NOW(),
             random_latitude,
-            random_longitude
+            random_longitude,
+            'Paris',
+            'France',
+            random_pictures
         );
     END LOOP;
 END $$;

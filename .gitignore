@@ -10,3 +10,4 @@ coverage
 # Benchmarking
 benchmarks/graphs
 .env
+test.js
