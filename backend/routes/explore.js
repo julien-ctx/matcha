@@ -114,7 +114,7 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
       gender,
       sexual_orientation,
       bio,
-      tags,
+      array_to_json(tags) AS tags,
       pictures,
       fame_rating,
       last_login,

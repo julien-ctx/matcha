@@ -20,7 +20,7 @@ router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const usersQuery = `
-      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures,
+      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures,
       fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
       FROM T_USER
       WHERE id IN ($1, $2);
@@ -180,7 +180,7 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
       UPDATE T_USER
       SET ${updates.join(", ")}
       WHERE id = $${paramIndex}
-      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
+      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
     `
     values.push(userId)
     const { rows } = await pool.query(query, values)
@@ -205,7 +205,7 @@ router.get("/filter", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
 
   const query = `
-    SELECT *
+    SELECT id, user_id, age_min, age_max, location_radius, min_fame_rating, max_fame_rating, array_to_json(tags) AS tags, page_number, limit_number, sort_by, order_by, created_at
     FROM T_FILTER
     WHERE user_id = $1
   `
@@ -294,7 +294,7 @@ router.put("/filter", httpAuthenticateJWT, async (req, res) => {
       UPDATE T_FILTER
       SET ${updates.join(", ")}
       WHERE user_id = $${paramIndex}
-      RETURNING *;
+      RETURNING id, user_id, age_min, age_max, location_radius, min_fame_rating, max_fame_rating, array_to_json(tags) AS tags, page_number, limit_number, sort_by, order_by, created_at;
     `
     values.push(userId)
 
@@ -347,7 +347,7 @@ router.post("/filter", httpAuthenticateJWT, async (req, res) => {
       sort_by,
       order_by
     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-    RETURNING *;
+    RETURNING id, user_id, age_min, age_max, location_radius, min_fame_rating, max_fame_rating, array_to_json(tags) AS tags, page_number, limit_number, sort_by, order_by, created_at;
   `
 
   const values = [
