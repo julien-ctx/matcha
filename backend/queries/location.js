@@ -1,5 +1,6 @@
 import axios from "axios"
 import dotenv from "dotenv"
+import * as turf from "@turf/turf"
 
 dotenv.config({ path: "../../.env" })
 
@@ -67,4 +68,31 @@ export const getLocationFromLatitudeLongitude = async (latitude, longitude) => {
     console.error("Failed to retrieve location data:", error)
     return undefined
   }
+}
+
+/**
+ * Calculates the distance between two geographical points.
+ *
+ * @param {number} latitude1 - Latitude of the first point.
+ * @param {number} longitude1 - Longitude of the first point.
+ * @param {number} latitude2 - Latitude of the second point.
+ * @param {number} longitude2 - Longitude of the second point.
+ * @returns {string|null} The distance in kilometers between the two points, rounded to six decimal places, or null if any input is undefined.
+ */
+export const getDistance = (latitude1, longitude1, latitude2, longitude2) => {
+  if (
+    latitude1 === undefined ||
+    longitude1 === undefined ||
+    latitude2 === undefined ||
+    longitude2 === undefined
+  ) {
+    return null
+  }
+
+  const point1 = turf.point([longitude1, latitude1])
+  const point2 = turf.point([longitude2, latitude2])
+  const options = { units: "kilometers" }
+
+  const distance = turf.distance(point1, point2, options)
+  return distance.toFixed(6)
 }
