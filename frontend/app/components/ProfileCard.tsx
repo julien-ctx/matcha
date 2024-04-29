@@ -42,6 +42,7 @@ const initialTestProfiles = [
 export default function ProfileCard({ profile, setCurrentProfile }: Props){
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+
     function prevImage() {
         if (currentImageIndex === 0) return;
 
