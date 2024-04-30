@@ -16,8 +16,7 @@ const app = express()
 const server = http.createServer(app)
 const io = new SocketIO(server, {
   cors: {
-    // origin: process.env.FRONT_URL,
-    origin: "*",
+    origin: process.env.FRONT_URL,
     methods: ["GET", "POST"],
   },
 })
@@ -25,11 +24,9 @@ setupSocketEvents(io)
 
 app.use(
   cors({
-    // origin: process.env.FRONT_URL,
-    origin: '*'
+    origin: process.env.FRONT_URL,
   }),
 )
-
 
 app.use(express.json())
 
