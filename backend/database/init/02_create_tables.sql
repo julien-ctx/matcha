@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS T_FILTER (
     location_radius INTEGER,
     min_fame_rating INTEGER,
     max_fame_rating INTEGER,
-    tags TEXT[],
+    tags tag[] DEFAULT '{}',
     page_number INTEGER DEFAULT 1,
     limit_number INTEGER DEFAULT 25,
     sort_by VARCHAR(50) DEFAULT 'distance',

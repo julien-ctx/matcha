@@ -35,7 +35,7 @@ router.post("/register", async (req, res) => {
     const query = `
       INSERT INTO T_USER (email, username, first_name, last_name, password)
       VALUES($1, $2, $3, $4, $5)
-      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
+      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
     `
     const values = [email, username, firstName, lastName, hashedPassword]
 
@@ -95,7 +95,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const query = `
-      SELECT *
+      SELECT id, email, username, password, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
       FROM T_USER
       WHERE email = $1 OR username = $1;
     `
@@ -157,7 +157,7 @@ router.post("/jwt-status", async (req, res) => {
     const userId = decoded.id
 
     const query = `
-      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
+      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
       FROM T_USER
       WHERE id = $1;
     `

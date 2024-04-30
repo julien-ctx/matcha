@@ -211,7 +211,7 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
     u.gender, 
     u.sexual_orientation, 
     u.bio, 
-    u.tags, 
+    array_to_json(u.tags) AS tags, 
     u.pictures, 
     u.fame_rating, 
     u.last_login, 
