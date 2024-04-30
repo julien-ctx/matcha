@@ -81,14 +81,13 @@ export const getLocationFromLatitudeLongitude = async (latitude, longitude) => {
  */
 export const getDistance = (latitude1, longitude1, latitude2, longitude2) => {
   if (
-    latitude1 === undefined ||
-    longitude1 === undefined ||
-    latitude2 === undefined ||
-    longitude2 === undefined
+    latitude1 == null ||
+    longitude1 == null ||
+    latitude2 == null ||
+    longitude2 == null
   ) {
     return null
   }
-
   const point1 = turf.point([longitude1, latitude1])
   const point2 = turf.point([longitude2, latitude2])
   const options = { units: "kilometers" }
