@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import nodemailer from "nodemailer"
+import passport from "passport"
 
 dotenv.config({ path: "../../.env" })
 
@@ -33,11 +34,18 @@ router.post("/register", async (req, res) => {
     }
 
     const query = `
-      INSERT INTO T_USER (email, username, first_name, last_name, password)
-      VALUES($1, $2, $3, $4, $5)
+      INSERT INTO T_USER (email, username, first_name, last_name, password, registration_method)
+      VALUES($1, $2, $3, $4, $5, $6)
       RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
     `
-    const values = [email, username, firstName, lastName, hashedPassword]
+    const values = [
+      email,
+      username,
+      firstName,
+      lastName,
+      hashedPassword,
+      "Default",
+    ]
 
     try {
       const { rows } = await pool.query(query, values)
@@ -95,7 +103,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const query = `
-      SELECT id, email, username, password, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
+      SELECT id, email, username, password, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, registration_method
       FROM T_USER
       WHERE email = $1 OR username = $1;
     `
@@ -108,6 +116,10 @@ router.post("/login", async (req, res) => {
     }
 
     const user = rows[0]
+
+    if (user?.registration_method !== "Default" || !user?.password) {
+      return res.status(401).send({ message: "Invalid login credentials." })
+    }
 
     const isMatch = await bcrypt.compare(password, user.password)
 
@@ -142,6 +154,39 @@ router.post("/login", async (req, res) => {
       .send({ message: "An error occurred during the login process" })
   }
 })
+
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] }),
+)
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google"),
+  (req, res) => {
+    const user = req.user
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      },
+      process.env.AUTH_JWT_SECRET,
+      { expiresIn: "24h" },
+    )
+    res.cookie("token", token, {
+      maxAge: 300000,
+      sameSite: "Strict",
+    })
+    res.redirect(`${process.env.FRONT_URL}`)
+  },
+  (err, req, res, next) => {
+    console.log(err)
+    res.redirect(`${process.env.FRONT_URL}`) // TODO: set error
+  },
+)
 
 router.post("/jwt-status", async (req, res) => {
   const { token } = req.body

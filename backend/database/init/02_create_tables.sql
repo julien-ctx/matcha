@@ -6,12 +6,13 @@ CREATE TYPE tag AS ENUM (
     'traveler', 'bookworm', 'movie buff', 'science nerd', 'fashionista',
     'social butterfly', 'homebody', 'pet lover', 'diy enthusiast'
 );
+CREATE TYPE registration_method AS ENUM ('Default', 'Google');
 
 CREATE TABLE IF NOT EXISTS T_USER (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
+    password VARCHAR(255),
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
     gender gender DEFAULT 'Other',
@@ -29,7 +30,8 @@ CREATE TABLE IF NOT EXISTS T_USER (
     latitude DECIMAL(9,6),
     longitude DECIMAL(9,6),
     city VARCHAR(50),
-    country VARCHAR(50)
+    country VARCHAR(50),
+    registration_method registration_method
 );
 
 CREATE TABLE IF NOT EXISTS T_VIEW (
