@@ -2,6 +2,7 @@ import express from "express"
 import pool from "../database/db.js"
 import dotenv from "dotenv"
 import { httpAuthenticateJWT } from "../middleware/auth.js"
+import { getDistance } from "../queries/location.js"
 
 dotenv.config({ path: "../../.env" })
 
@@ -64,13 +65,33 @@ router.get("/likes", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude
       FROM T_USER u
       JOIN T_LIKE l ON l.liker_id = u.id
       WHERE l.liked_id = $1;
     `
     const result = await pool.query(query, [userId])
-    res.json(result.rows)
+
+    const currentUser = await pool.query(
+      "SELECT latitude, longitude FROM T_USER WHERE id = $1",
+      [userId],
+    )
+    if (!currentUser.rows.length) {
+      res.json(result.rows)
+    }
+    const resultWithDistance = result.rows.map((user) => {
+      const distance = getDistance(
+        currentUser.rows[0].latitude,
+        currentUser.rows[0].longitude,
+        user.latitude,
+        user.longitude,
+      )
+      return {
+        ...user,
+        distance,
+      }
+    })
+    res.json(resultWithDistance)
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to retrieve likes" })
@@ -83,13 +104,33 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.longitude, u.latitude
       FROM T_USER u
       JOIN T_VIEW v ON v.viewer_id = u.id
       WHERE v.viewed_id = $1;
     `
     const result = await pool.query(query, [userId])
-    res.json(result.rows)
+
+    const currentUser = await pool.query(
+      "SELECT latitude, longitude FROM T_USER WHERE id = $1",
+      [userId],
+    )
+    if (!currentUser.rows.length) {
+      res.json(result.rows)
+    }
+    const resultWithDistance = result.rows.map((user) => {
+      const distance = getDistance(
+        currentUser.rows[0].latitude,
+        currentUser.rows[0].longitude,
+        user.latitude,
+        user.longitude,
+      )
+      return {
+        ...user,
+        distance,
+      }
+    })
+    res.json(resultWithDistance)
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to retrieve views" })
@@ -232,7 +273,27 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const result = await pool.query(query, [userId])
-    res.json(result.rows)
+
+    const currentUser = await pool.query(
+      "SELECT latitude, longitude FROM T_USER WHERE id = $1",
+      [userId],
+    )
+    if (!currentUser.rows.length) {
+      res.json(result.rows)
+    }
+    const resultWithDistance = result.rows.map((user) => {
+      const distance = getDistance(
+        currentUser.rows[0].latitude,
+        currentUser.rows[0].longitude,
+        user.latitude,
+        user.longitude,
+      )
+      return {
+        ...user,
+        distance,
+      }
+    })
+    res.json(resultWithDistance)
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({
