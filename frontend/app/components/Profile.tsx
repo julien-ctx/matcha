@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ProfileType } from './profileTypes'
 import './Profile.css'
-import InteractiveMap from './InteractiveMap';
 
 interface ProfileProps {
     profile: ProfileType; 
@@ -146,10 +145,6 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                                 </div>
                             ))} */}
                         </div>
-                    </div>
-                    <div className="w-full h-64 border-4 relative rounded-md">
-                        <h1 className="infoTitle">User's position</h1>
-                        <InteractiveMap />
                     </div>
                 </div>
             </div>

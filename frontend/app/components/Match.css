@@ -9,7 +9,28 @@
     /* background-blend-mode: multiply; */
     /* background-image: url('/back4.png'); */
     background-size: cover;
-    
+}
+
+.parameter-section {
+    @apply w-[95%] py-3 pb-6 gap-3 grid pr-8;
+    grid-template-columns: 35% 65%;
+}
+
+.range-slider {
+    @apply h-2 w-full rounded-lg bg-gradient-to-r-main border-1;
+}
+
+.range-thumb {
+    @apply bg-slate-50 hover:brightness-95 rounded-full h-3 w-3 shadow-md border-2;
+}
+
+.range-value {
+    @apply absolute px-2 rounded-md text-white top-4 -translate-x-1/3;
+    background-color: rgba(51, 65, 85, 0.8);
+}
+
+.range-slider-wrapper {
+    @apply w-full h-full flex items-center;
 }
 
 /* .container::before {

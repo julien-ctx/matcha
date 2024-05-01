@@ -13,6 +13,13 @@ main {
 *, *::before, *::after {
     box-sizing: border-box;
 }
+
+@layer utilities {
+    .text-gradient-main {
+      @apply bg-gradient-to-r-main text-transparent bg-clip-text;
+    }
+  }
+  
   
 @font-face {
     font-family: 'Jersey10';

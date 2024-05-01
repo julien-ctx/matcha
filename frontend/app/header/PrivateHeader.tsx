@@ -188,7 +188,7 @@ export default function PrivateHeader() {
                 </div>
             </div>
 
-            <Modal>
+            <Modal >
 
             </Modal>
         </div>
