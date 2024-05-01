@@ -98,9 +98,11 @@ export default function Match({ setCurrentProfile }: Props) {
 
     const handleDecision = (accept: boolean) => {
         // TODO Protection needed
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {
+        const token = localStorage.getItem('jwt');
+        console.log('token:', token);
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                Authorization: `Bearer ${token}`
             }}).then(res => {
                 console.log(res.data);
             }).catch(err => {

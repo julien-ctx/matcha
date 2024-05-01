@@ -1,3 +1,7 @@
 .photoButton {
     @apply absolute top-1/2 -translate-y-1/2 z-50 w-10 bg-slate-50 rounded-full aspect-square border-2 border-slate-100 shadow-lg hover:brightness-90;
 }
+
+.explanationBox {
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0),rgba(0, 0, 0, 0.25) 15%, rgba(0, 0, 0, 0.7) 60%);
+}

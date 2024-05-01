@@ -17,3 +17,7 @@
 .infoTitle-2 {
     @apply absolute top-[0.2rem] left-2 text-slate-300 text-sm;
 }
+
+.profil-container {
+    background-image: linear-gradient(180deg,#EDE574,#E1F5C4);
+}
