@@ -29,6 +29,24 @@ export default function Match({ setCurrentProfile }: Props) {
     const [profiles, setProfiles] = useState([]);
     const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
 
+    function fetchFilter() {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+            }
+        }).then(response => {
+            console.log("Filter fetched successfully", response.data);
+            setAgeRange([response.data.ageMin, response.data.ageMax]);
+            setKmWithin([response.data.locationRadius]);
+            setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
+            setTagsList(response.data.tags);
+        }).catch(error => {
+            console.error("Error fetching filter", error);
+        
+        })
+    }
+
+
     function browseProfile() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
             headers: {
@@ -48,6 +66,7 @@ export default function Match({ setCurrentProfile }: Props) {
     useEffect(() => {
         sendLocation();
         browseProfile();
+        fetchFilter();
     }, [])
 
     function sendLocation() {
@@ -129,7 +148,7 @@ export default function Match({ setCurrentProfile }: Props) {
                         </div>
                     </button>
                     <button className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 -left-16" onClick={() => handleDecision(false)}>X</button>
-                    <button className="likeOrNotButton text-green-300 bg-green-50 hover:brightness-105 -right-16" onClick={() => handleDecision(true)}>O</button>
+                    <button style={{backgroundColor: 'rgb(250, 254, 250)'}} className="likeOrNotButton text-green-300 hover:brightness-105 -right-16" onClick={() => handleDecision(true)}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (

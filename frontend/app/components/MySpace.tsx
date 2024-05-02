@@ -9,6 +9,7 @@ import Profile from './Profile'
 import { useAuth } from "../auth/AuthProvider"
 import Details from './Details'
 import "./MySpace.css"
+import { useUI } from '../UIContext'
 
 const testChat = [
     {
@@ -19,7 +20,7 @@ const testChat = [
                 name: "Toto",
                 img: "/toto.jpg"
             }, {
-                id: 7,
+                id: 99,
                 name: "Michelle",
                 img: "/girl.jpeg"
             }
@@ -45,7 +46,7 @@ const testChat = [
                 name: "Toto",
                 img: "/toto.jpg"
             }, {
-                id: 7,
+                id: 11,
                 name: "Léna",
                 img: "/lena.png"
             }
@@ -67,7 +68,7 @@ const testMatch = [
         name: "Bingo",
         img: "/bingo.png"
     }, {
-        id: 7,
+        id: 89,
         name: "Nana",
         img: "/nana.png"
     }
@@ -76,6 +77,7 @@ const testMatch = [
 
 export default function MySpace() {
     const { user } = useAuth();
+    const { showLikesList, showVisitsList } = useUI();
     const [isProfileReady, setProfileReady] = useState(false);
 
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
@@ -96,6 +98,18 @@ export default function MySpace() {
             <div className="w-3/4 relative">
                 <Match setCurrentProfile={setCurrentProfile} />
             </div>
+
+            {showLikesList && (
+                <div className="h-full absolute right-0 top-0 w-[72.5%] bg-red-500" style={{zIndex: 999}}>
+                    AHAHAHA
+                </div>    
+            )}
+
+            {showVisitsList && (
+                <div className="h-full absolute right-0 top-0 w-[72.5%] bg-blue-500" style={{zIndex: 999}}>
+                    AHAHAHA
+                </div>
+            )}
 
             {currentChatRoom !== null && (
                 <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 slide-in-right">

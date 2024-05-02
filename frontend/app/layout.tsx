@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import './globals.css'
 import AuthProvider from "./auth/AuthProvider"
 import Header from "./header/Header"
+import { UIProvider } from "./UIContext"
 
 export const metadata: Metadata = {
   title: "Matcha",
@@ -14,15 +15,17 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <AuthProvider>
-    <html lang="en">
-      <body>
-        <Header />
-        <main>
-          {children}
-        </main>
-      </body>
-    </html>
-    </AuthProvider>
+    <UIProvider>
+      <AuthProvider>
+      <html lang="en">
+        <body>
+          <Header />
+          <main>
+            {children}
+          </main>
+        </body>
+      </html>
+      </AuthProvider>
+    </UIProvider>
   )
 }
