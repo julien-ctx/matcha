@@ -3,8 +3,9 @@ import { useAuth } from '../auth/AuthProvider';
 import axios from 'axios';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUI } from '../UIContext';
+import { useUI } from '../contexts/UIContext';
 import InteractionList from '../components/InteractionList';
+import { useSocial } from '../contexts/SocialContext';
 
 const likesTest = [
     {
@@ -53,18 +54,13 @@ export default function PrivateHeader() {
     const { logout, user } = useAuth();
     const { toggleLikesList, toggleVisitsList } = useUI();
     const router = useRouter();
-    const [visits, setVisits] = useState([]);
-    const [likes, setLikes] = useState([]);
+    const {visits, likes} = useSocial();
 
     const menuToggleRef = useRef(null);
     const accountBtnRef = useRef(null);
     const logoutBtnRef = useRef(null);
-
-    useEffect(() => {
-        if (!user) return;
-        getVisits();
-        getLikes();
-    }, [user])
+    const likeListRef = useRef(null);
+    const visitListRef = useRef(null);
 
     useEffect(() => {
         const accountBtn = accountBtnRef.current;
@@ -81,64 +77,43 @@ export default function PrivateHeader() {
             logoutBtn.addEventListener('click', uncheckMenu);
         }
 
-        // Cleanup function to remove event listeners
         return () => {
             if (accountBtn && logoutBtn) {
                 accountBtn.removeEventListener('click', uncheckMenu);
                 logoutBtn.removeEventListener('click', uncheckMenu);
             }
         };
-    }, []); // Empty dependency array ensures this effect runs only once after the initial render
-
-    function getVisits() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/views`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-        })
-            .then(response => {
-                setVisits(response.data);
-                console.log('visit', response.data)
-            })
-            .catch(error => {
-                console.error(error);
-        })
-    }
-
-    function getLikes() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/likes`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-        })
-            .then(response => {
-                setLikes(response.data);
-                console.log('like', response.data)
-            })
-            .catch(error => {
-                console.error(error);
-            })
-    }
+    }, []);
 
     return (
         <div className="w-full h-full">
             <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => router.push('/')}>Matcha</h1>
 
             <div className="flex justify-center gap-8 absolute top-0 right-0 h-full items-center">
-                <div className="popup-container">
+                <div ref={visitListRef} className="popup-container">
                     <button className="popup-button">
                         u
                     </button>
                     <div className="popup-content">
-                        <InteractionList typeStr="Visits" profiles={visits} toggleShow={toggleVisitsList} /> 
+                        <InteractionList typeStr="Visits" profiles={visits} onClick={() => {
+                            toggleVisitsList(true);
+                            const activeElement = document.activeElement;
+                            if (visitListRef.current && visitListRef.current.contains(activeElement))
+                                activeElement.blur();
+                        }} /> 
                     </div>
                 </div>
-                <div className="popup-container">
+                <div ref={likeListRef} className="popup-container">
                     <button className="popup-button">
                         y
                     </button>
                     <div className="popup-content">
-                        <InteractionList typeStr="Likes" profiles={likesTest} toggleShow={toggleLikesList} />
+                        <InteractionList typeStr="Likes" profiles={likesTest} onClick={() => {
+                            toggleLikesList(true);
+                            const activeElement = document.activeElement;
+                            if (likeListRef.current && likeListRef.current.contains(activeElement))
+                                activeElement.blur();
+                        }} />
                     </div>
                 </div>
                 <div className="relative h-full flex-wrap flex py-1 ">

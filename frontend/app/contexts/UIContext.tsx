@@ -1,12 +1,12 @@
 "use client"
 
-import React, { ReactNode, createContext, useContext, useEffect, useState } from 'react';
+import React, { ReactNode, createContext, useContext, useState } from 'react';
 
 interface UIContextType {
     showVisitsList: boolean;
     showLikesList: boolean;
-    toggleVisitsList: () => void;
-    toggleLikesList: () => void;
+    toggleVisitsList: (show: boolean) => void;
+    toggleLikesList: (show: boolean) => void;
 }
 
 const UIContext = createContext<UIContextType | null>(null);
@@ -17,13 +17,13 @@ export const UIProvider = ({ children }: { children : ReactNode}) => {
     const [showVisitsList, setShowVisitsList] = useState(false);
     const [showLikesList, setShowLikesList] = useState(false);
 
-    const toggleVisitsList = () => {
+    const toggleVisitsList = (show: boolean) => {
         showLikesList && setShowLikesList(false);
-        setShowVisitsList(!showVisitsList);
+        setShowVisitsList(show);
     };
-    const toggleLikesList = () => {
+    const toggleLikesList = (show: boolean) => {
         showVisitsList && setShowVisitsList(false);
-        setShowLikesList(!showLikesList);
+        setShowLikesList(show);
     }
 
     return (
