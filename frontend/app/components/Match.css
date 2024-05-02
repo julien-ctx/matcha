@@ -57,3 +57,18 @@
         transform: translateX(300%) rotate(30deg);
     }
 }
+
+/* HTML: <div class="loader"></div> */
+.loader {
+    width: 70%;
+    aspect-ratio: 1;
+    --_c:no-repeat linear-gradient(to right, #de6262, #ffb88c) 50%; 
+    background: 
+      var(--_c)/100% 50%,
+      var(--_c)/50% 100%;
+    border-radius: 50%;
+    animation: l29 2s infinite linear;
+  }
+  @keyframes l29 {
+    100% {transform: rotate(1turn)}
+  }

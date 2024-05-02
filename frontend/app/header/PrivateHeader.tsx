@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUI } from '../contexts/UIContext';
-import InteractionList from '../components/InteractionList';
+import InteractionPopup from '../components/InteractionPopup';
 import { useSocial } from '../contexts/SocialContext';
 
 const likesTest = [
@@ -86,7 +86,7 @@ export default function PrivateHeader() {
     }, []);
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full bg-gradient-to-r-main">
             <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => router.push('/')}>Matcha</h1>
 
             <div className="flex justify-center gap-8 absolute top-0 right-0 h-full items-center">
@@ -95,7 +95,7 @@ export default function PrivateHeader() {
                         u
                     </button>
                     <div className="popup-content">
-                        <InteractionList typeStr="Visits" profiles={visits} onClick={() => {
+                        <InteractionPopup typeStr="Visits" profiles={visits} onClick={() => {
                             toggleVisitsList(true);
                             const activeElement = document.activeElement;
                             if (visitListRef.current && visitListRef.current.contains(activeElement))
@@ -108,7 +108,7 @@ export default function PrivateHeader() {
                         y
                     </button>
                     <div className="popup-content">
-                        <InteractionList typeStr="Likes" profiles={likesTest} onClick={() => {
+                        <InteractionPopup typeStr="Likes" profiles={likesTest} onClick={() => {
                             toggleLikesList(true);
                             const activeElement = document.activeElement;
                             if (likeListRef.current && likeListRef.current.contains(activeElement))

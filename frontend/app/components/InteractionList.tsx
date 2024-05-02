@@ -1,42 +1,101 @@
+import { useSocial } from "../contexts/SocialContext";
+import './InteractionList.css';
+
 interface InteractionListProps {
-    typeStr: string,
-    profiles: any[], //TODO
-    onClick: (open: boolean) => void
+    isLike: boolean,
+    toggleShow: (show: boolean) => void,
+    setCurrentProfile: (profile: any) => void
 }
 
-export default function InteractionList({ typeStr, profiles, onClick }: InteractionListProps) {
+const likesTest = [
+    {
+        id: 1,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 2,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 3,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 4,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 5,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 6,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 7,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 8,
+        first_name: "Bingo",
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 9,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 10,
+        pictures: ['/bingo.png']
+    }
+]
+
+export default function InteractionList({ isLike, toggleShow, setCurrentProfile }: InteractionListProps) {
+    const { visits, likes } = useSocial();
+
     return (
-        <>
-            <h1 className="flex w-full text-2xl pl-2 border-b-2 border-slate-200">{typeStr}</h1>
-            <div className="flex items-center h-20 border-2 bg-slate-50 px-2 gap-1 mt-2 rounded-xl">
-                <div className="bg-gradient-to-r-main rounded-fullhover:brightness-95 px-4 py-1 text-white rounded-2xl flex items-center justify-center ">
-                    <p className="text-xl">
-                        {profiles.length < 10 ? profiles.length : Math.min(Math.ceil(profiles.length / 5) * 5, 99)}
-                    </p>
-                    <p className="font-yarndings12 ">
-                        y
-                    </p>
-                </div>
-                <div className="relative w-full h-full">
-                    {profiles.slice(0, 5).map((profile, index) => (
-                        <img 
-                            key={profile.id} 
-                            src={profile.pictures[0]} 
-                            alt="profile" 
-                            className="w-12 h-12 object-cover rounded-full absolute top-1/2 -translate-y-1/2 border-2 border-red-200"
-                            style={{
-                                left: `${index * 20}px`,
-                                zIndex: `${profiles.length - index}`,
-                                filter: `blur(${Math.round(index) * 0.5}px)`,
-                                
-                            }}
-                        />
-                    ))}
-                </div>
+        <div className="relative w-[95%] h-full overflow-y-auto rounded-t-2xl bg-white flex flex-col p-8 pt-16">
+            <button className="text-gradient-main text-6xl absolute right-6 top-2 font-jersey10" onClick={() => {
+                toggleShow(false);
+            }}>X</button>
+            <div className="text-6xl flex gap-1 w-full justify-center mb-12 text-gradient-main">
+                <h1>Your {isLike ? "Like" : "Visit"} List</h1>
+                <p className="font-yarndings12">y</p>
             </div>
-            <button className="mt-2 bg-gradient-to-r-main rounded-full hover:brightness-95 w-16 h-10 text-white right-0 border-2"
-                onClick={onClick}>See all</button>
-            {profiles.length === 0 && <p className="text-lg py-3">You don't have {typeStr.toLowerCase()} yet!</p>}
-        </>
+            <div className="grid grid-cols-4 w-full gap-4">
+                {
+                    // likes.map((profile) => (
+                    likesTest.map((profile) => (
+                        <div className="w-full">
+                            <div className="w-full cursor-pointer" onClick={() => {
+                                // setCurrentProfile(profile); TODO
+                            }}>
+                                <img 
+                                    key={profile.id} 
+                                    src={profile.pictures[0]} 
+                                    alt="profile" 
+                                    className="w-full object-cover rounded-md border-2 border-red-200 pointer-events-none"
+                                    style={{
+                                        aspectRatio: '9/16'
+                                    }}
+                                />
+                                {/* TODO name, age and distance */}
+                            </div>
+                            {/* <div className="flex justify-around text-4xl">
+                                <button className="text-green-400 select-button">O</button>
+                                <button className="text-red-400 select-button">X</button>
+                            </div> */}
+                        </div>
+                ))}
+            </div>
+        </div>
     )
 }

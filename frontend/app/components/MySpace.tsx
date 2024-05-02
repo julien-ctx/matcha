@@ -10,7 +10,7 @@ import { useAuth } from "../auth/AuthProvider"
 import Details from './Details'
 import "./MySpace.css"
 import { useUI } from '../contexts/UIContext'
-import LikeList from './LikeList'
+import InteractionList from './InteractionList'
 
 const testChat = [
     {
@@ -102,14 +102,14 @@ export default function MySpace() {
 
             {showLikesList && (
                 <div className="h-full absolute right-0 top-0 pt-24 w-[72.5%] flex justify-center" style={{zIndex: 999}}>
-                    <LikeList profiles={testMatch} toggleShow={toggleLikesList} />
+                    <InteractionList isLike={true} toggleShow={toggleLikesList} setCurrentProfile={setCurrentProfile} />
                 </div>    
             )}
 
             {showVisitsList && (
-                <div className="h-full absolute right-0 top-0 w-[72.5%] bg-blue-500" style={{zIndex: 999}}>
-                    AHAHAHA
-                </div>
+                <div className="h-full absolute right-0 top-0 pt-24 w-[72.5%] flex justify-center" style={{zIndex: 999}}>
+                    <InteractionList isLike={false} toggleShow={toggleVisitsList} setCurrentProfile={setCurrentProfile} />
+                </div>    
             )}
 
             {currentChatRoom !== null && (
