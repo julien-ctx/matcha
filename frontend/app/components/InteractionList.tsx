@@ -61,7 +61,7 @@ const likesTest = [
 export default function InteractionList({ isLike, toggleShow, setCurrentProfile }: InteractionListProps) {
     const { visits, likes } = useSocial();
 
-    return (
+    return ( 
         <div className="relative w-[95%] h-full overflow-y-auto rounded-t-2xl bg-white flex flex-col p-8 pt-16">
             <button className="text-gradient-main text-6xl absolute right-6 top-2 font-jersey10" onClick={() => {
                 toggleShow(false);
@@ -89,10 +89,6 @@ export default function InteractionList({ isLike, toggleShow, setCurrentProfile 
                                 />
                                 {/* TODO name, age and distance */}
                             </div>
-                            {/* <div className="flex justify-around text-4xl">
-                                <button className="text-green-400 select-button">O</button>
-                                <button className="text-red-400 select-button">X</button>
-                            </div> */}
                         </div>
                 ))}
             </div>
