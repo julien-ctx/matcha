@@ -71,7 +71,8 @@ BEGIN
             longitude,
             city,
             country,
-            pictures
+            pictures,
+            registration_method
         ) VALUES (
             'user' || i || '@example.com',
             'user' || i,
@@ -92,7 +93,8 @@ BEGIN
             random_longitude,
             'Paris',
             'France',
-            random_pictures
+            random_pictures,
+            'Default'
         );
     END LOOP;
 END $$;

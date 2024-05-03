@@ -1,14 +1,26 @@
 "use client"
 
 import React, { useEffect, useState } from 'react'
+import Cookies from "js-cookie"
 import { useRouter } from 'next/navigation';
+import { useAuth } from "../auth/AuthProvider"
 import './PublicHome.css'
 
 export default function PublicHome() {
     const images = ['/front1.webp', '/front2.webp', '/front3.webp', '/front4.webp', '/front5.webp', '/front6.webp', '/front7.webp', '/front8.webp', '/front9.webp'];
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const router = useRouter();
+    const { login } = useAuth()
 
+    useEffect(() => {
+        const cookieToken = Cookies.get("token")
+        if (cookieToken) {
+          login(cookieToken)
+          Cookies.remove("token")
+          router.replace("/")
+        }
+      }, [])
+    
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentImageIndex(prevIndex => {

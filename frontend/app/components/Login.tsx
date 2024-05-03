@@ -6,7 +6,6 @@ import React from "react"
 import { useAuth } from "../auth/AuthProvider"
 import Link from "next/link"
 import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
-
 interface LoginProps {
   setModalOpen: (value: boolean) => void
 }
@@ -27,7 +26,7 @@ export default function Login({ setModalOpen }: LoginProps) {
       axios
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
         .then(() => {
-          router.replace(redirectPath ?? "/account") // TODO 
+          router.replace(redirectPath ?? "/account") // TODO
         })
         .catch((error) => {
           setIsValidating(false)
@@ -52,7 +51,7 @@ export default function Login({ setModalOpen }: LoginProps) {
       .then((response) => {
         if (response?.data?.jwt) {
           login(response.data.jwt)
-          console.log('login', response.data.user)
+          console.log("login", response.data.user)
         } else {
           console.error("Backend didn't send JWT token")
         }
@@ -62,6 +61,10 @@ export default function Login({ setModalOpen }: LoginProps) {
 
   const getRegisterPath = (): string => {
     return `register?redirect=${redirectPath ?? "/"}`
+  }
+
+  const signInWithGoogle = () => {
+    router.replace(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
   }
 
   return (
@@ -76,7 +79,9 @@ export default function Login({ setModalOpen }: LoginProps) {
         <div className="w-full flex flex-col justify-center items-center p-2">
           <form onSubmit={handleSubmit} className=" w-full flex flex-col gap-2 p-2 items-center">
             <div className="w-full flex justify-center">
-              <label className="w-1/3 text-end pr-2" htmlFor="identifier">Email / Username:</label>
+              <label className="w-1/3 text-end pr-2" htmlFor="identifier">
+                Email / Username:
+              </label>
               <input
                 type="identifier"
                 id="identifier"
@@ -88,7 +93,9 @@ export default function Login({ setModalOpen }: LoginProps) {
               />
             </div>
             <div className="w-full flex justify-center">
-              <label className="w-1/3 text-end pr-2" htmlFor="password">Password:</label>
+              <label className="w-1/3 text-end pr-2" htmlFor="password">
+                Password:
+              </label>
               <input
                 type="password"
                 id="password"
@@ -102,20 +109,30 @@ export default function Login({ setModalOpen }: LoginProps) {
             <button type="submit" className="bg-slate-200 hover:brightness-90 px-3 py-1">
               Login
             </button>
+            <button onClick={signInWithGoogle}>Sign in with Google</button>
           </form>
-          <div className="flex flex-col text-sm justify-center items-center"> 
-            <button className="bg-white hover:brightness-90 px-2 " onClick={() => {
-              setModalOpen(false);
-              router.replace("/recover-password");
-            }}>I forgot the password</button>
-            <Link className="bg-white hover:brightness-90 px-2" href={getRegisterPath()} replace onClick={() => {
-              setModalOpen(false);
-            }}>
+          <div className="flex flex-col text-sm justify-center items-center">
+            <button
+              className="bg-white hover:brightness-90 px-2 "
+              onClick={() => {
+                setModalOpen(false)
+                router.replace("/recover-password")
+              }}
+            >
+              I forgot the password
+            </button>
+            <Link
+              className="bg-white hover:brightness-90 px-2"
+              href={getRegisterPath()}
+              replace
+              onClick={() => {
+                setModalOpen(false)
+              }}
+            >
               Register
             </Link>
           </div>
         </div>
-
       )}
     </div>
   )
