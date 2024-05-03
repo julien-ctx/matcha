@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ProfileType } from './profileTypes'
 import './Profile.css'
-import InteractiveMap from './InteractiveMap';
 
 interface ProfileProps {
     profile: ProfileType; 
@@ -59,7 +58,7 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
     };
 
     return (
-        <div className="relative w-full h-full pl-14 px-5 pt-20 bg-white gap-2 overflow-y-auto flex items-center gap-4">
+        <div className="relative w-full h-full pl-14 px-5 pt-20 profil-container overflow-y-auto flex items-center gap-4">
             <div className="absolute top-24 duration-100 w-12 h-12 rounded-full left-1 text-4xl font-jersey20 hover:brightness-90 bg-white border-2">
                 <button onClick={() => setCurrentProfile(null)} className="w-full h-full bg-gradient-to-r-main text-transparent bg-clip-text">
                     &lt;
@@ -115,8 +114,11 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                         </div>
                     </div>
                     <div className="flex-wrap min-h-44 border-4 rounded-md relative pb-20 py-7 px-4 text-lg w-full">
-                        <h1 className="infoTitle">Bio</h1>
-                        {profile.bio}
+                        <h1 className="infoTitle ">Bio</h1>
+                        <p className="break-normal w-full break-all">
+                            {profile.bio}
+
+                        </p>
                     </div>
                     <div className="flex h-32 gap-1 w-full">
                         <div className="infoBox w-3/5 h-full">
@@ -144,15 +146,8 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                             ))} */}
                         </div>
                     </div>
-                    <div className="w-full h-64 border-4 relative rounded-md">
-                        <h1 className="infoTitle">User's position</h1>
-                        <InteractiveMap />
-                    </div>
                 </div>
             </div>
-
-
-
         </div>
     )
 }

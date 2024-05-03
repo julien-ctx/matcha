@@ -2,13 +2,18 @@
 
 import React, { useState, useEffect } from 'react'
 import { ProfileType } from './profileTypes'
-
 import Modal from "./Modal"
 import ProfileCard from "./ProfileCard"
 import axios from 'axios'
 
 import './Match.css'
+import SearchParam from './SearchParam';
 
+enum LoadState {
+    Loading,
+    Loaded,
+    Error
+}
 
 interface Props {
     setCurrentProfile: (profile: ProfileType) => void
@@ -17,13 +22,32 @@ interface Props {
 export default function Match({ setCurrentProfile }: Props) {
     
     const [isModalOpen, setModalOpen] = useState(false);
-    const [ageRange, setAgeRange] = useState({ min: 18, max: 99 });
-    const [kmWithin, setKmWithin] = useState(50); // Default 50 km
-    const [fameRating, setFameRating] = useState(1); // Default rating 1
-    const [sameInterests, setSameInterests] = useState(false);
+    const [ageRange, setAgeRange] = useState([18, 99]);
+    const [kmWithin, setKmWithin] = useState([20]);
+    const [fameRatingRange, setFameRatingRange] = useState([1, 5]);
+    const [tagsList, setTagsList] = useState([]);
 
     const [profiles, setProfiles] = useState([]);
     const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
+
+    const [loadState, setLoadState] = useState(LoadState.Loading);
+
+    function fetchFilter() {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+            }
+        }).then(response => {
+            console.log("Filter fetched successfully", response.data);
+            setAgeRange([response.data.ageMin, response.data.ageMax]);
+            setKmWithin([response.data.locationRadius]);
+            setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
+            setTagsList(response.data.tags);
+        }).catch(error => {
+            console.error("Error fetching filter", error);
+        
+        })
+    }
 
     function browseProfile() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
@@ -35,6 +59,9 @@ export default function Match({ setCurrentProfile }: Props) {
         .then((response) => {
             console.log('profiles: ', response.data)
             setProfiles(response.data);
+            setTimeout(() => {
+                setLoadState(LoadState.Loaded);
+            }, 1000)
         })
         .catch((error) => {
             console.error(error);
@@ -44,6 +71,7 @@ export default function Match({ setCurrentProfile }: Props) {
     useEffect(() => {
         sendLocation();
         browseProfile();
+        fetchFilter();
     }, [])
 
     function sendLocation() {
@@ -88,19 +116,13 @@ export default function Match({ setCurrentProfile }: Props) {
         }
     }
 
-    const handleAgeMinChange = (event) => {
-        setAgeRange({ ...ageRange, min: parseInt(event.target.value) });
-    };
-
-    const handleAgeMaxChange = (event) => {
-        setAgeRange({ ...ageRange, max: parseInt(event.target.value) });
-    };
-
     const handleDecision = (accept: boolean) => {
         // TODO Protection needed
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {
+        const token = localStorage.getItem('jwt');
+        console.log('token:', token);
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                Authorization: `Bearer ${token}`
             }}).then(res => {
                 console.log(res.data);
             }).catch(err => {
@@ -112,9 +134,13 @@ export default function Match({ setCurrentProfile }: Props) {
         setCurrentProfileIndex(prev => Math.max(0, prev - 1));
     };
 
-
     return (
         <div className="fixed top-0 right-0 container h-full w-[72.5%] z-0 pt-20 flex justify-center items-center">
+            {loadState === LoadState.Loading ? (
+                <div className="w-[18%] aspect-square bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <div className="loader"></div>
+                </div>
+            ) : loadState === LoadState.Loaded ? (
                 <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
                     <button className="absolute -top-8 right-20 bg-gray-200 hover:bg-red-300 duration-200 py-1 px-4 rounded-t-2xl" onClick={() => setModalOpen(true)}>
                         <div className="text-white flex gap-2 items-center justify-center">
@@ -123,42 +149,30 @@ export default function Match({ setCurrentProfile }: Props) {
                         </div>
                     </button>
                     <button className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 -left-16" onClick={() => handleDecision(false)}>X</button>
-                    <button className="likeOrNotButton text-green-300 bg-green-50 hover:brightness-105 -right-16" onClick={() => handleDecision(true)}>O</button>
+                    <button style={{backgroundColor: 'rgb(250, 254, 250)'}} className="likeOrNotButton text-green-300 hover:brightness-105 -right-16" onClick={() => handleDecision(true)}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (
                         <p>No more profiles</p>
                     )}
-
                 </div>
+            ) : loadState === LoadState.Error ? (
+                <p>Error loading profiles</p>
+            ) : null}
 
             <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
-                <div>
-                    <h1>Parameters allo</h1>
-                    <div>
-                        <label>Age Range: {ageRange.min} - {ageRange.max}</label>
-                        <input type="range" min="18" max="99" value={ageRange.min} onChange={handleAgeMinChange} />
-                        <input type="range" min="18" max="99" value={ageRange.max} onChange={handleAgeMaxChange} />
-                    </div>
-                    <div>
-                        <label>KM Within: {kmWithin} km</label>
-                        <input type="range" min="1" max="500" value={kmWithin} onChange={(e) => setKmWithin(parseInt(e.target.value))} />
-                    </div>
-                    <div>
-                        <label>Fame Rating: {fameRating}</label>
-                        <input type="range" min="1" max="5" value={fameRating} onChange={(e) => setFameRating(parseInt(e.target.value))} />
-                    </div>
-                    <div>
-                        <label>
-                            <input type="checkbox" checked={sameInterests} onChange={(e) => setSameInterests(e.target.checked)} />
-                            Same Interests as Mine
-                        </label>
-                    </div>
-                    <div className="flex gap-2">
-                        <button onClick={() => setModalOpen(false)}>Save</button>
-                        <button onClick={() => setModalOpen(false)}>Close</button>
-                    </div>
-                </div>
+                <SearchParam 
+                    setLoadState={setLoadState}
+                    ageRange={ageRange}
+                    setAgeRange={setAgeRange}
+                    kmWithin={kmWithin}
+                    setKmWithin={setKmWithin}
+                    fameRatingRange={fameRatingRange}
+                    setFameRatingRange={setFameRatingRange}
+                    tagsList={tagsList}
+                    setTagsList={setTagsList}
+                    setModalOpen={setModalOpen}
+                />
             </Modal>
         </div>
     )

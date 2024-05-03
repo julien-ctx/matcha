@@ -28,7 +28,7 @@
 }
   
 .checkbox-label {
-    @apply w-32 border-2 border-black py-2 cursor-pointer text-center duration-150;
+    @apply w-32 border-2 text-slate-600 border-slate-600 py-2 cursor-pointer text-center duration-150;
     line-height: 0.2;
 }
   

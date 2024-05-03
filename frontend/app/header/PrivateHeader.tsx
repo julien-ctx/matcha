@@ -3,16 +3,64 @@ import { useAuth } from '../auth/AuthProvider';
 import axios from 'axios';
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUI } from '../contexts/UIContext';
+import InteractionPopup from '../components/InteractionPopup';
+import { useSocial } from '../contexts/SocialContext';
+
+const likesTest = [
+    {
+        id: 1,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 2,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 3,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 4,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 5,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 6,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 7,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 8,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 9,
+        pictures: ['/bingo.png']
+    },
+    {
+        id: 10,
+        pictures: ['/bingo.png']
+    }
+]
 
 export default function PrivateHeader() {
     const { logout, user } = useAuth();
+    const { toggleLikesList, toggleVisitsList } = useUI();
     const router = useRouter();
-    const [visits, setVisits] = useState([]);
-    const [likes, setLikes] = useState([]);
+    const {visits, likes} = useSocial();
 
-    const menuToggleRef = useRef(null); // For the checkbox
-    const accountBtnRef = useRef(null); // For the account button
-    const logoutBtnRef = useRef(null); // For the logout button
+    const menuToggleRef = useRef(null);
+    const accountBtnRef = useRef(null);
+    const logoutBtnRef = useRef(null);
+    const likeListRef = useRef(null);
+    const visitListRef = useRef(null);
 
     useEffect(() => {
         const accountBtn = accountBtnRef.current;
@@ -29,44 +77,43 @@ export default function PrivateHeader() {
             logoutBtn.addEventListener('click', uncheckMenu);
         }
 
-        // Cleanup function to remove event listeners
         return () => {
             if (accountBtn && logoutBtn) {
                 accountBtn.removeEventListener('click', uncheckMenu);
                 logoutBtn.removeEventListener('click', uncheckMenu);
             }
         };
-    }, []); // Empty dependency array ensures this effect runs only once after the initial render
-
-    function getVisits() {
-
-    }
-
-    function getLikes() {
-
-    }
+    }, []);
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full bg-gradient-to-r-main">
             <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => router.push('/')}>Matcha</h1>
 
             <div className="flex justify-center gap-8 absolute top-0 right-0 h-full items-center">
-                <div className="popup-container">
+                <div ref={visitListRef} className="popup-container">
                     <button className="popup-button">
                         u
                     </button>
                     <div className="popup-content">
-                        <h1 className="flex w-full text-2xl pl-2 border-b-2 border-slate-200">Visits</h1>
-                        <div className="text-lg py-3">You don't have visits yet!</div>
+                        <InteractionPopup typeStr="Visits" profiles={visits} onClick={() => {
+                            toggleVisitsList(true);
+                            const activeElement = document.activeElement;
+                            if (visitListRef.current && visitListRef.current.contains(activeElement))
+                                activeElement.blur();
+                        }} /> 
                     </div>
                 </div>
-                <div className="popup-container">
+                <div ref={likeListRef} className="popup-container">
                     <button className="popup-button">
                         y
                     </button>
                     <div className="popup-content">
-                        <h1 className="flex w-full text-2xl pl-2 border-b-2 border-slate-200">Likes</h1>
-                        <div className="text-lg py-3">You don't have likes yet!</div>
+                        <InteractionPopup typeStr="Likes" profiles={likesTest} onClick={() => {
+                            toggleLikesList(true);
+                            const activeElement = document.activeElement;
+                            if (likeListRef.current && likeListRef.current.contains(activeElement))
+                                activeElement.blur();
+                        }} />
                     </div>
                 </div>
                 <div className="relative h-full flex-wrap flex py-1 ">

@@ -11,6 +11,9 @@ const config: Config = {
       backgroundImage: {
         'gradient-to-r-main': 'linear-gradient(to right, #de6262, #ffb88c)',
       },
+      borderWidth: {
+        '1': '1px',
+      },
       fontFamily: {
         'jersey10': ['Jersey10', 'sans-serif'], 
         'jersey10Charted': ['Jersey10Charted', 'sans-serif'],
