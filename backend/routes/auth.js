@@ -261,7 +261,7 @@ router.post("/password-recovery-email", async (req, res) => {
 
   try {
     const query = `
-      SELECT id, email
+      SELECT id, email, registration_method
       FROM T_USER
       WHERE email = $1;
     `
@@ -278,7 +278,7 @@ router.post("/password-recovery-email", async (req, res) => {
 
     const user = rows[0]
 
-    sendPasswordRecoveryEmail(user.id, user.email)
+    sendPasswordRecoveryEmail(user.id, user.email, user.registration_method)
 
     return res.status(200).send({
       message:
@@ -315,10 +315,10 @@ router.post(
         return res.status(401).send({ message: "Authentication failed." })
       }
 
-      const isMatch = await bcrypt.compare(
+      const isMatch = userResult.rows[0]?.password ? await bcrypt.compare(
         password,
         userResult.rows[0].password,
-      )
+      ) : false
       if (!isMatch) {
         return res.status(401).send({ message: "Authentication failed." })
       }

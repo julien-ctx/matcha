@@ -39,9 +39,25 @@ export const sendVerificationEmail = async (id, email) => {
  * Sends a password recovery email to a user with a token to reset their password.
  * @param {number} id - The unique ID of the user.
  * @param {string} email - The email address of the user.
+ * @param {string} registrationMethod - The registration method of the user.
  * @throws Will throw an error if sending the email fails.
+ *
  */
-export const sendPasswordRecoveryEmail = async (id, email) => {
+export const sendPasswordRecoveryEmail = async (
+  id,
+  email,
+  registrationMethod,
+) => {
+  if (registrationMethod !== "Default") {
+    await transporter.sendMail({
+      from: process.env.SMTP_SENDER_EMAIL,
+      to: email,
+      subject: "Recover your password",
+      html: "You requested a password recovery link but you initially registered with a third party login solution like Google. Change your password directly in your third party account.",
+    })
+    return
+  }
+
   const verificationToken = jwt.sign(
     { id, email },
     process.env.RECOVERY_JWT_SECRET,
