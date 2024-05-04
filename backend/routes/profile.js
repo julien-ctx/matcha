@@ -8,6 +8,8 @@ import {
 } from "../queries/location.js"
 import { getName } from "country-list"
 import { httpAuthenticateJWT } from "../middleware/auth.js"
+import { sendVerificationEmail } from "../queries/auth.js"
+import jwt from "jsonwebtoken"
 
 dotenv.config({ path: "../../.env" })
 
@@ -90,7 +92,9 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
 
     if (email) {
       updates.push(`email = $${paramIndex++}`)
+      updates.push("account_verified = false")
       values.push(email)
+      sendVerificationEmail(userId, email)
     }
     if (firstName) {
       updates.push(`first_name = $${paramIndex++}`)
@@ -185,12 +189,26 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
     values.push(userId)
     const { rows } = await pool.query(query, values)
 
+    const user = rows[0]
+    const authToken = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.first_name,
+        lastName: user.last_name,
+      },
+      process.env.AUTH_JWT_SECRET,
+      { expiresIn: "24h" },
+    )
+
     res.send({
       message: "Profile updated successfully",
       user: {
         ...rows[0],
         password: undefined,
       },
+      jwt: authToken,
     })
   } catch (error) {
     console.error("Database error:", error)
