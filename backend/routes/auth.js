@@ -8,6 +8,7 @@ import {
   sendPasswordRecoveryEmail,
   sendVerificationEmail,
 } from "../queries/auth.js"
+import { httpAuthenticateJWT } from "../middleware/auth.js"
 
 dotenv.config({ path: "../../.env" })
 
@@ -292,7 +293,52 @@ router.post("/password-recovery-email", async (req, res) => {
   }
 })
 
-router.post("/update-password", async (req, res) => {
+/* Update password of the currently authenticated user who provides his current password along with a new password */
+router.post(
+  "/internal-update-password",
+  httpAuthenticateJWT,
+  async (req, res) => {
+    const userId = req.user.id
+    const { password, newPassword } = req.body
+
+    if (!password || !newPassword) {
+      return res
+        .status(400)
+        .send({ message: "Please provide both current and new passwords." })
+    }
+
+    try {
+      const userQuery = `SELECT password FROM T_USER WHERE id = $1;`
+      const userResult = await pool.query(userQuery, [userId])
+
+      if (userResult.rows.length === 0) {
+        return res.status(401).send({ message: "Authentication failed." })
+      }
+
+      const isMatch = await bcrypt.compare(
+        password,
+        userResult.rows[0].password,
+      )
+      if (!isMatch) {
+        return res.status(401).send({ message: "Authentication failed." })
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10)
+      const updateQuery = `UPDATE T_USER SET password = $1 WHERE id = $2;`
+      await pool.query(updateQuery, [hashedPassword, userId])
+
+      res.status(200).send({ message: "Password successfully updated." })
+    } catch (error) {
+      console.error("Database error:", error)
+      res
+        .status(500)
+        .send({ message: "An error occurred while updating the password." })
+    }
+  },
+)
+
+/* Update the password of a user who forgot it and used the link sent by email to reset it */
+router.post("/external-update-password", async (req, res) => {
   const { token, password } = req.body
 
   if (!token || !password) {
