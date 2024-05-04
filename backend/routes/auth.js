@@ -3,21 +3,15 @@ import pool from "../database/db.js"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
-import nodemailer from "nodemailer"
 import passport from "passport"
+import {
+  sendPasswordRecoveryEmail,
+  sendVerificationEmail,
+} from "../queries/auth.js"
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
-
-const transporter = nodemailer.createTransport({
-  host: "sandbox.smtp.mailtrap.io",
-  port: 2525,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-})
 
 router.post("/register", async (req, res) => {
   const { email, username, firstName, lastName, password } = req.body
@@ -63,19 +57,7 @@ router.post("/register", async (req, res) => {
         { expiresIn: "24h" },
       )
 
-      const verificationToken = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.VERIF_JWT_SECRET,
-        { expiresIn: "15m" },
-      )
-
-      const verificationUrl = `${process.env.FRONT_URL}/verify?token=${verificationToken}`
-      await transporter.sendMail({
-        from: process.env.SMTP_SENDER_EMAIL,
-        to: email,
-        subject: "Verify your account",
-        html: `<p>Please click the following link to verify your account: <a href="${verificationUrl}">Verify now</a></p>`,
-      })
+      sendVerificationEmail(user.id, user.email)
 
       res.status(201).send({
         message: "Registered successfully",
@@ -295,19 +277,7 @@ router.post("/password-recovery-email", async (req, res) => {
 
     const user = rows[0]
 
-    const verificationToken = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.RECOVERY_JWT_SECRET,
-      { expiresIn: "15m" },
-    )
-
-    const recoverUrl = `${process.env.FRONT_URL}/update-password?token=${verificationToken}`
-    await transporter.sendMail({
-      from: process.env.SMTP_SENDER_EMAIL,
-      to: user.email,
-      subject: "Recover your password",
-      html: `<p>Please click the following link to recover your password: <a href="${recoverUrl}">Recover now</a></p>`,
-    })
+    sendPasswordRecoveryEmail(user.id, user.email)
 
     return res.status(200).send({
       message:
@@ -348,7 +318,7 @@ router.post("/update-password", async (req, res) => {
 
       await pool.query(query, [id, hashedPassword])
       res.status(200).send({
-        message: "Password edited successfully successfully.",
+        message: "Password edited successfully.",
       })
     })
   } catch (error) {
