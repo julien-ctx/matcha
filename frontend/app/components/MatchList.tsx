@@ -1,10 +1,9 @@
 interface MatchListProp {
     matches: any[],
-    setCurrentMatch: (matchId: number) => void
     setCurrentProfile: (profile: any) => void
 }
 
-export default function MatchList({ matches, setCurrentMatch, setCurrentProfile }: MatchListProp) {
+export default function MatchList({ matches, setCurrentProfile }: MatchListProp) {
     return (
         <div className="overflow-y-auto">
             <h1 className="text-3xl flex flex-col py-3 px-4 bg-gradient-to-r-main text-transparent bg-clip-text">Your matches</h1>
@@ -14,8 +13,7 @@ export default function MatchList({ matches, setCurrentMatch, setCurrentProfile 
                         return (
                             <div key={match.id} className="flex flex-col items-center justify-center border-gray-200 hover:brightness-110 cursor-pointer"
                                 onClick={() => {
-                                    setCurrentProfile(null);
-                                    setCurrentMatch(match.id);
+                                    setCurrentProfile(match);
                                 }}>
                                 <img src={match.img} alt={match.name} className="w-16 h-16 object-cover rounded-full border-2 border-red-100" />
                                 <h2 className="text-md text-neutral-600 w-full text-center">{match.name}</h2>

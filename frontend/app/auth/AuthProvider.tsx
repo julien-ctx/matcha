@@ -4,7 +4,6 @@ import React, { useContext, useEffect, useState } from "react"
 import AuthContext from "./AuthContext"
 import axios from "axios"
 import { AuthStatus, User } from "./authTypes"
-// import { usePathname, useRouter } from "next/navigation"
 import { io } from "socket.io-client"
 
 interface Props {
@@ -28,17 +27,13 @@ const AuthProvider = ({ children }: Props) => {
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.Validating);
   const [user, setUser] = useState<User | undefined>(undefined)
 
-  // const router = useRouter()
-  // const currentPath = usePathname()
-
-  function connectSocket() {
+  function connectSocket(tok: string) {
     const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
       auth: {
-        token: token
+        token: tok
       }
     });
     setSocket(newSocket);
-    console.log('Socket connection request sent.');
   }
 
   const login = (newToken: string) => {
@@ -67,7 +62,7 @@ const AuthProvider = ({ children }: Props) => {
               setAuthToken(storedToken);
               setUser(response.data.user)
               if (response.data.user.date_of_birth) {
-                connectSocket();
+                connectSocket(storedToken);
                 console.log('Socket connection established.')
               }
             setAuthStatus(AuthStatus.Validated);

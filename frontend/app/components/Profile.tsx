@@ -3,9 +3,12 @@
 import { useState } from 'react';
 import { ProfileType } from './profileTypes'
 import './Profile.css'
+import Modal from './Modal';
+import { useAuth } from '../auth/AuthProvider';
 
 interface ProfileProps {
     profile: ProfileType; 
+    matchList: any[];
     setCurrentProfile: (profile: ProfileType | null) => void; 
 }
 
@@ -40,9 +43,9 @@ const initialTestProfiles = [
 
 export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-
-    console.log('here', profile)
-
+    const [firstMessageModalOpen, setFirstMessageModalOpen] = useState<boolean>(false);
+    const { socket, user } = useAuth();
+    const [message, setMessage] = useState<string>('');
 
     function prevImage() {
         if (currentImageIndex === 0) return;
@@ -51,7 +54,6 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
     }
 
     function nextImage() {
-        // if (currentImageIndex === profile.pictures.length - 1) return;
         if (currentImageIndex === initialTestProfiles[profile.id % 2].pictures.length - 1) return;
 
         setCurrentImageIndex((prevIndex) => (prevIndex + 1));
@@ -65,9 +67,9 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                 </button>
             </div>
 
-            <div className="flex w-2/5 h-[95%] justify-center rounded-xl bg-slate-900 ">
+            <div className="flex w-[35%] h-[80%] justify-center rounded-xl bg-slate-900 ">
 
-                <div className="relative w-full h-full border-[1rem] border-orange-200 rounded-xl cursor-pointer"
+                <div className="relative w-full h-full border-4 border-orange-50 rounded-xl cursor-pointer"
                     onClick={() => {
                         setCurrentProfile(profile);
                     }}>
@@ -93,6 +95,12 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                         className="photoButton right-1"
                     >
                         &gt;
+                    </button>
+
+                    <button 
+                        onClick={() => setFirstMessageModalOpen(true)}
+                        className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90">
+                        <img className="w-9 h-9" src="/message.svg" alt="message" />
                     </button>
                 </div>
             </div>
@@ -148,6 +156,34 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                     </div>
                 </div>
             </div>
+
+            <Modal isOpen={firstMessageModalOpen}
+                onClose={() => setFirstMessageModalOpen(false)}>
+                <div className="w-full flex flex-col">
+                    <h1 className="text-3xl">Send the first message!</h1>
+                    <form className="flex gap-1" action="">
+                        <input 
+                            type="textarea"
+                            className="w-full rounded-md bg-slate-100 p-2"
+                            placeholder="Type your message here..."
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                        />
+                        <button className=" bg-gradient-to-r-main text-white rounded-md px-3 border-1 "
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (message.trim() === '') return;
+                                console.log(socket)
+                                socket?.emit('sendMessage', {
+                                    content: message,
+                                    senderId: user?.id,
+                                    receiverId: profile.id
+                                })
+                            }}
+                        >Send</button>
+                    </form>
+                </div>
+            </Modal>
         </div>
     )
 }

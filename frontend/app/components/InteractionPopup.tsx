@@ -18,7 +18,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
         <div>
             { user ? 
                 <>
-                    <h1 className="flex w-full text-2xl pl-2 border-b-2 border-slate-200">{typeStr}</h1>
+                    <h1 className="flex w-full text-2xl pl-2 border-b-2 border-slate-200">{typeStr}s</h1>
                     <div className="flex items-center h-20 border-2 bg-slate-50 px-2 gap-1 mt-2 rounded-xl">
                         <div className="bg-gradient-to-r-main rounded-fullhover:brightness-95 px-4 py-1 text-white rounded-2xl flex items-center justify-center ">
                             <p className="text-xl">
@@ -28,7 +28,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                                 y
                             </p>
                         </div>
-                        <div className="relative w-full h-full">
+                        <div className="relative w-full h-full flex items-center">
                             {profiles.slice(0, 5).map((profile, index) => (
                                 <img 
                                     key={profile.id} 
@@ -43,15 +43,13 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                                     }}
                                 />
                             ))}
+                            {profiles.length === 0 && <p className="text-lg py-3 ml-5">No {typeStr.toLowerCase()} yet!</p>}
                         </div>
                     </div>
                     <button className="mt-2 bg-gradient-to-r-main rounded-full hover:brightness-95 w-16 h-10 text-white right-0 border-2"
                         onClick={() => {
                             user.premium ? onClickButton(true) : setPremiumModalOpen(true);
                         }}>See all</button>
-                    {profiles.length === 0 && <p className="text-lg py-3">You don't have {typeStr.toLowerCase()} yet!</p>}
-                
-                
                 </>
                 : null
             }
