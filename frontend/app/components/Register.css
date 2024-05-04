@@ -1,0 +1,8 @@
+.registerInput {
+    @apply w-48 bg-slate-50 rounded-sm px-2;
+}
+
+.registerLine {
+    @apply grid gap-1 w-full px-3;
+    grid-template-columns: 30% 70%;
+}

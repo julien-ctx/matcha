@@ -87,7 +87,7 @@ export default function PrivateHeader() {
 
     return (
         <div className="w-full h-full bg-gradient-to-r-main">
-            <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => router.push('/')}>Matcha</h1>
+            <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => window.location.reload()}>Matcha</h1>
 
             <div className="flex justify-center gap-8 absolute top-0 right-0 h-full items-center">
                 <div ref={visitListRef} className="popup-container">
@@ -95,7 +95,7 @@ export default function PrivateHeader() {
                         u
                     </button>
                     <div className="popup-content">
-                        <InteractionPopup typeStr="Visits" profiles={visits} onClick={() => {
+                        <InteractionPopup typeStr="Visit" profiles={visits} onClick={() => {
                             toggleVisitsList(true);
                             const activeElement = document.activeElement;
                             if (visitListRef.current && visitListRef.current.contains(activeElement))
@@ -108,7 +108,7 @@ export default function PrivateHeader() {
                         y
                     </button>
                     <div className="popup-content">
-                        <InteractionPopup typeStr="Likes" profiles={likesTest} onClick={() => {
+                        <InteractionPopup typeStr="Like" profiles={likesTest} onClick={() => {
                             toggleLikesList(true);
                             const activeElement = document.activeElement;
                             if (likeListRef.current && likeListRef.current.contains(activeElement))
@@ -120,7 +120,6 @@ export default function PrivateHeader() {
                     <input ref={menuToggleRef} className="hidden" id="menu-toggle" type="checkbox" />
                     <label className='menu-toggle duration-200 flex flex-wrap h-full w-full px-2 mr-4 ml-6 rounded-3xl cursor-pointer' htmlFor="menu-toggle">
                         <div className="flex items-center">
-                            {/* Optional: <img src={user.pictures[0]} alt="profile" /> */}
                             <img className="w-14 h-14 object-cover rounded-full select-none pointer-events-none" src="/tchoupi.jpg" alt="profile" />
                         </div>
                     </label>

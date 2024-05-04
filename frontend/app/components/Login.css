@@ -1,0 +1,4 @@
+.loginLine {
+    @apply grid gap-1 w-full px-3;
+    grid-template-columns: 40% 60%;
+}

@@ -11,6 +11,7 @@ import Details from './Details'
 import "./MySpace.css"
 import { useUI } from '../contexts/UIContext'
 import InteractionList from './InteractionList'
+import axios from 'axios'
 
 const testChat = [
     {
@@ -75,26 +76,49 @@ const testMatch = [
     }
 ]
 
+enum SpaceState {
+    LOADING,
+    READY,
+    DETAIL
+}
 
 export default function MySpace() {
-    const { user } = useAuth();
+    const { token, user } = useAuth();
     const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList } = useUI();
-    const [isProfileReady, setProfileReady] = useState(false);
+    const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
 
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
+    const [matchList, setMatchList] = useState<any[]>([]);
 
     useEffect(() => {
-        // TODO should fix authprovider
-        console.log('here we go', user)
-        if (!user?.date_of_birth) return;
-        setProfileReady(true);
+        if (!user) return;
+        (!user?.date_of_birth) ? setSpaceState(SpaceState.DETAIL) : setSpaceState(SpaceState.READY);
     }, [user])
 
-    return isProfileReady ? (
+    function fetchMatches() {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/matches`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then(response => {
+            console.log('matches', response.data)
+            setMatchList(response.data)
+        }).catch(error => {
+            console.error(error)
+        })
+    }
+
+    useEffect(() => {
+        if (!token) return;
+
+        fetchMatches();
+    }, [token])
+
+    return spaceState === SpaceState.READY ? (
         <div className="w-full h-full flex fixed overflow-hidden">
             <div className="w-1/4 relative">
-                <Chat rooms={testChat} matchList={testMatch} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+                <Chat rooms={testChat} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             </div>
             <div className="w-3/4 relative">
                 <Match setCurrentProfile={setCurrentProfile} />
@@ -120,13 +144,13 @@ export default function MySpace() {
             )}
             {currentProfile !== null && (
                 <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 flex justify-center slide-in-right">
-                    <Profile profile={currentProfile} setCurrentProfile={setCurrentProfile}/>
+                    <Profile profile={currentProfile} matchList={matchList} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
         </div>
-    ) : (
+    ) : spaceState === SpaceState.DETAIL ? (
         <div className="w-full h-full">
             <Details />
         </div>
-    )
+    ) : null
 }
