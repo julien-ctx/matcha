@@ -14,8 +14,7 @@
 .modal-content {
     @apply bg-gradient-to-r-main p-6 border-2 border-red-100;
     border-radius: 5px;
-    max-width: 400px;
-    width: 100%;
+    width: 400px;
 }
 
 .modal-header {

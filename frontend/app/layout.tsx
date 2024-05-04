@@ -16,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <AuthProvider>
-      <UIProvider>
+    <UIProvider>
+      <AuthProvider>
         <SocialProvider>
           <html lang="en">
             <body>
@@ -28,7 +28,7 @@ export default function RootLayout({
             </body>
           </html>
         </SocialProvider>
-      </UIProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </UIProvider>
   )
 }

@@ -4,37 +4,21 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import React from "react"
 import { useAuth } from "../auth/AuthProvider"
-import Link from "next/link"
-import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
+import "./Login.css"
+
 interface LoginProps {
-  setModalOpen: (value: boolean) => void
+  goBackHome: Function;
+  goRegister: Function;
 }
 
-export default function Login({ setModalOpen }: LoginProps) {
+export default function Login({ goBackHome, goRegister }: LoginProps) {
   const [formData, setFormData] = useState({
     identifier: "",
     password: "",
   })
-  const { token, login } = useAuth()
+  const { login } = useAuth()
   const router = useRouter()
-  const searchParams: ReadonlyURLSearchParams = useSearchParams()
-  const [isValidating, setIsValidating] = useState<boolean>(true)
-  const redirectPath: string | null = searchParams.get("redirect")
-
-  useEffect(() => {
-    if (token) {
-      axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
-        .then(() => {
-          router.replace(redirectPath ?? "/account") // TODO
-        })
-        .catch((error) => {
-          setIsValidating(false)
-        })
-    } else if (token === null) {
-      setIsValidating(false)
-    }
-  }, [token, router])
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = event.target
@@ -59,41 +43,43 @@ export default function Login({ setModalOpen }: LoginProps) {
       .catch((error) => console.error("Error:", error))
   }
 
-  const getRegisterPath = (): string => {
-    return `register?redirect=${redirectPath ?? "/"}`
-  }
-
   const signInWithGoogle = () => {
     router.replace(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`)
   }
 
   return (
-    <div className="p-0 h-72 flex justify-center items-center flex-col gap-2">
-      <h1 className="text-4xl">Get Started</h1>
-      {isValidating && (
-        <>
-          <h1>Loading...</h1>
-        </>
-      )}
-      {!isValidating && (
-        <div className="w-full flex flex-col justify-center items-center p-2">
-          <form onSubmit={handleSubmit} className=" w-full flex flex-col gap-2 p-2 items-center">
-            <div className="w-full flex justify-center">
-              <label className="w-1/3 text-end pr-2" htmlFor="identifier">
+    <div className="relative p-6 flex justify-center items-center flex-col gap-2 rounded-lg pt-8" style={{backgroundColor: 'rgba(255, 255, 255, 0.45)'}}>
+      <button className="absolute top-2 left-4 text-slate-200 text-5xl font-jersey200 hover:brightness-110 duration-100"
+        onClick={() => goBackHome()}
+      >&lt;</button>
+      <h1 className="text-4xl mb-3">Connect with us</h1>
+      <button className="bg-slate-50 flex gap-4 justify-center items-center px-3 py-2 rounded-lg border-2 hover:brightness-95 duration-150"
+          onClick={signInWithGoogle}
+        >
+          <img className="w-6 h-6" src="/google.svg" alt="g" />
+          <p className="text-xl">Connect with Google</p>
+      </button>
+        <div className="w-full flex flex-col justify-center items-center p-2 gap-1">
+          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-2 p-2 pr-4 pb-3 pt-6 items-center rounded-lg border-1"
+            style={{backgroundColor: 'rgba(255, 255, 255, 0.75)'}}
+          >
+            <div className="loginLine">
+              <label className="text-end pr-2" htmlFor="identifier">
                 Email / Username:
               </label>
               <input
-                type="identifier"
+                type="text"
                 id="identifier"
                 name="identifier"
                 value={formData.identifier}
                 onChange={handleChange}
                 required
-                className="bg-slate-100 h-7 w-2/5 px-2"
+                className="bg-slate-100 px-2"
+                autoComplete="username"
               />
             </div>
-            <div className="w-full flex justify-center">
-              <label className="w-1/3 text-end pr-2" htmlFor="password">
+            <div className="loginLine">
+              <label className="text-end pr-2" htmlFor="password">
                 Password:
               </label>
               <input
@@ -103,37 +89,31 @@ export default function Login({ setModalOpen }: LoginProps) {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="bg-slate-100 h-7 w-2/5 px-2"
+                autoComplete="current-password"
+                className="bg-slate-100 px-2"
               />
             </div>
-            <button type="submit" className="bg-slate-200 hover:brightness-90 px-3 py-1">
+            <button type="submit"  className="border-rose-500 border-2 text-rose-500 px-3 bg-white rounded-lg hover:brightness-95 duration-100 mt-3">
               Login
             </button>
-            <button onClick={signInWithGoogle}>Sign in with Google</button>
           </form>
           <div className="flex flex-col text-sm justify-center items-center">
             <button
-              className="bg-white hover:brightness-90 px-2 "
+              className="hover:bg-white hover:brightness-90 px-2 rounded-md duration-75"
               onClick={() => {
-                setModalOpen(false)
                 router.replace("/recover-password")
               }}
             >
               I forgot the password
             </button>
-            <Link
-              className="bg-white hover:brightness-90 px-2"
-              href={getRegisterPath()}
-              replace
-              onClick={() => {
-                setModalOpen(false)
-              }}
+            <button
+              className="hover:bg-white hover:brightness-90 px-2 rounded-md duration-75"
+              onClick={() => goRegister()}
             >
               Register
-            </Link>
+            </button>
           </div>
         </div>
-      )}
     </div>
   )
 }
