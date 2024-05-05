@@ -30,10 +30,16 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likedId = req.params.userId
 
   try {
-    const query =
+    const likeQuery =
       "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
-    await pool.query(query, [likerId, likedId])
-    res.status(200).send({ message: "Profile like recorded" })
+    await pool.query(likeQuery, [likerId, likedId])
+    const matchQuery = `SELECT * FROM T_LIKE WHERE liked_id = $1 AND liker_id = $2`
+    const match = await pool.query(matchQuery, [likerId, likedId])
+    if (!match.rows.length) {
+      res.status(200).send({ message: "Profile like recorded", isMatch: false })
+    } else {
+      res.status(200).send({ message: "Match recorded", isMatch: true })
+    }
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to record profile like" })
