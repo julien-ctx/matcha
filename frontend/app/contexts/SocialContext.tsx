@@ -14,7 +14,7 @@ const SocialContext = createContext<SocialContextType | null>(null);
 export const useSocial = () => useContext(SocialContext);
 
 export const SocialProvider = ({ children }) => {
-    const { logout, user } = useAuth();
+    const { logout, user, httpAuthHeader } = useAuth();
 
     const [visits, setVisits] = useState([]);
     const [likes, setLikes] = useState([]);
@@ -23,11 +23,7 @@ export const SocialProvider = ({ children }) => {
         if (!user) return;
 
         const fetchVisits = async () => {
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/views`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                }
-            })
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/views`, httpAuthHeader)
                 .then(response => {
                     setVisits(response.data);
                     console.log('visit', response.data)
@@ -37,11 +33,7 @@ export const SocialProvider = ({ children }) => {
             })
         };
         const fetchLikes = async () => {
-            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/likes`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                }
-            })
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/likes`, httpAuthHeader)
             .then(response => {
                 setLikes(response.data);
                 console.log('like', response.data)

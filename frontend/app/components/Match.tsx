@@ -8,6 +8,7 @@ import axios from 'axios'
 
 import './Match.css'
 import SearchParam from './SearchParam';
+import { useAuth } from '../auth/AuthProvider'
 
 enum LoadState {
     Loading,
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function Match({ setCurrentProfile }: Props) {
+    const { httpAuthHeader } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState([18, 99]);
@@ -33,11 +35,8 @@ export default function Match({ setCurrentProfile }: Props) {
     const [loadState, setLoadState] = useState(LoadState.Loading);
 
     function fetchFilter() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-        }).then(response => {
+
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader).then(response => {
             console.log("Filter fetched successfully", response.data);
             setAgeRange([response.data.ageMin, response.data.ageMax]);
             setKmWithin([response.data.locationRadius]);
@@ -50,12 +49,7 @@ export default function Match({ setCurrentProfile }: Props) {
     }
 
     function browseProfile() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-            
-        })
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, httpAuthHeader)
         .then((response) => {
             console.log('profiles: ', response.data)
             setProfiles(response.data);
@@ -69,10 +63,11 @@ export default function Match({ setCurrentProfile }: Props) {
     }
 
     useEffect(() => {
+        if (!httpAuthHeader) return;
         sendLocation();
         browseProfile();
         fetchFilter();
-    }, [])
+    }, [httpAuthHeader])
 
     function sendLocation() {
         if (navigator.geolocation) {
@@ -84,11 +79,7 @@ export default function Match({ setCurrentProfile }: Props) {
                     axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
                         latitude,
                         longitude
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                        }
-                    }).then(response => {
+                    }, httpAuthHeader).then(response => {
                         console.log("Location updated successfully", response.data);
                     }).catch(error => {
                         console.error("Error updating location", error);
@@ -99,11 +90,7 @@ export default function Match({ setCurrentProfile }: Props) {
                     axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
                         latitude: 999,
                         longitude: 999
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                        }
-                    }).then(response => {
+                    }, httpAuthHeader).then(response => {
                         console.log("Null location updated successfully", response.data);
                     }).catch(error => {
                         console.error("Error updating null location", error);
@@ -118,12 +105,7 @@ export default function Match({ setCurrentProfile }: Props) {
 
     const handleDecision = (accept: boolean) => {
         // TODO Protection needed
-        const token = localStorage.getItem('jwt');
-        console.log('token:', token);
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }}).then(res => {
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
                 console.log(res.data);
             }).catch(err => {
                 console.error(err);

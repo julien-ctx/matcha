@@ -16,7 +16,7 @@ interface SearchParamProps {
 }
 
 export default function SearchParam({ setLoadState, setModalOpen, ageRange, setAgeRange, kmWithin, setKmWithin, fameRatingRange, setFameRatingRange, tagsList, setTagsList }: SearchParamProps) {
-    const { user } = useAuth();
+    const { user, httpAuthHeader } = useAuth();
 
     const handleTagChange = (tag: string) => {
         if (tagsList.includes(tag)) {
@@ -151,11 +151,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         minFameRating: fameRatingRange[0],
                         maxFameRating: fameRatingRange[1],
                         tags: tagsList
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                        }
-                    }).then(response => {
+                    }, httpAuthHeader).then(response => {
                         console.log("Filter applied successfully", response.data);
                         setModalOpen(false);
                     }).catch(error => {

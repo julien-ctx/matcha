@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ProfileType } from './profileTypes';
 import axios from 'axios';
 import './ProfileCard.css';
+import { useAuth } from '../auth/AuthProvider';
 
 interface Props {
     profile: ProfileType,
@@ -40,6 +41,7 @@ const initialTestProfiles = [
 ]
 
 export default function ProfileCard({ profile, setCurrentProfile }: Props){
+    const { httpAuthHeader } = useAuth();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
 
@@ -62,11 +64,7 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
                 <div className="w-full h-full hover:brightness-90 cursor-pointer duration-150 relative"
                     onClick={() => {
                         setCurrentProfile(profile);
-                        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/view/${profile.id}`, {}, {
-                            headers: {
-                                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                            }
-                        }).then(res => {
+                        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/view/${profile.id}`, {}, httpAuthHeader).then(res => {
                             console.log(res.data);
                         }).catch(err => {
                             console.error(err);

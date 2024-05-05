@@ -92,6 +92,7 @@ export default function MySpace() {
     const [matchList, setMatchList] = useState<any[]>([]);
 
     useEffect(() => {
+        console.log('user', user)
         if (!user) return;
         (!user?.date_of_birth) ? setSpaceState(SpaceState.DETAIL) : setSpaceState(SpaceState.READY);
     }, [user])

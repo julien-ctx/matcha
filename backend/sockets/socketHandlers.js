@@ -1,4 +1,5 @@
 import { socketAuthenticateJWT } from "../middleware/auth.js"
+import pool from "../database/db.js"
 
 /**
  * Update the user's online status in the database.

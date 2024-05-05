@@ -40,7 +40,7 @@ const interestsList = [
 ]
 
 export default function Details() {
-    const { token } = useAuth();
+    const { httpAuthHeader } = useAuth();
     const router = useRouter();
 
     const [currentDetail, setCurrentDetail] = useState<CurrentDetail>(CurrentDetail.Birthday)
@@ -56,7 +56,6 @@ export default function Details() {
     function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Birthday ? prev - 1 : prev)); }
     
     function handleSubmit() {
-        console.log('here token', token, localStorage.getItem('jwt'))
         axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
             dateOfBirth: birthday,
             gender: GenderList[gender],
@@ -64,11 +63,7 @@ export default function Details() {
             bio: bio,
             tags: interests,
             pictures: photos
-        }, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-        }).then(res => {
+        }, httpAuthHeader).then(res => {
             console.log('details return', res.data);
             // TODO loading then reedirect (timeOut 1500 for example)
             window.location.reload();
