@@ -315,10 +315,9 @@ router.post(
         return res.status(401).send({ message: "Authentication failed." })
       }
 
-      const isMatch = userResult.rows[0]?.password ? await bcrypt.compare(
-        password,
-        userResult.rows[0].password,
-      ) : false
+      const isMatch = userResult.rows[0]?.password
+        ? await bcrypt.compare(password, userResult.rows[0].password)
+        : false
       if (!isMatch) {
         return res.status(401).send({ message: "Authentication failed." })
       }
@@ -384,5 +383,24 @@ router.post("/external-update-password", async (req, res) => {
     }
   }
 })
+
+/* Send a verification email to the currently authenticated user */
+router.get(
+  "/send-verification-email",
+  httpAuthenticateJWT,
+  async (req, res) => {
+    try {
+      sendVerificationEmail(req.user.id, req.user.email)
+      res.status(200).send({
+        message: "Email successfully sent.",
+      })
+    } catch (error) {
+      console.error("Database error:", error)
+      return res.status(500).send({
+        message: "An error occurred while sending verification email",
+      })
+    }
+  },
+)
 
 export default router
