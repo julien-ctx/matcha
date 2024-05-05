@@ -14,6 +14,10 @@ main {
     box-sizing: border-box;
 }
 
+img {
+    @apply pointer-events-none;
+}
+
 @layer utilities {
     .text-gradient-main {
       @apply bg-gradient-to-r-main text-transparent bg-clip-text;

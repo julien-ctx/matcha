@@ -82,7 +82,7 @@ export default function InteractionList({ isLike, toggleShow, setCurrentProfile 
                                     key={profile.id} 
                                     src={profile.pictures[0]} 
                                     alt="profile" 
-                                    className="w-full object-cover rounded-md border-2 border-red-200 pointer-events-none"
+                                    className="w-full object-cover rounded-md border-2 border-red-200"
                                     style={{
                                         aspectRatio: '9/16'
                                     }}

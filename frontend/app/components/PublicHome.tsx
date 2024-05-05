@@ -52,7 +52,7 @@ export default function PublicHome() {
                 <div className="w-full h-full" style={{ transform: `translateX(-${currentImageIndex * 100}%)`, transition: 'transform 1s ease-out' }}>
                     {images.map((src, index) => (
                         <div key={index} className="image-container absolute w-full h-full inset-0 " style={{ left: `${index * 100}%` }}>
-                            <img src={src} alt={`front ${index + 1}`} className=" w-full h-full object-cover pointer-events-none"  />
+                            <img src={src} alt={`front ${index + 1}`} className=" w-full h-full object-cover"  />
                         </div>
                     ))}
                 </div>

@@ -78,7 +78,7 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
                             key={index} 
                             src={img} 
                             alt={profile.first_name}
-                            className={`absolute w-full h-full object-cover duration-250 pointer-events-none ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
+                            className={`absolute w-full h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
                         />
                     ))}
                     <div className="text-white absolute bottom-0 p-2 explanationBox h-1/6 overflow-hidden w-full flex flex-col gap-2 justify-center">

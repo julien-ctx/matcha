@@ -120,7 +120,7 @@ export default function PrivateHeader() {
                     <input ref={menuToggleRef} className="hidden" id="menu-toggle" type="checkbox" />
                     <label className='menu-toggle duration-200 flex flex-wrap h-full w-full px-2 mr-4 ml-6 rounded-3xl cursor-pointer' htmlFor="menu-toggle">
                         <div className="flex items-center">
-                            <img className="w-14 h-14 object-cover rounded-full select-none pointer-events-none" src="/tchoupi.jpg" alt="profile" />
+                            <img className="w-14 h-14 object-cover rounded-full select-none" src="/tchoupi.jpg" alt="profile" />
                         </div>
                     </label>
                     <div className="menu-items">

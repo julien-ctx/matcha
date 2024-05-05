@@ -18,6 +18,7 @@ export default function Verify() {
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, { token: verificationToken })
         .then((response) => {
           setDisplayMessage("Successfully verified")
+          // TODO redirect to home page
         })
         .catch((error) => {
           setDisplayMessage(error?.response?.data?.message ?? "")

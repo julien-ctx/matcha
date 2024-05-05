@@ -12,6 +12,7 @@ import "./MySpace.css"
 import { useUI } from '../contexts/UIContext'
 import InteractionList from './InteractionList'
 import axios from 'axios'
+import Verify from './Verify'
 
 const testChat = [
     {
@@ -79,11 +80,12 @@ const testMatch = [
 enum SpaceState {
     LOADING,
     READY,
-    DETAIL
+    DETAIL,
+    VERIFY
 }
 
 export default function MySpace() {
-    const { token, user } = useAuth();
+    const { httpAuthHeader, user } = useAuth();
     const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList } = useUI();
     const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
 
@@ -94,15 +96,16 @@ export default function MySpace() {
     useEffect(() => {
         console.log('user', user)
         if (!user) return;
-        (!user?.date_of_birth) ? setSpaceState(SpaceState.DETAIL) : setSpaceState(SpaceState.READY);
+        if (!user.account_verified)
+            setSpaceState(SpaceState.VERIFY);
+        else if (!user?.date_of_birth)
+            setSpaceState(SpaceState.DETAIL)
+        else
+            setSpaceState(SpaceState.READY);
     }, [user])
 
     function fetchMatches() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/matches`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }).then(response => {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/matches`, httpAuthHeader).then(response => {
             console.log('matches', response.data)
             setMatchList(response.data)
         }).catch(error => {
@@ -111,10 +114,10 @@ export default function MySpace() {
     }
 
     useEffect(() => {
-        if (!token) return;
+        if (!httpAuthHeader) return;
 
         fetchMatches();
-    }, [token])
+    }, [httpAuthHeader])
 
     return spaceState === SpaceState.READY ? (
         <div className="w-full h-full flex fixed overflow-hidden">
@@ -145,13 +148,17 @@ export default function MySpace() {
             )}
             {currentProfile !== null && (
                 <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 flex justify-center slide-in-right">
-                    <Profile profile={currentProfile} matchList={matchList} setCurrentProfile={setCurrentProfile}/>
+                    <Profile profile={currentProfile} matchList={matchList} setMatchList={setMatchList} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
         </div>
     ) : spaceState === SpaceState.DETAIL ? (
         <div className="w-full h-full">
             <Details />
+        </div>
+    ) : spaceState === SpaceState.VERIFY ? (
+        <div className="w-full h-full flex justify-center">
+            <Verify />
         </div>
     ) : null
 }

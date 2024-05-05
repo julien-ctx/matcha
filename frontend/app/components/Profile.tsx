@@ -5,10 +5,12 @@ import { ProfileType } from './profileTypes'
 import './Profile.css'
 import Modal from './Modal';
 import { useAuth } from '../auth/AuthProvider';
+import axios from 'axios';
 
 interface ProfileProps {
     profile: ProfileType; 
     matchList: any[];
+    setMatchList: (matchList: any[]) => void;
     setCurrentProfile: (profile: ProfileType | null) => void; 
 }
 
@@ -41,10 +43,11 @@ const initialTestProfiles = [
     }
 ]
 
-export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
+export default function Profile({ profile, matchList, setMatchList, setCurrentProfile }: ProfileProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
     const [firstMessageModalOpen, setFirstMessageModalOpen] = useState<boolean>(false);
-    const { socket, user } = useAuth();
+    const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] = useState<boolean>(false);
+    const { socket, user, httpAuthHeader } = useAuth();
     const [message, setMessage] = useState<string>('');
 
     function prevImage() {
@@ -97,11 +100,20 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                         &gt;
                     </button>
 
-                    <button 
-                        onClick={() => setFirstMessageModalOpen(true)}
-                        className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90">
-                        <img className="w-9 h-9" src="/message.svg" alt="message" />
-                    </button>
+                    {matchList.find(match => match.id === profile.id) &&
+                        <div className="flex gap-2 absolute bottom-4 left-1/2 -translate-x-1/2">
+                            <button 
+                                onClick={() => setFirstMessageModalOpen(true)}
+                                className="bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90">
+                                <img className="w-9 h-9" src="/message.svg" alt="message" />
+                            </button>
+                            <button 
+                                onClick={() => setDeleteConfirmModalOpen(true)}
+                                className="bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90 justify-center items-center">
+                                <p className="font-mono text-3xl text-white w-9 h-9">X</p>
+                            </button>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -182,6 +194,37 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                             }}
                         >Send</button>
                     </form>
+                </div>
+            </Modal>
+                            
+            <Modal
+                isOpen={deleteConfirmModalOpen}
+                onClose={() => setDeleteConfirmModalOpen(false)}
+            >
+                <div className="w-full flex flex-col">
+                    <h1 className="text-3xl">Are you sure you want to delete this profile from match?</h1>
+                    <div className="flex gap-1">
+                        <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
+                            onClick={() => {
+                                // axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/unlike/${profile.id}`, httpAuthHeader)
+                                //     .then(response => {
+                                //         console.log(response.data)
+                                //         // setCurrentProfile(null);
+                                //     }).catch(error => {
+                                //         console.error(error)
+                                //     }
+                                // )
+                                
+                                // TODO en cas de reussite apres request
+                                setMatchList(matchList.filter(match => match.id !== profile.id));
+                                setDeleteConfirmModalOpen(false);
+                                setCurrentProfile(null);
+                            }}
+                        >Yes</button>
+                        <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
+                            onClick={() => setDeleteConfirmModalOpen(false)}
+                        >No</button>
+                    </div>
                 </div>
             </Modal>
         </div>
