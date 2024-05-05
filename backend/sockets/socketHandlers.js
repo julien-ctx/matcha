@@ -1,4 +1,5 @@
 import { socketAuthenticateJWT } from "../middleware/auth.js"
+import pool from "../database/db.js"
 
 /**
  * Update the user's online status in the database.
@@ -57,7 +58,7 @@ export function setupSocketEvents(io) {
           await pool.query("BEGIN")
 
           let chatroom = await pool.query(
-            `SELECT id FROM T_CHATROOM WHERE (user1_id = $1 AND user2_id = $2) OR (user1_id = $2 AND user2_id = $1);`,
+            `SELECT id FROM T_CHATROOM WHERE (user1_id = LEAST($1, $2) AND user2_id = GREATEST($1, $2));`,
             [senderId, recipientId],
           )
 
@@ -65,8 +66,8 @@ export function setupSocketEvents(io) {
 
           if (chatroom.rowCount === 0) {
             chatroom = await pool.query(
-              `INSERT INTO T_CHATROOM (user1_id, user2_id) VALUES ($1, $2) RETURNING id;`,
-              [LEAST(senderId, recipientId), GREATEST(senderId, recipientId)],
+              `INSERT INTO T_CHATROOM (user1_id, user2_id) VALUES (LEAST($1, $2), GREATEST($1, $2)) RETURNING id;`,
+              [senderId, recipientId],
             )
             isNewRoom = true
           }
@@ -80,23 +81,30 @@ export function setupSocketEvents(io) {
           }
 
           const result = await pool.query(
-            `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id;`,
+            `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id, sent_at;`,
             [chatroomId, senderId, content],
           )
-          const messageId = result.rows[0].id
+          const message = result.rows[0]
 
           await pool.query("COMMIT")
 
           io.to(chatroomId).emit("newMessage", {
-            messageId,
+            messageId: message.id,
             content,
             senderId,
             recipientId,
             chatroomId,
             isNewRoom,
+            sentAt: message.sent_at,
           })
 
-          callback({ success: true, messageId, chatroomId, isNewRoom })
+          callback({
+            success: true,
+            messageId: message.id,
+            chatroomId,
+            isNewRoom,
+            sentAt: message.sent_at,
+          })
         } catch (error) {
           await pool.query("ROLLBACK")
           console.error("Database error:", error)

@@ -30,10 +30,16 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likedId = req.params.userId
 
   try {
-    const query =
+    const likeQuery =
       "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
-    await pool.query(query, [likerId, likedId])
-    res.status(200).send({ message: "Profile like recorded" })
+    await pool.query(likeQuery, [likerId, likedId])
+    const matchQuery = `SELECT * FROM T_LIKE WHERE liked_id = $1 AND liker_id = $2`
+    const match = await pool.query(matchQuery, [likerId, likedId])
+    if (!match.rows.length) {
+      res.status(200).send({ message: "Profile like recorded", isMatch: false })
+    } else {
+      res.status(200).send({ message: "Match recorded", isMatch: true })
+    }
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to record profile like" })
@@ -300,6 +306,55 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
       message: "Failed to retrieve matches",
       error: error.message,
     })
+  }
+})
+
+/* Delete 2 rows corresponding to a match in T_LIKE */
+router.delete("/match", httpAuthenticateJWT, async (req, res) => {
+  const { firstUserId, secondUserId } = req.body
+
+  if (!firstUserId || !secondUserId) {
+    return res.status(400).send({ message: "Both user IDs must be provided." })
+  }
+
+  if (req.user.id !== firstUserId && req.user.id !== secondUserId) {
+    return res.status(401).send({ message: "Unauthorized operation." })
+  }
+
+  try {
+    await pool.query("BEGIN")
+
+    const matchCheckQuery = `
+      SELECT COUNT(*) FROM T_LIKE
+      WHERE (liker_id = $1 AND liked_id = $2) AND EXISTS (
+        SELECT 1 FROM T_LIKE WHERE liker_id = $2 AND liked_id = $1
+      );
+    `
+    const matchCheckResult = await pool.query(matchCheckQuery, [
+      firstUserId,
+      secondUserId,
+    ])
+    if (matchCheckResult.rows[0].count !== "1") {
+      await pool.query("ROLLBACK")
+      return res
+        .status(404)
+        .send({ message: "No mutual like (match) found to delete." })
+    }
+
+    const deleteMatchQuery = `
+      DELETE FROM T_LIKE
+      WHERE (liker_id = $1 AND liked_id = $2) OR (liker_id = $2 AND liked_id = $1);
+    `
+    await pool.query(deleteMatchQuery, [firstUserId, secondUserId])
+    await pool.query("COMMIT")
+
+    res.send({ message: "Match successfully deleted." })
+  } catch (error) {
+    await pool.query("ROLLBACK")
+    console.error("Database error during match deletion:", error)
+    res
+      .status(500)
+      .send({ message: "Failed to delete match", error: error.message })
   }
 })
 
