@@ -81,23 +81,30 @@ export function setupSocketEvents(io) {
           }
 
           const result = await pool.query(
-            `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id;`,
+            `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id, sent_at;`,
             [chatroomId, senderId, content],
           )
-          const messageId = result.rows[0].id
+          const message = result.rows[0]
 
           await pool.query("COMMIT")
 
           io.to(chatroomId).emit("newMessage", {
-            messageId,
+            messageId: message.id,
             content,
             senderId,
             recipientId,
             chatroomId,
             isNewRoom,
+            sentAt: message.sent_at,
           })
 
-          callback({ success: true, messageId, chatroomId, isNewRoom })
+          callback({
+            success: true,
+            messageId: message.id,
+            chatroomId,
+            isNewRoom,
+            sentAt: message.sent_at,
+          })
         } catch (error) {
           await pool.query("ROLLBACK")
           console.error("Database error:", error)
