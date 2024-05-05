@@ -309,6 +309,55 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
   }
 })
 
+/* Delete 2 rows corresponding to a match in T_LIKE */
+router.delete("/match", httpAuthenticateJWT, async (req, res) => {
+  const { firstUserId, secondUserId } = req.body
+
+  if (!firstUserId || !secondUserId) {
+    return res.status(400).send({ message: "Both user IDs must be provided." })
+  }
+
+  if (req.user.id !== firstUserId && req.user.id !== secondUserId) {
+    return res.status(401).send({ message: "Unauthorized operation." })
+  }
+
+  try {
+    await pool.query("BEGIN")
+
+    const matchCheckQuery = `
+      SELECT COUNT(*) FROM T_LIKE
+      WHERE (liker_id = $1 AND liked_id = $2) AND EXISTS (
+        SELECT 1 FROM T_LIKE WHERE liker_id = $2 AND liked_id = $1
+      );
+    `
+    const matchCheckResult = await pool.query(matchCheckQuery, [
+      firstUserId,
+      secondUserId,
+    ])
+    if (matchCheckResult.rows[0].count !== "1") {
+      await pool.query("ROLLBACK")
+      return res
+        .status(404)
+        .send({ message: "No mutual like (match) found to delete." })
+    }
+
+    const deleteMatchQuery = `
+      DELETE FROM T_LIKE
+      WHERE (liker_id = $1 AND liked_id = $2) OR (liker_id = $2 AND liked_id = $1);
+    `
+    await pool.query(deleteMatchQuery, [firstUserId, secondUserId])
+    await pool.query("COMMIT")
+
+    res.send({ message: "Match successfully deleted." })
+  } catch (error) {
+    await pool.query("ROLLBACK")
+    console.error("Database error during match deletion:", error)
+    res
+      .status(500)
+      .send({ message: "Failed to delete match", error: error.message })
+  }
+})
+
 /* Retrieve all chatrooms for the currently authenticated user with messages. */
 router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
