@@ -22,6 +22,7 @@ DECLARE
     random_longitude DOUBLE PRECISION;
     candidate_tag tag;
     picture_options TEXT[] := ARRAY['danielle1.jpeg', 'danielle2.jpeg', 'wonyoung1.jpeg', 'wonyoung2.jpeg'];
+    is_premium BOOLEAN;
 BEGIN
     FOR i IN 1..500 LOOP
         num_tags := (random() * 5 + 1)::int;
@@ -51,6 +52,8 @@ BEGIN
         random_latitude := (random() * (51 - 42) + 42)::DOUBLE PRECISION;
         random_longitude := (random() * (8 - (-5)) - 5)::DOUBLE PRECISION;
 
+        is_premium := (random() < 0.2);
+
         INSERT INTO T_USER (
             email,
             username,
@@ -72,7 +75,8 @@ BEGIN
             city,
             country,
             pictures,
-            registration_method
+            registration_method,
+            is_premium
         ) VALUES (
             'user' || i || '@example.com',
             'user' || i,
@@ -94,7 +98,8 @@ BEGIN
             'Paris',
             'France',
             random_pictures,
-            'Default'
+            'Default',
+            is_premium
         );
     END LOOP;
 END $$;

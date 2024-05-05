@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS T_USER (
     longitude DECIMAL(9,6),
     city VARCHAR(50),
     country VARCHAR(50),
-    registration_method registration_method
+    registration_method registration_method,
+    is_premium BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS T_VIEW (

@@ -30,6 +30,24 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likedId = req.params.userId
 
   try {
+    const userQuery = "SELECT is_premium FROM T_USER WHERE id = $1"
+    const userResult = await pool.query(userQuery, [likerId])
+    if (userResult.rowCount === 0 || !userResult.rows[0].is_premium) {
+      const likeCountQuery = `
+        SELECT COUNT(*) AS like_count
+        FROM T_LIKE
+        WHERE liker_id = $1
+        AND liked_at > CURRENT_TIMESTAMP - INTERVAL '24 hours';
+      `
+      const likeCountResult = await pool.query(likeCountQuery, [likerId])
+      if (parseInt(likeCountResult.rows[0].like_count, 10) >= 20) {
+        return res.status(403).json({
+          message:
+            "Like limit reached. Upgrade to premium for unlimited likes.",
+        })
+      }
+    }
+
     const likeQuery =
       "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
     await pool.query(likeQuery, [likerId, likedId])
