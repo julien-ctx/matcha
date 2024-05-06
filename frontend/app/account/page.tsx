@@ -31,6 +31,8 @@ export default function Account() {
   const [gender, setGender] = useState<Gender | null>(null);
   const [orientation, setOrientation] = useState<Orientation | null>(null);
   const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
+  const [tags, setTags] = useState([]);
 
 
   const [passwordFormData, setPasswordFormData] = useState({

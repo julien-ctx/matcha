@@ -124,12 +124,14 @@ router.put("/details", httpAuthenticateJWT, upload.array('pictures'), async (req
     }
   
     // new way to handle pictures
-    const fileNames = req.files.map(file => file.path);
-    if (fileNames.length > 0) {
-      updates.push(`pictures = $${paramIndex++}`);
-      values.push(`{${fileNames.join(",")}}`);
+    if (req.files && req.files.length > 0) {
+      const fileNames = req.files.map(file => file.path);
+      if (fileNames.length > 0) {
+        updates.push(`pictures = $${paramIndex++}`);
+        values.push(`{${fileNames.join(",")}}`);
+      }
     }
-
+    
     if (lastLogin) {
       updates.push(`last_login = $${paramIndex++}`)
       values.push(lastLogin)

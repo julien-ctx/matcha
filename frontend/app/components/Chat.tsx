@@ -9,8 +9,6 @@ interface ChatRoomProp {
     setCurrentProfile: (profile: any) => void
 }
 
-const currentUserId = 42;
-
 export default function Chat({ rooms, matchList, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
     const { user } = useAuth();
     
@@ -23,7 +21,7 @@ export default function Chat({ rooms, matchList, setCurrentRoom, setCurrentProfi
                     <h1 className="bg-gradient-to-r-main text-transparent bg-clip-text px-4 py-3 text-3xl">Your messages</h1>
                     <ul className="flex flex-col ">
                         {rooms.map(room => {
-                            const otherUser = room.users.find(u => u.id !== currentUserId);
+                            const otherUser = room.users.find(u => u.id !== user.id);
                             const lastMessage = room.messages[room.messages.length - 1];
 
                             return (

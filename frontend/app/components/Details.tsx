@@ -185,10 +185,6 @@ export default function Details() {
         <div className="relative w-full h-full bg-white flex items-center justify-center flex-col fadeInAnimation"
         >
             <div className="relative w-3/5 max-h-full h-2/3 flex justify-center items-center">
-                {/* <p className="absolute top-0 left-3 text-2xl text-black font-yarndings12">adehijlmnqSTadehijlmnq</p>
-                <p className="rotate-90 -translate-x-1/2 translate-y-32 absolute top-2 left-2 text-2xl text-black font-yarndings12">adehijlmnqSTa</p>
-                <p className="absolute bottom-2 left-2 text-2xl text-black font-yarndings12">adehijlmnqSTadehijlmnq</p> */}
-                {/* <div className="bg-red-200 w-full absolute top-0 left-0">l</div> */}
                 {currentDetail === CurrentDetail.Birthday && <div className="flex flex-col items-center">
                         <h1 className="detail-title mb-8">When were you born?</h1>
                         <input
@@ -196,7 +192,7 @@ export default function Details() {
                             className="text-2xl"
                             value={birthday ? birthday.toISOString().split('T')[0] : ''}
                             onChange={(e) => setBirthday(new Date(e.target.value))}
-                            max={new Date().toISOString().split('T')[0]}
+                            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                         />
                     </div>
                 }

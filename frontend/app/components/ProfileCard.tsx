@@ -5,6 +5,7 @@ import { ProfileType } from './profileTypes';
 import axios from 'axios';
 import './ProfileCard.css';
 import { useAuth } from '../auth/AuthProvider';
+import { calculAge } from '../utils';
 
 interface Props {
     profile: ProfileType,
@@ -82,7 +83,7 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
                         />
                     ))}
                     <div className="text-white absolute bottom-0 p-2 explanationBox h-1/6 overflow-hidden w-full flex flex-col gap-2 justify-center">
-                        <h1 className="text-2xl font-semibold text-ellipsis px-1 w-4/5">{profile.first_name}, {profile.age}, {Math.round(profile.distance)}km</h1>
+                        <h1 className="text-2xl font-semibold text-ellipsis px-1 w-4/5">{profile.first_name}, {calculAge(profile.date_of_birth)}, {Math.round(profile.distance)}km</h1>
                     </div>
                 </div>
                 <button
