@@ -8,22 +8,6 @@ import { useRouter } from "next/navigation"
 import './account.css'
 import { calculAge, capitalize } from "../utils"
 
-const enum Gender {
-  Male,
-  Female,
-  Other
-}
-
-const enum Orientation {
-  Male,
-  Female,
-  Both,
-  Other
-}
-
-const GenderList = ['Male', 'Female', 'Other'] //TODO make it simpler
-const OrientationList = ['Male', 'Female', 'Both', 'Other']
-
 const tagsList = [
   'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
   'musician', 'foodie', 'gamer', 'nature lover', 'fitness enthusiast',
@@ -54,14 +38,12 @@ export default function Account() {
 
   useEffect(() => {
     if (!user) return;
-    console.log('allo', user)
-    setProfilePhotos(user.pictures.map(url => ({ url, file: null })));
+    setProfilePhotos(user.pictures.map(url => ({ url: `${process.env.NEXT_PUBLIC_API_URL}/${url}`, file: null })));
     setGender(user.gender);
     setOrientation(user.sexual_orientation);
     setEmail(user.email);
     setBio(user.bio);
     setTags(user.tags);
-    
   }, [user])
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -99,34 +81,44 @@ export default function Account() {
   }
 
   function handlePhotoChange(event) {
-    const newPhotos = Array.from(event.target.files).slice(0, 6 - profilePhotos.length);
+    const newPhotos = Array.from(event.target.files).slice(0, 6 - profilePhotos.length); // Get new files from the input
     const validPhotos = newPhotos.filter(file => {
         const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
         const maxSize = 5 * 1024 * 1024; // 5MB max size
         return validTypes.includes(file.type) && file.size <= maxSize;
     });
+
     if (validPhotos.length !== newPhotos.length) {
         alert("Some files were omitted due to size or type constraints.");
     }
-    console.log('allo', validPhotos)
-    setProfilePhotos(prev => [...prev, ...validPhotos]);
-    console.log(profilePhotos);
-};
 
-  const removePhoto = index => {
-    if (index === 0) return ;
-    if (photo.file === null) {
-      setRemovedPhotos(prev => [...prev, photo.url]); // Track URL for server-side deletion
+    // Create a new array with objects containing both the file and a URL for each file
+    const photoObjects = validPhotos.map(file => ({
+        url: URL.createObjectURL(file), // Generate a URL for preview
+        file: file  // Keep the file for upload
+    }));
+
+    console.log('allo', photoObjects )
+
+    // Update the profilePhotos state by adding new photo objects
+    setProfilePhotos(prev => [...prev, ...photoObjects]);
+  };
+
+  function removePhoto(index) {
+    if (profilePhotos.length === 1) return ;
+    if (profilePhotos[index].file === null) {
+      const imagePath = profilePhotos[index].url.slice(process.env.NEXT_PUBLIC_API_URL.length + 1);
+      setRemovedPhotos(prev => [...prev, imagePath]); // Track URL for server-side deletion
     } 
     setProfilePhotos(profilePhotos.filter((_, i) => i !== index));
-  };
+  }
 
   const orientationOptions = [
     { id: 'male', value: 'Male', label: 'Male' },
     { id: 'female', value: 'Female', label: 'Female' },
     { id: 'both', value: 'Both', label: 'Both' },
     { id: 'other', value: 'Other', label: 'Other' }
-];
+  ];
 
 const renderOrientationOption = (option) => (
     <>
@@ -180,7 +172,7 @@ const renderGenderOption = (option) => (
                     <div key={`photobox-${index}`} className={`photo-grid-item ${index === 0 ? 'large' : ''}`}>
                         {profilePhotos[index] ? (
                             <>
-                                <img src={`${process.env.NEXT_PUBLIC_API_URL}/${profilePhotos[index].url}`} alt={`Photo ${index}`} />
+                                <img src={`${profilePhotos[index].url}`} alt={`Photo ${index}`} />
                                 <button onClick={() => removePhoto(index)} className="photo-remove">X</button>
                             </>
                         ) : (
@@ -204,17 +196,30 @@ const renderGenderOption = (option) => (
 
                   const formData = new FormData();
     
-                  profilePhotos.forEach(photo => {
-                      formData.append('photos', photo);
+                  profilePhotos.forEach((photo, index) => {
+                    console.log('fileinfo', photo.file)
+                    if (photo.file) {
+                        formData.append('new_photos', photo.file); // Append each photo file
+                    }
                   });
-              
-                  axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/photos`, formData, {
+
+                  const pictures = profilePhotos.map(photo => ({
+                    url: photo.file ? null : photo.url.slice(process.env.NEXT_PUBLIC_API_URL.length + 1),
+                    filename: photo.file ? photo.file.name : null,
+                  }));
+                  console.log(pictures)
+                  formData.append('pictures', JSON.stringify(pictures));
+                  formData.append('removedPictures', JSON.stringify(removedPhotos));
+
+        
+                  axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/update-photos`, formData, {
                       headers: {
                           Authorization: `Bearer ${token}`,
                           'Content-Type': 'multipart/form-data'
                       }
                   }).then(response => {
                       console.log(response.data);
+                      window.location.reload();
                   }).catch(error => {
                       console.error(error);
                   });

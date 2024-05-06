@@ -11,6 +11,7 @@ import { httpAuthenticateJWT } from "../middleware/auth.js"
 import { sendVerificationEmail } from "../queries/auth.js"
 import jwt from "jsonwebtoken"
 import multer from 'multer';
+import fs from 'fs/promises';
 
 dotenv.config({ path: "../../.env" })
 
@@ -404,5 +405,40 @@ router.post("/filter", httpAuthenticateJWT, async (req, res) => {
     })
   }
 })
+
+/* Update profile photos of the user */
+router.put("/update-photos", httpAuthenticateJWT, upload.array('new_photos'), async (req, res) => {
+  const files = req.files;
+  const userId = req.user.id;
+  const pictures = JSON.parse(req.body.pictures);
+  const removedPictures = req.body.removedPictures ? JSON.parse(req.body.removedPictures) : null;
+
+  try {
+    const updatedPictures = pictures.map(photo => {
+      if (photo.filename) {
+        return files.find(f => f.originalname === photo.filename).path;
+      } else if (photo.url) {
+        return photo.url;
+      }
+    }).filter(p => p);
+    const query = `
+      UPDATE T_USER SET
+      pictures = $1::text[]
+      WHERE id = $2
+      RETURNING id, pictures;
+    `;
+    await pool.query(query, [updatedPictures, userId]);
+
+    if (removedPictures) {
+      for (const picturePath of removedPictures)
+        await fs.unlink(picturePath);
+    }
+
+    res.send({ message: "Photos updated successfully" });
+  } catch (error) {
+    console.error("Database error:", error)
+    res.sendStatus(500)
+  }
+});
 
 export default router
