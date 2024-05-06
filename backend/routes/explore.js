@@ -43,15 +43,15 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
   }
 
   if (ageMax < ageMin) {
-    return res.status(400).send({
-      message: "ageMax cannot be less than ageMin",
-    })
+    return res
+      .status(400)
+      .send({ message: "ageMax cannot be less than ageMin" })
   }
 
   if (maxFameRating < minFameRating) {
-    return res.status(400).send({
-      message: "ageMax cannot be less than ageMin",
-    })
+    return res
+      .status(400)
+      .send({ message: "maxFameRating cannot be less than minFameRating" })
   }
 
   const offset = getOffset(page, limit)
@@ -66,10 +66,14 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
 
     const { latitude, longitude, sexual_orientation, gender } =
       currentUser.rows[0]
-
     const sexualPreferences = getSexualPreferences(sexual_orientation, gender)
 
-    let conditions = `id != $1 AND (${sexualPreferences})`
+    let conditions = `
+      id != $1 AND (${sexualPreferences}) AND
+      id NOT IN (SELECT liked_id FROM T_LIKE WHERE liker_id = $1)
+      AND id NOT IN (SELECT reported_id FROM T_REPORT WHERE reporter_id = $1)
+      AND id NOT IN (SELECT blocked_id FROM T_BLOCK WHERE blocker_id = $1)
+    `
     let params = [userId]
     let paramCount = 2
 
@@ -105,28 +109,10 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
     }
 
     const baseQuery = `
-    SELECT
-      id,
-      email,
-      username,
-      first_name,
-      last_name,
-      gender,
-      sexual_orientation,
-      bio,
-      array_to_json(tags) AS tags,
-      pictures,
-      fame_rating,
-      last_login,
-      is_online,
-      account_verified,
-      created_at,
-      updated_at,
-      date_of_birth,
-      latitude,
-      longitude,
-      city,
-      country
+      SELECT
+        id, email, username, first_name, last_name, gender, sexual_orientation, bio,
+        array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online,
+        account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
       FROM T_USER
       WHERE ${conditions}
       ${getOrderClause(sortBy, orderBy, latitude, longitude)}
@@ -135,15 +121,17 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
     params.push(limit, offset)
 
     const suggestions = await pool.query(baseQuery, params)
-
-    const suggestionsWithDistance = suggestions.rows.map(user => {
-      const distance = getDistance(latitude, longitude, user.latitude, user.longitude);
-      return {
+    res.json(
+      suggestions.rows.map((user) => ({
         ...user,
-        distance
-      };
-    });
-    res.json(suggestionsWithDistance);
+        distance: getDistance(
+          latitude,
+          longitude,
+          user.latitude,
+          user.longitude,
+        ),
+      })),
+    )
   } catch (err) {
     console.error("Error fetching suggestions:", err)
     res.status(500).json({ message: "Error fetching profile suggestions" })
