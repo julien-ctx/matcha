@@ -12,7 +12,7 @@ const enum CurrentDetail {
     Orientation,
     Photos,
     Bio,
-    Interests
+    Tags
 }
 
 const enum Gender {
@@ -32,7 +32,7 @@ const enum Orientation {
 
 const OrientationList = ['Male', 'Female', 'Both', 'Other']
 
-const interestsList = [
+const tagsList = [
     'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
     'musician', 'foodie', 'gamer', 'nature lover', 'fitness enthusiast',
     'traveler', 'bookworm', 'movie buff', 'science nerd', 'fashionista',
@@ -50,9 +50,9 @@ export default function Details() {
     const [orientation, setOrientation] = useState<Orientation | null>(null);
     const [photos, setPhotos] = useState<any>([]); // TODO type set
     const [bio, setBio] = useState<string>('');
-    const [interests, setInterests] = useState<string[]>([]);
+    const [tags, setTags] = useState<string[]>([]);
 
-    function nextDetail() { setCurrentDetail((prev) => (prev < CurrentDetail.Interests ? prev + 1 : prev)); }
+    function nextDetail() { setCurrentDetail((prev) => (prev < CurrentDetail.Tags ? prev + 1 : prev)); }
     function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Birthday ? prev - 1 : prev)); }
     
     function handleSubmit() {
@@ -62,7 +62,7 @@ export default function Details() {
         formData.append('gender', GenderList[gender]);
         formData.append('sexualOrientation', OrientationList[orientation]);
         formData.append('bio', bio);
-        formData.append('tags', interests.join(','));
+        formData.append('tags', tags.join(','));
         
         photos.forEach((photo, index) => {
             formData.append(`pictures`, photo, `photo${index}.jpg`);
@@ -105,11 +105,11 @@ export default function Details() {
         setPhotos(photos.filter((_, i) => i !== index));
     };
 
-    function handleInterestChange(interest: string) : void {
-        if (interests.includes(interest)) {
-          setInterests(interests.filter(i => i !== interest));
-        } else if (interests.length < 10) {
-          setInterests([...interests, interest]);
+    function handleTagChange(tag: string) : void {
+        if (tags.includes(tag)) {
+          setTags(tags.filter(i => i !== tag));
+        } else if (tags.length < 10) {
+          setTags([...tags, tag]);
         }
       };
 
@@ -125,15 +125,15 @@ export default function Details() {
                 return photos.length > 0;
             case CurrentDetail.Bio:
                 return bio.trim().length > 0;
-            case CurrentDetail.Interests:
-                return interests.length > 0;
+            case CurrentDetail.Tags:
+                return tags.length > 0;
             default:
                 return false;
         }
     };
 
     const isFirstDetail = currentDetail === CurrentDetail.Birthday;
-    const isLastDetail = currentDetail === CurrentDetail.Interests;
+    const isLastDetail = currentDetail === CurrentDetail.Tags;
 
 
     const orientationOptions = [
@@ -248,20 +248,20 @@ export default function Details() {
                         <p className="absolute right-2 text-slate-400" style={{bottom: "10%"}}>{bio.length} / 500</p>
                     </div>
                 </div>}
-                {currentDetail === CurrentDetail.Interests && <div className="w-full h-4/5 flex flex-col items-center justify-center">
+                {currentDetail === CurrentDetail.Tags && <div className="w-full h-4/5 flex flex-col items-center justify-center">
                     <h2 className="detail-title">Tags</h2>
                     <div className="flex flex-wrap gap-1 w-full h-full justify-center items-center gap-y-5 content-center">
-                        {interestsList.map(interest => (
-                            <div key={interest}>
+                        {tagsList.map(tag => (
+                            <div key={tag}>
                                 <input
                                     type="checkbox"
-                                    id={`interest-${interest}`}
+                                    id={`tag-${tag}`}
                                     className="checkbox-input"
-                                    checked={interests.includes(interest)}
-                                    onChange={() => handleInterestChange(interest)}
+                                    checked={tags.includes(tag)}
+                                    onChange={() => handleTagChange(tag)}
                                 />
-                                <label htmlFor={`interest-${interest}`} className="checkbox-label px-2 rounded-xl">
-                                #{interest}
+                                <label htmlFor={`tag-${tag}`} className="checkbox-label px-2 rounded-xl">
+                                #{tag}
                                 </label>
                             </div>
                         ))}

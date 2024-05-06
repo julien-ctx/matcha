@@ -128,12 +128,12 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                     <div key={tag}>
                         <input
                             type="checkbox"
-                            id={`interest-${tag}`}
+                            id={`tag-${tag}`}
                             className="checkbox-input"
                             checked={tagsList.includes(tag)}
                             onChange={() => handleTagChange(tag)}
                         />
-                        <label htmlFor={`interest-${tag}`} className="checkbox-label px-1 text-sm rounded-lg">
+                        <label htmlFor={`tag-${tag}`} className="checkbox-label px-1 text-sm rounded-lg">
                         #{tag}
                         </label>
                     </div>

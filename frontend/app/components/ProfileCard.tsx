@@ -19,7 +19,6 @@ const initialTestProfiles = [
         age: 20,
         bio: 'je cherche un plan chaud',
         fameRating: 3,
-        interests: ["Gaming", "Reading", "Coding"],
         distance: 10,
         pictures: [
             "/danielle1.jpeg",
@@ -31,7 +30,6 @@ const initialTestProfiles = [
         age: 20,
         bio: 'je cherche un plan serieux',
         fameRating: 4,
-        interests: ["Gaming", "Reading", "Coding"],
         distance: 20,
         pictures: [
             "/wonyoung1.jpeg",

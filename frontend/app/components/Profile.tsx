@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProfileType } from './profileTypes'
 import './Profile.css'
 import Modal from './Modal';
 import { useAuth } from '../auth/AuthProvider';
 import axios from 'axios';
+import { calculAge } from '../utils';
 
 interface ProfileProps {
     profile: ProfileType; 
@@ -21,7 +22,6 @@ const initialTestProfiles = [
         age: 20,
         bio: 'je cherche un plan chaud',
         fameRating: 3,
-        interests: ["Gaming", "Reading", "Coding"],
         distance: 10,
         pictures: [
             "/danielle1.jpeg",
@@ -33,7 +33,6 @@ const initialTestProfiles = [
         age: 20,
         bio: 'je cherche un plan serieux',
         fameRating: 4,
-        interests: ["Gaming", "Reading", "Coding"],
         distance: 20,
         pictures: [
             "/wonyoung1.jpeg",
@@ -49,6 +48,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] = useState<boolean>(false);
     const { socket, user, httpAuthHeader } = useAuth();
     const [message, setMessage] = useState<string>('');
+
 
     function prevImage() {
         if (currentImageIndex === 0) return;
@@ -126,7 +126,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                         </div>
                         <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Age</h1>
-                            {profile.age} TODO
+                            {calculAge(profile.date_of_birth)}
                         </div>
                         <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Status</h1>
@@ -143,7 +143,12 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                     <div className="flex h-32 gap-1 w-full">
                         <div className="infoBox w-3/5 h-full">
                             <h1 className="infoTitle">Fame Rating</h1>
-                            {profile.fame_rating} // TODO
+                            <div className="flex w-full">
+                            {[...Array(5)].map((_, i) => {
+                                const imagePath = i <= profile.fame_rating % 20 + 1 ? "/star_color.svg" : "/star_gray.svg";
+                                return <img className="w-1/5" key={i} src={imagePath} alt={i < profile.fame_rating ? "Color Star" : "Gray Star"} />;
+                            })}
+                            </div>
                         </div>
                         <div className="flex flex-col w-2/5 h-full gap-1 items-center justify-center">
                             <div className="infoBox-2 w-full">
@@ -159,9 +164,9 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                     <div className="flex h-24 w-full border-4 relative rounded-md">
                         <h1 className="infoTitle">tags</h1>
                         <div className="flex flex-wrap gap-2 ">
-                            {/* {profile.tags.map((interest, index) => (
+                            {/* {profile.tags.map((tag, index) => (
                                 <div key={index} className="bg-gradient-to-r-main rounded-full p-2 text-white">
-                                    {interest}
+                                    {tag}
                                 </div>
                             ))} */}
                         </div>
@@ -206,7 +211,9 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                     <div className="flex gap-1">
                         <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
                             onClick={() => {
-                                // axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/unlike/${profile.id}`, httpAuthHeader)
+                                // axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/match/`, {
+                                    
+                                // }, httpAuthHeader)
                                 //     .then(response => {
                                 //         console.log(response.data)
                                 //         // setCurrentProfile(null);

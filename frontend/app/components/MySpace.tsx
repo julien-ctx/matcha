@@ -14,69 +14,6 @@ import InteractionList from './InteractionList'
 import axios from 'axios'
 import Verify from './Verify'
 
-const testChat = [
-    {
-        id: 1,
-        users: [
-            {
-                id: 42,
-                name: "Toto",
-                img: "/toto.jpg"
-            }, {
-                id: 99,
-                name: "Michelle",
-                img: "/girl.jpeg"
-            }
-        ],
-        messages: [
-            {
-                id: 1,
-                content: "Salut",
-                senderId: 7,
-                receiverId: 42
-            }, {
-                id: 2,
-                content: "Tu fais quoi ce soir?",
-                senderId: 7,
-                receiverId: 42
-            }
-        ]
-    }, {
-        id: 2,
-        users: [
-            {
-                id: 42,
-                name: "Toto",
-                img: "/toto.jpg"
-            }, {
-                id: 11,
-                name: "Léna",
-                img: "/lena.png"
-            }
-        ],
-        messages: [
-            {
-                id: 405,
-                content: 'asodijaisodjaosdjioasdjiosioadoiasdoajoidjadasdsadsasadadasdasd',
-                senderId: 7,
-                receiverId: 42
-            }
-        ]
-    }
-]
-
-const testMatch = [
-    {
-        id: 7,
-        name: "Bingo",
-        img: "/bingo.png"
-    }, {
-        id: 89,
-        name: "Nana",
-        img: "/nana.png"
-    }
-]
-
 enum SpaceState {
     LOADING,
     READY,
@@ -92,6 +29,7 @@ export default function MySpace() {
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
     const [matchList, setMatchList] = useState<any[]>([]);
+    const [chatRoomList, setChatRoomList] = useState<any[]>([]);
 
     useEffect(() => {
         console.log('user', user)
@@ -114,16 +52,26 @@ export default function MySpace() {
         })
     }
 
+    function fetchChatRooms() {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/chatrooms`, httpAuthHeader).then(response => {
+            console.log('chats', response.data)
+            setChatRoomList(response.data)
+        }).catch(error => {
+            console.error(error)
+        })
+    }
+
     useEffect(() => {
         if (!user) return;
 
         fetchMatches();
+        fetchChatRooms();
     }, [user])
 
     return spaceState === SpaceState.READY ? (
         <div className="w-full h-full flex fixed overflow-hidden">
             <div className="w-1/4 relative">
-                <Chat rooms={testChat} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+                <Chat rooms={chatRoomList} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             </div>
             <div className="w-3/4 relative">
                 <Match setCurrentProfile={setCurrentProfile} />

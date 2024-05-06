@@ -2,59 +2,19 @@ import './PrivateHeader.css';
 import { useAuth } from '../auth/AuthProvider';
 import axios from 'axios';
 import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useUI } from '../contexts/UIContext';
 import InteractionPopup from '../components/InteractionPopup';
 import { useSocial } from '../contexts/SocialContext';
-
-const likesTest = [
-    {
-        id: 1,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 2,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 3,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 4,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 5,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 6,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 7,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 8,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 9,
-        pictures: ['/bingo.png']
-    },
-    {
-        id: 10,
-        pictures: ['/bingo.png']
-    }
-]
 
 export default function PrivateHeader() {
     const { logout, user } = useAuth();
     const { toggleLikesList, toggleVisitsList } = useUI();
     const router = useRouter();
     const {visits, likes} = useSocial();
+    const pathname = usePathname()
+
+    console.log('pathname', pathname)
 
     const menuToggleRef = useRef(null);
     const accountBtnRef = useRef(null);
@@ -87,7 +47,12 @@ export default function PrivateHeader() {
 
     return (
         <div className="w-full h-full bg-gradient-to-r-main">
-            <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => window.location.reload()}>Matcha</h1>
+            <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => {
+                if (pathname === '/')
+                    window.location.reload();
+                else
+                    router.push('/');
+            }}>Matcha</h1>
 
             {
                 user?.date_of_birth &&
@@ -110,7 +75,7 @@ export default function PrivateHeader() {
                             y
                         </button>
                         <div className="popup-content">
-                            <InteractionPopup typeStr="Like" profiles={likesTest} onClick={() => {
+                            <InteractionPopup typeStr="Like" profiles={likes} onClick={() => {
                                 toggleLikesList(true);
                                 const activeElement = document.activeElement;
                                 if (likeListRef.current && likeListRef.current.contains(activeElement))

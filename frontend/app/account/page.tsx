@@ -6,14 +6,13 @@ import { AuthStatus } from "../auth/authTypes"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import './account.css'
+import { calculAge, capitalize } from "../utils"
 
 const enum Gender {
   Male,
   Female,
   Other
 }
-
-const GenderList = ['Male', 'Female', 'Other'] //TODO make it simpler
 
 const enum Orientation {
   Male,
@@ -22,18 +21,26 @@ const enum Orientation {
   Other
 }
 
+const GenderList = ['Male', 'Female', 'Other'] //TODO make it simpler
 const OrientationList = ['Male', 'Female', 'Both', 'Other']
 
+const tagsList = [
+  'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
+  'musician', 'foodie', 'gamer', 'nature lover', 'fitness enthusiast',
+  'traveler', 'bookworm', 'movie buff', 'science nerd', 'fashionista',
+  'social butterfly', 'homebody', 'pet lover', 'diy enthusiast'
+]
+
 export default function Account() {
-  const { authStatus, user } = useAuth()
+  const { authStatus, user, token, httpAuthHeader } = useAuth()
   const router = useRouter()
   const [profilePhotos, setProfilePhotos] = useState([])
-  const [gender, setGender] = useState<Gender | null>(null);
-  const [orientation, setOrientation] = useState<Orientation | null>(null);
+  const [removedPhotos, setRemovedPhotos] = useState([]);
+  const [gender, setGender] = useState<string | null>(null);
+  const [orientation, setOrientation] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
   const [tags, setTags] = useState([]);
-
 
   const [passwordFormData, setPasswordFormData] = useState({
     firstPassword: "",
@@ -48,10 +55,12 @@ export default function Account() {
   useEffect(() => {
     if (!user) return;
     console.log('allo', user)
-    setProfilePhotos(user.pictures);
+    setProfilePhotos(user.pictures.map(url => ({ url, file: null })));
     setGender(user.gender);
     setOrientation(user.sexual_orientation);
     setEmail(user.email);
+    setBio(user.bio);
+    setTags(user.tags);
     
   }, [user])
 
@@ -62,6 +71,15 @@ export default function Account() {
       [name]: value,
     }))
   }
+
+  function handleTagChange(tag: string) : void {
+    if (tags.includes(tag)) {
+      setTags(tags.filter(i => i !== tag));
+    } else if (tags.length < 10) {
+      setTags([...tags, tag]);
+    }
+  };
+
 
   const handlePasswordSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
@@ -80,9 +98,8 @@ export default function Account() {
       })
   }
 
-
   function handlePhotoChange(event) {
-    const newPhotos = Array.from(event.target.files).slice(0, 6 - photos.length); // Ensure not to exceed six photos
+    const newPhotos = Array.from(event.target.files).slice(0, 6 - profilePhotos.length);
     const validPhotos = newPhotos.filter(file => {
         const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
         const maxSize = 5 * 1024 * 1024; // 5MB max size
@@ -91,23 +108,17 @@ export default function Account() {
     if (validPhotos.length !== newPhotos.length) {
         alert("Some files were omitted due to size or type constraints.");
     }
+    console.log('allo', validPhotos)
     setProfilePhotos(prev => [...prev, ...validPhotos]);
+    console.log(profilePhotos);
 };
 
   const removePhoto = index => {
+    if (index === 0) return ;
+    if (photo.file === null) {
+      setRemovedPhotos(prev => [...prev, photo.url]); // Track URL for server-side deletion
+    } 
     setProfilePhotos(profilePhotos.filter((_, i) => i !== index));
-  };
-
-
-  const handleSaveChanges = async () => {
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-profile`, formData);
-      // Update successful
-      alert("Profile updated successfully!");
-    } catch (error) {
-      // Handle errors here, such as displaying a notification
-      alert("Failed to update profile.");
-    }
   };
 
   const orientationOptions = [
@@ -166,10 +177,10 @@ const renderGenderOption = (option) => (
               <h1 className="text-4xl">Profile Photos</h1>
               <div className="photo-grid bg-gradient-to-r-main p-2">
                 {Array.from({ length: 6 }).map((_, index) => (
-                    <div key={index} className={`photo-grid-item ${index === 0 ? 'large' : ''}`}>
+                    <div key={`photobox-${index}`} className={`photo-grid-item ${index === 0 ? 'large' : ''}`}>
                         {profilePhotos[index] ? (
                             <>
-                                <img src={`${process.env.NEXT_PUBLIC_API_URL}/${profilePhotos[index]}`} alt={`Photo ${index}`} />
+                                <img src={`${process.env.NEXT_PUBLIC_API_URL}/${profilePhotos[index].url}`} alt={`Photo ${index}`} />
                                 <button onClick={() => removePhoto(index)} className="photo-remove">X</button>
                             </>
                         ) : (
@@ -187,21 +198,96 @@ const renderGenderOption = (option) => (
                     </div>
                 ))}
               </div>
-              <button className="save-btn">Save</button>
+              <button className="save-btn"
+                onClick={() => {
+                  // TODO : remove photos from the server
+
+                  const formData = new FormData();
+    
+                  profilePhotos.forEach(photo => {
+                      formData.append('photos', photo);
+                  });
+              
+                  axios.post(`${process.env.NEXT_PUBLIC_API_URL}/users/photos`, formData, {
+                      headers: {
+                          Authorization: `Bearer ${token}`,
+                          'Content-Type': 'multipart/form-data'
+                      }
+                  }).then(response => {
+                      console.log(response.data);
+                  }).catch(error => {
+                      console.error(error);
+                  });
+                }}
+              
+              >Save</button>
       
             </div>
             <div className="section">
               <h1 className="text-4xl">About You</h1>
               <div className="flex flex-col gap-2 items-center w-full">
+                <label className="text-2xl">Your Name</label>
+                <p>{capitalize(user.first_name)} {capitalize(user.last_name)}</p>
+
+                <label className="text-2xl">Your Position</label>
+                <p>{user.city}, {user.country}</p>
+
+                <label className="text-2xl">Your Birthday / Age</label>
+                <p>{user.date_of_birth.split('T')[0]} / {calculAge(user.date_of_birth)} years old</p>
+
                 <label className="text-2xl">Your Gender</label>
                 <div className="flex gap-1 items-center">
-                  {genderOptions.map(option => renderGenderOption(option))}
+                      {genderOptions.map(option => (
+                          <div key={`gender-option-${option.id}`}>{renderGenderOption(option)}</div>
+                      ))}
                 </div>
                 <label className="text-2xl">Your Orientation</label>
                 <div className="flex gap-1 items-center">
-                  {orientationOptions.map(option => renderOrientationOption(option))}
+                  {orientationOptions.map(option => (
+                      <div key={`orientation-option-${option.id}`}>{renderOrientationOption(option)}</div>
+                  ))}
                 </div>
-                <button className="save-btn">Save</button>
+                <label className="text-2xl">Your Bio</label>
+                <textarea
+                  className="w-4/5 h-72 bg-slate-100 px-2"
+                  value={bio}
+                  onChange={(event) => setBio(event.target.value)}
+                />
+                <label className="text-2xl my-2">Your Tags</label>
+                <div className="flex flex-wrap gap-1 w-full justify-center items-center gap-y-5 content-center">
+                    {tagsList.map(tag => (
+                        <div key={`account-${tag}`}>
+                            <input
+                                type="checkbox"
+                                id={`tag-${tag}`}
+                                className="checkbox-input"
+                                checked={tags.includes(tag)}
+                                onChange={() => handleTagChange(tag)}
+                            />
+                            <label htmlFor={`tag-${tag}`} className="checkbox-label px-2 rounded-xl">
+                            #{tag}
+                            </label>
+                        </div>
+                    ))}
+
+                </div>
+
+                <button className="save-btn" onClick={() => {
+                  const formData = new FormData();
+                  formData.append('gender', gender);
+                  formData.append('sexualOrientation', orientation);
+                  formData.append('bio', bio);
+                  formData.append('tags', tags.join(','));
+
+                  axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, formData, httpAuthHeader)
+                    .then(res => {
+                      console.log('details return', res.data);
+                      // TODO loading then reedirect (timeOut 1500 for example)
+                      window.location.reload();
+                    }).catch(e => {
+                      console.log('error:', e);
+                    })
+                  }}>Save</button>
               </div>
             </div>
             <div className="section">
