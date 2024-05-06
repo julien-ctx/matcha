@@ -10,10 +10,12 @@ import { getName } from "country-list"
 import { httpAuthenticateJWT } from "../middleware/auth.js"
 import { sendVerificationEmail } from "../queries/auth.js"
 import jwt from "jsonwebtoken"
+import multer from 'multer';
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
+const upload = multer({ dest: 'uploads/' });
 
 /* Retrieves the details of a specified user or the current user if no ID is passed. */
 router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
@@ -66,7 +68,7 @@ router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
 })
 
 /* Update the details of the currently authenticated user. */
-router.put("/details", httpAuthenticateJWT, async (req, res) => {
+router.put("/details", httpAuthenticateJWT, upload.array('pictures'), async (req, res) => {  
   const userId = req.user.id
   const {
     email,
@@ -76,7 +78,6 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
     sexualOrientation,
     bio,
     tags,
-    pictures,
     lastLogin,
     isOnline,
     accountVerified,
@@ -117,13 +118,18 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
       values.push(bio)
     }
     if (tags) {
-      updates.push(`tags = $${paramIndex++}`)
-      values.push(tags)
+      const tagsArray = tags.split(',');
+      updates.push(`tags = $${paramIndex++}`);
+      values.push(tagsArray);
     }
-    if (pictures) {
-      updates.push(`pictures = $${paramIndex++}`)
-      values.push(pictures)
+  
+    // new way to handle pictures
+    const fileNames = req.files.map(file => file.path);
+    if (fileNames.length > 0) {
+      updates.push(`pictures = $${paramIndex++}`);
+      values.push(`{${fileNames.join(",")}}`);
     }
+
     if (lastLogin) {
       updates.push(`last_login = $${paramIndex++}`)
       values.push(lastLogin)

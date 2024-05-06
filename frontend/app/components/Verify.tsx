@@ -1,29 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useAuth } from "../auth/AuthProvider"
-import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation"
 import axios from "axios"
-import { AuthStatus } from "../auth/authTypes"
 
 export default function Verify() {
-  const { token, authStatus } = useAuth()
-  const searchParams: ReadonlyURLSearchParams = useSearchParams()
-  const verificationToken: string | null = searchParams.get("token")
-  const [displayMessage, setDisplayMessage] = useState<string>("")
-
-  useEffect(() => {
-    if (authStatus !== AuthStatus.Validating && token) {
-      axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, { token: verificationToken })
-        .then((response) => {
-          setDisplayMessage("Successfully verified")
-        })
-        .catch((error) => {
-          setDisplayMessage(error?.response?.data?.message ?? "")
-        })
-    }
-  }, [authStatus])
+  const { httpAuthHeader } = useAuth()
+  const [ mailSent, setMailSent ] = useState<boolean>(false)
 
   return (
     <div className="relative flex flex-col justify-center items-center w-full h-full"
@@ -43,12 +26,23 @@ export default function Verify() {
         }}
       >
         <h2 className="text-4xl w-72 text-slate-200">Please verify your mail to continue with us !</h2>
+        {mailSent === false ? (
         <button
           className="px-4 py-2 text-2xl bg-gradient-to-r-main text-white rounded-lg hover:scale-105 hover:brightness-110 border-1 duration-150"
           onClick={() => {
-            axios.
+            axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/send-verification-email`, httpAuthHeader)
+              .then(response => {
+                console.log(response.data)
+                setMailSent(true)
+              }).catch(error => {
+                console.error(error)
+              })
           }}
         >Resend verification mail</button>
+        
+        ) : (
+          <p className="text-slate-400 text-lg">Please check your mailbox !</p>
+        )}
 
       </div>
     </div>

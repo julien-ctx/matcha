@@ -40,7 +40,7 @@ const interestsList = [
 ]
 
 export default function Details() {
-    const { httpAuthHeader } = useAuth();
+    const { token } = useAuth();
     const router = useRouter();
 
     const [currentDetail, setCurrentDetail] = useState<CurrentDetail>(CurrentDetail.Birthday)
@@ -56,14 +56,24 @@ export default function Details() {
     function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Birthday ? prev - 1 : prev)); }
     
     function handleSubmit() {
-        axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
-            dateOfBirth: birthday,
-            gender: GenderList[gender],
-            sexualOrientation: OrientationList[orientation],
-            bio: bio,
-            tags: interests,
-            pictures: photos
-        }, httpAuthHeader).then(res => {
+        const formData = new FormData();
+        const date = new Date(birthday);
+        formData.append('dateOfBirth', date.toISOString().split('T')[0]);
+        formData.append('gender', GenderList[gender]);
+        formData.append('sexualOrientation', OrientationList[orientation]);
+        formData.append('bio', bio);
+        formData.append('tags', interests.join(','));
+        
+        photos.forEach((photo, index) => {
+            formData.append(`pictures`, photo, `photo${index}.jpg`);
+        });
+    
+        axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, formData, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        }).then(res => {
             console.log('details return', res.data);
             // TODO loading then reedirect (timeOut 1500 for example)
             window.location.reload();

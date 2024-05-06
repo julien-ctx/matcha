@@ -167,7 +167,7 @@ const renderGenderOption = (option) => (
                     <div key={index} className={`photo-grid-item ${index === 0 ? 'large' : ''}`}>
                         {profilePhotos[index] ? (
                             <>
-                                <img src={profilePhotos[index]} alt={`Photo ${index}`} />
+                                <img src={`${process.env.NEXT_PUBLIC_API_URL}/${profilePhotos[index]}`} alt={`Photo ${index}`} />
                                 <button onClick={() => removePhoto(index)} className="photo-remove">X</button>
                             </>
                         ) : (

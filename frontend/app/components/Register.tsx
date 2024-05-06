@@ -15,26 +15,8 @@ export default function Register() {
     lastName: "",
     password: "",
   })
-  const { token, login } = useAuth()
+  const { login } = useAuth()
   const router = useRouter()
-  const searchParams: ReadonlyURLSearchParams = useSearchParams()
-  const [isValidating, setIsValidating] = useState<boolean>(true)
-  const redirectPath: string | null = searchParams.get("redirect")
-
-  useEffect(() => {
-    if (token) {
-      axios
-        .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token })
-        .then(() => {
-          router.replace(redirectPath ?? "/account")
-        })
-        .catch((error) => {
-          setIsValidating(false)
-        })
-    } else if (token === null) {
-      setIsValidating(false)
-    }
-  }, [token, router])
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -50,7 +32,7 @@ export default function Register() {
       .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, formData)
       .then((response) => {
         if (response?.data?.jwt) {
-          login(response.data.jwt)
+          login(response.data)
         } else {
           console.error("Backend didn't send JWT token")
         }
