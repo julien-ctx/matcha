@@ -246,13 +246,15 @@ router.post("/report/:userId", httpAuthenticateJWT, async (req, res) => {
 /* The currently authenticated user blocks another user */
 router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
-  const blockedId = req.params.userId
+  const blockedId = parseInt(req.params.userId, 10)
 
   if (blockerId === parseInt(blockedId, 10)) {
     return res.status(400).send({ message: "Users cannot block themselves" })
   }
 
   try {
+    await pool.query("BEGIN")
+
     const chatroomQuery = `
       SELECT id FROM T_CHATROOM
       WHERE (user1_id = LEAST($1::int, $2::int) AND user2_id = GREATEST($1::int, $2::int));
@@ -271,20 +273,30 @@ router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
       await pool.query(deleteChatroomQuery, [chatroomId])
     }
 
-    const query = `
-        INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
-        VALUES ($1, $2, NOW())
-        ON CONFLICT DO NOTHING;
+    const deleteLikesQuery = `
+      DELETE FROM T_LIKE
+      WHERE (liker_id = $1 AND liked_id = $2) OR (liker_id = $2 AND liked_id = $1);
     `
-    const result = await pool.query(query, [blockerId, blockedId])
-    if (result.rowCount === 0) {
-      res.status(409).send({ message: "User is already blocked" })
-    } else {
-      res.status(201).send({ message: "User successfully blocked" })
-    }
+    await pool.query(deleteLikesQuery, [blockerId, blockedId])
+
+    const insertBlockQuery = `
+      INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT DO NOTHING;
+    `
+    await pool.query(insertBlockQuery, [blockerId, blockedId])
+
+    await pool.query("COMMIT")
+
+    res.status(201).send({
+      message: "User successfully blocked and all related likes removed",
+    })
   } catch (error) {
-    console.error("Database error:", error)
-    res.status(500).send({ message: "Failed to block user" })
+    await pool.query("ROLLBACK")
+    console.error("Database error during block operation:", error)
+    res
+      .status(500)
+      .send({ message: "Failed to block user", error: error.message })
   }
 })
 
