@@ -58,7 +58,7 @@ export function setupSocketEvents(io) {
           await pool.query("BEGIN")
 
           let chatroom = await pool.query(
-            `SELECT id FROM T_CHATROOM WHERE (user1_id = LEAST($1, $2) AND user2_id = GREATEST($1, $2));`,
+            `SELECT id FROM T_CHATROOM WHERE (user1_id = LEAST($1::int, $2::int) AND user2_id = GREATEST($1::int, $2::int));`,
             [senderId, recipientId],
           )
 
@@ -66,7 +66,7 @@ export function setupSocketEvents(io) {
 
           if (chatroom.rowCount === 0) {
             chatroom = await pool.query(
-              `INSERT INTO T_CHATROOM (user1_id, user2_id) VALUES (LEAST($1, $2), GREATEST($1, $2)) RETURNING id;`,
+              `INSERT INTO T_CHATROOM (user1_id, user2_id) VALUES (LEAST($1::int, $2::int), GREATEST($1::int, $2::int)) RETURNING id;`,
               [senderId, recipientId],
             )
             isNewRoom = true
