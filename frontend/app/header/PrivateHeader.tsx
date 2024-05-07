@@ -9,7 +9,7 @@ import { useSocial } from '../contexts/SocialContext';
 
 export default function PrivateHeader() {
     const { logout, user } = useAuth();
-    const { toggleLikesList, toggleVisitsList } = useUI();
+    const { toggleLikesList, toggleVisitsList, anotherConnection } = useUI();
     const router = useRouter();
     const {visits, likes} = useSocial();
     const pathname = usePathname()
@@ -55,7 +55,7 @@ export default function PrivateHeader() {
             }}>Matcha</h1>
 
             {
-                user?.date_of_birth &&
+                user?.date_of_birth && !anotherConnection &&
                 <div className="flex justify-center gap-8 absolute top-0 right-0 h-full items-center">
                     <div ref={visitListRef} className="popup-container">
                         <button className="popup-button">

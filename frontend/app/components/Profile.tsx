@@ -13,6 +13,8 @@ interface ProfileProps {
     matchList: any[];
     setMatchList: (matchList: any[]) => void;
     setCurrentProfile: (profile: ProfileType | null) => void; 
+    setCurrentChatRoom: (chatRoomId: number | null) => void;
+    setChatRoomList: (chatRoomList: any[]) => void;
 }
 
 const initialTestProfiles = [
@@ -46,8 +48,10 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
     const [firstMessageModalOpen, setFirstMessageModalOpen] = useState<boolean>(false);
     const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] = useState<boolean>(false);
-    const { socket, user, httpAuthHeader } = useAuth();
+    const { socket, user, httpAuthHeader, token } = useAuth();
     const [message, setMessage] = useState<string>('');
+
+    console.log('profile', profile)
 
 
     function prevImage() {
@@ -194,7 +198,12 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                                 socket?.emit('sendMessage', {
                                     content: message,
                                     senderId: user?.id,
-                                    receiverId: profile.id
+                                    recipientId: profile.id
+                                }, (res) => {
+                                    if (res.success) {
+                                        console.log('success: ', res);
+                                        setCurrentProfile(null);
+                                    }
                                 })
                             }}
                         >Send</button>
@@ -211,16 +220,22 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                     <div className="flex gap-1">
                         <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
                             onClick={() => {
-                                // axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/match/`, {
-                                    
-                                // }, httpAuthHeader)
-                                //     .then(response => {
-                                //         console.log(response.data)
-                                //         // setCurrentProfile(null);
-                                //     }).catch(error => {
-                                //         console.error(error)
-                                //     }
-                                // )
+                                axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/match/`, {
+                                    data: {
+                                        firstUserId: user?.id,
+                                        secondUserId: profile.id
+                                    },
+                                    headers: {
+                                        Authorization: `Bearer ${token}`
+                                    }
+                                })
+                                .then(response => {
+                                    console.log(response.data)
+                                    setCurrentProfile(null);
+                                }).catch(error => {
+                                    console.error(error)
+                                }
+                                )
                                 
                                 // TODO en cas de reussite apres request
                                 setMatchList(matchList.filter(match => match.id !== profile.id));

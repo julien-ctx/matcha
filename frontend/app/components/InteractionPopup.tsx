@@ -32,7 +32,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                             {profiles.slice(0, 5).map((profile, index) => (
                                 <img 
                                     key={profile.id} 
-                                    src={profile.pictures[0]} 
+                                    src={`${process.env.NEXT_PUBLIC_API_URL}/${profile.pictures[0]}`} 
                                     alt="profile" 
                                     className="w-12 h-12 object-cover rounded-full absolute top-1/2 -translate-y-1/2 border-2 border-red-200"
                                     style={{

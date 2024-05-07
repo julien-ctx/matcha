@@ -13,6 +13,7 @@ import { useUI } from '../contexts/UIContext'
 import InteractionList from './InteractionList'
 import axios from 'axios'
 import Verify from './Verify'
+import AnotherConnection from './AnotherConnection'
 
 enum SpaceState {
     LOADING,
@@ -22,8 +23,8 @@ enum SpaceState {
 }
 
 export default function MySpace() {
-    const { httpAuthHeader, user } = useAuth();
-    const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList } = useUI();
+    const { httpAuthHeader, user, socket } = useAuth();
+    const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList, anotherConnection, toggleAnotherConnection } = useUI();
     const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
 
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
@@ -68,13 +69,24 @@ export default function MySpace() {
         fetchChatRooms();
     }, [user])
 
-    return spaceState === SpaceState.READY ? (
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('anotherConnectionFound', () => {
+            toggleAnotherConnection(true);
+        })
+    }, [socket])
+
+    return anotherConnection ? (
+           <AnotherConnection /> 
+        )
+        : spaceState === SpaceState.READY ? (
         <div className="w-full h-full flex fixed overflow-hidden">
             <div className="w-1/4 relative">
                 <Chat rooms={chatRoomList} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             </div>
             <div className="w-3/4 relative">
-                <Match setCurrentProfile={setCurrentProfile} />
+                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList}/>
             </div>
 
             {showLikesList && (
