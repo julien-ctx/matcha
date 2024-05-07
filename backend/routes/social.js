@@ -162,7 +162,7 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
       WHERE v.viewed_id = $1 AND NOT EXISTS (
         SELECT 1 FROM T_LIKE l WHERE l.liker_id = u.id AND l.liked_id = $1
       );
-    `;
+    `
     const result = await pool.query(query, [userId])
 
     const currentUser = await pool.query(
@@ -396,15 +396,24 @@ router.delete("/match", httpAuthenticateJWT, async (req, res) => {
       WHERE (liker_id = $1 AND liked_id = $2) OR (liker_id = $2 AND liked_id = $1);
     `
     await pool.query(deleteMatchQuery, [firstUserId, secondUserId])
+
+    const blockEachOtherQuery = `
+      INSERT INTO T_BLOCK (blocker_id, blocked_id)
+      VALUES ($1, $2), ($2, $1)
+      ON CONFLICT DO NOTHING;
+    `
+    await pool.query(blockEachOtherQuery, [firstUserId, secondUserId])
+
     await pool.query("COMMIT")
 
-    res.send({ message: "Match successfully deleted." })
+    res.send({ message: "Match deletion and block successfully processed." })
   } catch (error) {
     await pool.query("ROLLBACK")
     console.error("Database error during match deletion:", error)
-    res
-      .status(500)
-      .send({ message: "Failed to delete match", error: error.message })
+    res.status(500).send({
+      message: "Failed to delete match and update block list",
+      error: error.message,
+    })
   }
 })
 
