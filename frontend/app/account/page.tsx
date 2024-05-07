@@ -7,6 +7,7 @@ import axios from "axios"
 import { useRouter } from "next/navigation"
 import './account.css'
 import { calculAge, capitalize } from "../utils"
+import Modal from "../components/Modal"
 
 const tagsList = [
   'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
@@ -16,7 +17,7 @@ const tagsList = [
 ]
 
 export default function Account() {
-  const { authStatus, user, token, httpAuthHeader } = useAuth()
+  const { authStatus, user, token, httpAuthHeader, logout } = useAuth()
   const router = useRouter()
   const [profilePhotos, setProfilePhotos] = useState([])
   const [removedPhotos, setRemovedPhotos] = useState([]);
@@ -25,6 +26,7 @@ export default function Account() {
   const [email, setEmail] = useState('');
   const [bio, setBio] = useState('');
   const [tags, setTags] = useState([]);
+  const [deleteAccountModal, setDeleteAccountModal] = useState(false);
 
   const [passwordFormData, setPasswordFormData] = useState({
     firstPassword: "",
@@ -48,7 +50,7 @@ export default function Account() {
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = event.target
-    setFormData((prevState) => ({
+    setPasswordFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }))
@@ -67,10 +69,11 @@ export default function Account() {
     event.preventDefault()
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-password`, {
-        token: verificationToken,
-        password: formData.firstPassword,
+        token: token,
+        password: passwordFormData.firstPassword,
       })
-      .then(() => {
+      .then((res) => {
+        console.log(res);
         // logout()
         // router.replace("/")
       })
@@ -92,15 +95,11 @@ export default function Account() {
         alert("Some files were omitted due to size or type constraints.");
     }
 
-    // Create a new array with objects containing both the file and a URL for each file
     const photoObjects = validPhotos.map(file => ({
-        url: URL.createObjectURL(file), // Generate a URL for preview
-        file: file  // Keep the file for upload
+        url: URL.createObjectURL(file),
+        file: file
     }));
 
-    console.log('allo', photoObjects )
-
-    // Update the profilePhotos state by adding new photo objects
     setProfilePhotos(prev => [...prev, ...photoObjects]);
   };
 
@@ -130,7 +129,7 @@ const renderOrientationOption = (option) => (
             checked={orientation === option.value}
             onChange={() => setOrientation(option.value)}
         />
-        <label htmlFor={`orientation-${option.id}`} className="radio-label">
+        <label htmlFor={`orientation-${option.id}`} className="radio-label px-3 rounded-lg">
             {option.label}
         </label>
     </>
@@ -152,7 +151,7 @@ const renderGenderOption = (option) => (
             checked={gender === option.value}
             onChange={() => setGender(option.value)}
         />
-        <label htmlFor={`gender-${option.id}`} className="radio-label">
+        <label htmlFor={`gender-${option.id}`} className="radio-label px-3 rounded-lg">
             {option.label}
         </label>
     </>
@@ -192,8 +191,6 @@ const renderGenderOption = (option) => (
               </div>
               <button className="save-btn"
                 onClick={() => {
-                  // TODO : remove photos from the server
-
                   const formData = new FormData();
     
                   profilePhotos.forEach((photo, index) => {
@@ -241,13 +238,13 @@ const renderGenderOption = (option) => (
                 <p>{user.date_of_birth.split('T')[0]} / {calculAge(user.date_of_birth)} years old</p>
 
                 <label className="text-2xl">Your Gender</label>
-                <div className="flex gap-1 items-center">
+                <div className="flex gap-1 items-center w-full justify-center">
                       {genderOptions.map(option => (
                           <div key={`gender-option-${option.id}`}>{renderGenderOption(option)}</div>
                       ))}
                 </div>
                 <label className="text-2xl">Your Orientation</label>
-                <div className="flex gap-1 items-center">
+                <div className="flex gap-1 items-center w-full justify-center">
                   {orientationOptions.map(option => (
                       <div key={`orientation-option-${option.id}`}>{renderOrientationOption(option)}</div>
                   ))}
@@ -287,7 +284,6 @@ const renderGenderOption = (option) => (
                   axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, formData, httpAuthHeader)
                     .then(res => {
                       console.log('details return', res.data);
-                      // TODO loading then reedirect (timeOut 1500 for example)
                       window.location.reload();
                     }).catch(e => {
                       console.log('error:', e);
@@ -342,15 +338,38 @@ const renderGenderOption = (option) => (
               </button>
 
             </div>
-            <div>
-
-
-
+            <div className="section">
+              <h1 className="text-4xl">Account</h1>
+              <h2 className="text-2xl">Deletion</h2>
+              <button className="bg-white px-2 rounded-md hover:brightness-90 duration-100"
+                onClick={() => setDeleteAccountModal(true)}
+              >I want to delete my account.</button>
             </div>
           </div>
         )}
         </div>
       )}
+
+      <Modal
+        isOpen={deleteAccountModal} onClose={() => setDeleteAccountModal(false)}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <h1 className="text-3xl text-center mt-3">Are you sure you want to delete your account?</h1>
+          <h3 className="text-center">If you delete your account, all your data will be lost and you will not be able to recover it.</h3>
+          <div className="flex flex-col gap-1">
+            <button className="bg-gradient-to-r-main text-white px-4 py-2 text-lg rounded-lg hover:brightness-95 duration-100"
+              onClick={() => {
+                // TODO axios.
+
+                // if success
+                // logout()
+                router.push('/goodbye')
+              }}
+            >Yes, delete my account</button>
+            <button className="border-rose-500 text-rose-500 border-2 px-4 py-2 text-lg rounded-lg hover:brightness-95 bg-white duration-100" onClick={() => setDeleteAccountModal(false)}>No, keep my account</button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

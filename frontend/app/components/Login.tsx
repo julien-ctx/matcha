@@ -10,9 +10,10 @@ import "./Login.css"
 interface LoginProps {
   goBackHome: Function;
   goRegister: Function;
+  goRecover: Function;
 }
 
-export default function Login({ goBackHome, goRegister }: LoginProps) {
+export default function Login({ goBackHome, goRegister, goRecover }: LoginProps) {
   const [formData, setFormData] = useState({
     identifier: "",
     password: "",
@@ -100,9 +101,7 @@ export default function Login({ goBackHome, goRegister }: LoginProps) {
           <div className="flex flex-col text-sm justify-center items-center">
             <button
               className="hover:bg-white hover:brightness-90 px-2 rounded-md duration-75"
-              onClick={() => {
-                router.replace("/recover-password")
-              }}
+              onClick={() => goRecover()}
             >
               I forgot the password
             </button>

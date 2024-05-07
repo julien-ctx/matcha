@@ -8,6 +8,7 @@ import { SocialProvider } from "./contexts/SocialContext"
 export const metadata: Metadata = {
   title: "Matcha",
   description: "Because, love too can be industrialized.",
+
 }
 
 export default function RootLayout({

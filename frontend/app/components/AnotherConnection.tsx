@@ -27,24 +27,30 @@ export default function AnotherConnection() {
               backgroundColor: "rgba(255, 255, 255, 0.5)",
             }}
           >
-            <h2 className="text-xl w-72 text-slate-900">Matcha is open in another window. Click "Use here" to use Matcha in this window.</h2>
-            {loading ? (
-                    <div className="loader"></div>
-                ) :
+            <h2 className="text-xl w-72 text-slate-900">Matcha is open in another window. Click "Use Here" to use Matcha in this window.</h2>
+            <div className="flex gap-1">
+                {loading ? (
+                        <div className="loader mx-6"></div>
+                    ) :
 
-            <button
-              className="px-4 py-2 text-xl border-rose-500 bg-white text-rose-500 rounded-md border-2 duration-150"
-              onClick={() => {
-                setLoading(true);
-                socket.emit("useHere", {}, (response: any) => {
-                    console.log(response)
-                    if (response.success) {
-                        toggleAnotherConnection(false);
-                    }
-                })
-              }}
-            >Use here</button>
-            }
+                <button
+                className="px-4 py-2 text-xl border-rose-500 bg-white text-rose-500 rounded-md border-2 hover:brightness-95 duration-100"
+                onClick={() => {
+                    setLoading(true);
+                    socket.emit("useHere", {}, (response: any) => {
+                        console.log(response)
+                        if (response.success) {
+                            toggleAnotherConnection(false);
+                        }
+                    })
+                }}
+                >Use Here</button>
+                }
+                <button
+                    className="px-4 py-2 text-xl border-slate-400 bg-white text-slate-400 rounded-md border-2 hover:brightness-95 duration-100"
+                    onClick={() => window.close()}
+                >Close Tab</button>
+            </div>
           </div>
         </div>
       )

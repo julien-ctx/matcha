@@ -21,7 +21,7 @@ export const UIProvider = ({ children }: { children : ReactNode}) => {
     const [showVisitsList, setShowVisitsList] = useState(false);
     const [showLikesList, setShowLikesList] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
-    const [anotherConnection, setAnotherConnection] = useState(true);
+    const [anotherConnection, setAnotherConnection] = useState(false);
 
     const toggleLogin = (show: boolean) => {
         setShowLogin(show);

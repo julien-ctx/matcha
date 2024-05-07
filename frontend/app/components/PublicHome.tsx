@@ -8,11 +8,13 @@ import './PublicHome.css'
 import Register from './Register';
 import Login from './Login';
 import { useUI } from '../contexts/UIContext';
+import RecoverPassword from './RecoverPassword';
 
 enum PublicHomeState {
     Home,
     Register,
-    Login
+    Login,
+    RecoverPassword
 }
 
 export default function PublicHome() {
@@ -78,7 +80,15 @@ export default function PublicHome() {
                                 setHomeState(PublicHomeState.Register)
                                 toggleLogin(false)
                             }}
+                            goRecover={() => {
+                                setHomeState(PublicHomeState.RecoverPassword)
+                                toggleLogin(false)
+                            }}
                         />
+                    </div>
+                ) : homeState === PublicHomeState.RecoverPassword ? (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <RecoverPassword />
                     </div>
                 ) : null}
             </div>
