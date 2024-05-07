@@ -117,7 +117,10 @@ router.get("/likes", httpAuthenticateJWT, async (req, res) => {
       SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude
       FROM T_USER u
       JOIN T_LIKE l ON l.liker_id = u.id
-      WHERE l.liked_id = $1;
+      WHERE l.liked_id = $1
+      AND NOT EXISTS (
+        SELECT 1 FROM T_LIKE l2 WHERE l2.liker_id = $1 AND l2.liked_id = l.liker_id
+      );
     `
     const result = await pool.query(query, [userId])
 
@@ -126,7 +129,7 @@ router.get("/likes", httpAuthenticateJWT, async (req, res) => {
       [userId],
     )
     if (!currentUser.rows.length) {
-      res.json(result.rows)
+      return res.json(result.rows)
     }
     const resultWithDistance = result.rows.map((user) => {
       const distance = getDistance(
@@ -153,11 +156,13 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.longitude, u.latitude
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude
       FROM T_USER u
       JOIN T_VIEW v ON v.viewer_id = u.id
-      WHERE v.viewed_id = $1;
-    `
+      WHERE v.viewed_id = $1 AND NOT EXISTS (
+        SELECT 1 FROM T_LIKE l WHERE l.liker_id = u.id AND l.liked_id = $1
+      );
+    `;
     const result = await pool.query(query, [userId])
 
     const currentUser = await pool.query(
@@ -165,12 +170,14 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
       [userId],
     )
     if (!currentUser.rows.length) {
-      res.json(result.rows)
+      return res.json(result.rows)
     }
+    const currentCoordinates = currentUser.rows[0]
+
     const resultWithDistance = result.rows.map((user) => {
       const distance = getDistance(
-        currentUser.rows[0].latitude,
-        currentUser.rows[0].longitude,
+        currentCoordinates.latitude,
+        currentCoordinates.longitude,
         user.latitude,
         user.longitude,
       )
