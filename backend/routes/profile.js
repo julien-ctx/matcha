@@ -23,7 +23,7 @@ router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
   try {
     const usersQuery = `
       SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures,
-      fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
+      fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, registration_method, is_premium
       FROM T_USER
       WHERE id IN ($1, $2);
     `
@@ -83,6 +83,7 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
     dateOfBirth,
     latitude,
     longitude,
+    isPremium,
   } = req.body
 
   try {
@@ -140,6 +141,10 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
       updates.push(`date_of_birth = $${paramIndex++}`)
       values.push(dateOfBirth)
     }
+    if (isPremium !== undefined) {
+      updates.push(`is_premium = $${paramIndex++}`)
+      values.push(isPremium)
+    }
     if (latitude === 999 && longitude === 999) {
       const location = await getLocationWithoutPermission()
       if (
@@ -184,7 +189,7 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
       UPDATE T_USER
       SET ${updates.join(", ")}
       WHERE id = $${paramIndex}
-      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
+      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, is_premium;
     `
     values.push(userId)
     const { rows } = await pool.query(query, values)
