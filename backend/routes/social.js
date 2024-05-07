@@ -253,6 +253,24 @@ router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
   }
 
   try {
+    const chatroomQuery = `
+      SELECT id FROM T_CHATROOM
+      WHERE (user1_id = LEAST($1::int, $2::int) AND user2_id = GREATEST($1::int, $2::int));
+    `
+    const chatroomResult = await pool.query(chatroomQuery, [
+      blockerId,
+      blockedId,
+    ])
+    if (chatroomResult.rows.length > 0) {
+      const chatroomId = chatroomResult.rows[0].id
+
+      const deleteMessagesQuery = `DELETE FROM T_MESSAGE WHERE chatroom_id = $1;`
+      await pool.query(deleteMessagesQuery, [chatroomId])
+
+      const deleteChatroomQuery = `DELETE FROM T_CHATROOM WHERE id = $1;`
+      await pool.query(deleteChatroomQuery, [chatroomId])
+    }
+
     const query = `
         INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
         VALUES ($1, $2, NOW())
@@ -391,6 +409,24 @@ router.delete("/match", httpAuthenticateJWT, async (req, res) => {
         .send({ message: "No mutual like (match) found to delete." })
     }
 
+    const chatroomQuery = `
+      SELECT id FROM T_CHATROOM
+      WHERE (user1_id = LEAST($1::int, $2::int) AND user2_id = GREATEST($1::int, $2::int));
+    `
+    const chatroomResult = await pool.query(chatroomQuery, [
+      firstUserId,
+      secondUserId,
+    ])
+    if (chatroomResult.rows.length > 0) {
+      const chatroomId = chatroomResult.rows[0].id
+
+      const deleteMessagesQuery = `DELETE FROM T_MESSAGE WHERE chatroom_id = $1;`
+      await pool.query(deleteMessagesQuery, [chatroomId])
+
+      const deleteChatroomQuery = `DELETE FROM T_CHATROOM WHERE id = $1;`
+      await pool.query(deleteChatroomQuery, [chatroomId])
+    }
+
     const deleteMatchQuery = `
       DELETE FROM T_LIKE
       WHERE (liker_id = $1 AND liked_id = $2) OR (liker_id = $2 AND liked_id = $1);
@@ -406,12 +442,14 @@ router.delete("/match", httpAuthenticateJWT, async (req, res) => {
 
     await pool.query("COMMIT")
 
-    res.send({ message: "Match deletion and block successfully processed." })
+    res.send({
+      message: "Match and chatroom deleted, users blocked successfully.",
+    })
   } catch (error) {
     await pool.query("ROLLBACK")
     console.error("Database error during match deletion:", error)
     res.status(500).send({
-      message: "Failed to delete match and update block list",
+      message: "Failed to delete match and chatroom, update block list",
       error: error.message,
     })
   }
