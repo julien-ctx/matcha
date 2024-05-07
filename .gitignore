@@ -11,3 +11,5 @@ coverage
 benchmarks/graphs
 .env
 test.js
+
+backend/uploads

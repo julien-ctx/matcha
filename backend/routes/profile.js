@@ -10,10 +10,13 @@ import { getName } from "country-list"
 import { httpAuthenticateJWT } from "../middleware/auth.js"
 import { sendVerificationEmail } from "../queries/auth.js"
 import jwt from "jsonwebtoken"
+import multer from 'multer';
+import fs from 'fs/promises';
 
 dotenv.config({ path: "../../.env" })
 
 const router = express.Router()
+const upload = multer({ dest: 'uploads/' });
 
 /* Retrieves the details of a specified user or the current user if no ID is passed. */
 router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
@@ -66,7 +69,7 @@ router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
 })
 
 /* Update the details of the currently authenticated user. */
-router.put("/details", httpAuthenticateJWT, async (req, res) => {
+router.put("/details", httpAuthenticateJWT, upload.array('pictures'), async (req, res) => {  
   const userId = req.user.id
   const {
     email,
@@ -76,7 +79,6 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
     sexualOrientation,
     bio,
     tags,
-    pictures,
     lastLogin,
     isOnline,
     accountVerified,
@@ -118,13 +120,20 @@ router.put("/details", httpAuthenticateJWT, async (req, res) => {
       values.push(bio)
     }
     if (tags) {
-      updates.push(`tags = $${paramIndex++}`)
-      values.push(tags)
+      const tagsArray = tags.split(',');
+      updates.push(`tags = $${paramIndex++}`);
+      values.push(tagsArray);
     }
-    if (pictures) {
-      updates.push(`pictures = $${paramIndex++}`)
-      values.push(pictures)
+  
+    // new way to handle pictures
+    if (req.files && req.files.length > 0) {
+      const fileNames = req.files.map(file => file.path);
+      if (fileNames.length > 0) {
+        updates.push(`pictures = $${paramIndex++}`);
+        values.push(`{${fileNames.join(",")}}`);
+      }
     }
+    
     if (lastLogin) {
       updates.push(`last_login = $${paramIndex++}`)
       values.push(lastLogin)
@@ -401,5 +410,40 @@ router.post("/filter", httpAuthenticateJWT, async (req, res) => {
     })
   }
 })
+
+/* Update profile photos of the user */
+router.put("/update-photos", httpAuthenticateJWT, upload.array('new_photos'), async (req, res) => {
+  const files = req.files;
+  const userId = req.user.id;
+  const pictures = JSON.parse(req.body.pictures);
+  const removedPictures = req.body.removedPictures ? JSON.parse(req.body.removedPictures) : null;
+
+  try {
+    const updatedPictures = pictures.map(photo => {
+      if (photo.filename) {
+        return files.find(f => f.originalname === photo.filename).path;
+      } else if (photo.url) {
+        return photo.url;
+      }
+    }).filter(p => p);
+    const query = `
+      UPDATE T_USER SET
+      pictures = $1::text[]
+      WHERE id = $2
+      RETURNING id, pictures;
+    `;
+    await pool.query(query, [updatedPictures, userId]);
+
+    if (removedPictures) {
+      for (const picturePath of removedPictures)
+        await fs.unlink(picturePath);
+    }
+
+    res.send({ message: "Photos updated successfully" });
+  } catch (error) {
+    console.error("Database error:", error)
+    res.sendStatus(500)
+  }
+});
 
 export default router

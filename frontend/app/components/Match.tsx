@@ -8,6 +8,8 @@ import axios from 'axios'
 
 import './Match.css'
 import SearchParam from './SearchParam';
+import { useAuth } from '../auth/AuthProvider'
+import { capitalize } from '../utils'
 
 enum LoadState {
     Loading,
@@ -17,9 +19,11 @@ enum LoadState {
 
 interface Props {
     setCurrentProfile: (profile: ProfileType) => void
+    setMatchList: any //TODO
 }
 
-export default function Match({ setCurrentProfile }: Props) {
+export default function Match({ setCurrentProfile, setMatchList }: Props) {
+    const { httpAuthHeader, socket } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState([18, 99]);
@@ -32,30 +36,28 @@ export default function Match({ setCurrentProfile }: Props) {
 
     const [loadState, setLoadState] = useState(LoadState.Loading);
 
+    const [matchModalOpen, setMatchModalOpen] = useState(false);
+    const [matchProfile, setMatchProfile] = useState(null);
+    const [message, setMessage] = useState('');
+
     function fetchFilter() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-        }).then(response => {
+
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader).then(response => {
             console.log("Filter fetched successfully", response.data);
             setAgeRange([response.data.ageMin, response.data.ageMax]);
             setKmWithin([response.data.locationRadius]);
             setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
             setTagsList(response.data.tags);
         }).catch(error => {
-            console.error("Error fetching filter", error);
-        
+            setAgeRange([18, 99]);
+            setKmWithin([30]);
+            setFameRatingRange([1, 5]);
+            setTagsList([]);
         })
     }
 
     function browseProfile() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-            
-        })
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, httpAuthHeader)
         .then((response) => {
             console.log('profiles: ', response.data)
             setProfiles(response.data);
@@ -69,10 +71,11 @@ export default function Match({ setCurrentProfile }: Props) {
     }
 
     useEffect(() => {
+        if (!httpAuthHeader) return;
         sendLocation();
         browseProfile();
         fetchFilter();
-    }, [])
+    }, [httpAuthHeader])
 
     function sendLocation() {
         if (navigator.geolocation) {
@@ -84,11 +87,7 @@ export default function Match({ setCurrentProfile }: Props) {
                     axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
                         latitude,
                         longitude
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                        }
-                    }).then(response => {
+                    }, httpAuthHeader).then(response => {
                         console.log("Location updated successfully", response.data);
                     }).catch(error => {
                         console.error("Error updating location", error);
@@ -99,11 +98,7 @@ export default function Match({ setCurrentProfile }: Props) {
                     axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
                         latitude: 999,
                         longitude: 999
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                        }
-                    }).then(response => {
+                    }, httpAuthHeader).then(response => {
                         console.log("Null location updated successfully", response.data);
                     }).catch(error => {
                         console.error("Error updating null location", error);
@@ -118,13 +113,13 @@ export default function Match({ setCurrentProfile }: Props) {
 
     const handleDecision = (accept: boolean) => {
         // TODO Protection needed
-        const token = localStorage.getItem('jwt');
-        console.log('token:', token);
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }}).then(res => {
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
                 console.log(res.data);
+                if (accept && res.data.isMatch) {
+                    setMatchList((currentMatches) => [profiles[currentProfileIndex], ...currentMatches]);
+                    setMatchProfile(profiles[currentProfileIndex]);
+                    setMatchModalOpen(true);
+                }
             }).catch(err => {
                 console.error(err);
             }
@@ -173,6 +168,39 @@ export default function Match({ setCurrentProfile }: Props) {
                     setTagsList={setTagsList}
                     setModalOpen={setModalOpen}
                 />
+            </Modal>
+
+            <Modal isOpen={matchModalOpen} onClose={() => setMatchModalOpen(false)}>
+                <div className="w-full flex flex-col">
+                    <h1>Congratulations! You got match with {capitalize(matchProfile?.first_name)}</h1>
+                    <h2 className="text-3xl">Send the first message!</h2>
+                    <form className="flex gap-1" action="">
+                        <input 
+                            type="textarea"
+                            className="w-full rounded-md bg-slate-100 p-2"
+                            placeholder="Type your message here..."
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                        />
+                        <button className=" bg-gradient-to-r-main text-white rounded-md px-3 border-1 "
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (message.trim() === '') return;
+                                socket?.emit('sendMessage', {
+                                    content: message,
+                                    senderId: user?.id,
+                                    receiverId: matchProfile.id
+                                }, (res) => {
+                                    if (res.success) {
+                                        console.log('success: ', res);
+                                        setMatchModalOpen(false);
+                                    }
+                                })
+                            }}
+                        >Send</button>
+                    </form>
+                </div>
+
             </Modal>
         </div>
     )

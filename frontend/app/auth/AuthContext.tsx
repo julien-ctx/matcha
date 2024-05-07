@@ -8,6 +8,7 @@ interface Props {
   authStatus: AuthStatus
   user: User | undefined
   socket: any | null // TODO type set
+  httpAuthHeader: any
 }
 
 const AuthContext = createContext<Props | null>(null)

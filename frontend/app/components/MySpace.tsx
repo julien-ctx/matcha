@@ -12,96 +12,40 @@ import "./MySpace.css"
 import { useUI } from '../contexts/UIContext'
 import InteractionList from './InteractionList'
 import axios from 'axios'
-
-const testChat = [
-    {
-        id: 1,
-        users: [
-            {
-                id: 42,
-                name: "Toto",
-                img: "/toto.jpg"
-            }, {
-                id: 99,
-                name: "Michelle",
-                img: "/girl.jpeg"
-            }
-        ],
-        messages: [
-            {
-                id: 1,
-                content: "Salut",
-                senderId: 7,
-                receiverId: 42
-            }, {
-                id: 2,
-                content: "Tu fais quoi ce soir?",
-                senderId: 7,
-                receiverId: 42
-            }
-        ]
-    }, {
-        id: 2,
-        users: [
-            {
-                id: 42,
-                name: "Toto",
-                img: "/toto.jpg"
-            }, {
-                id: 11,
-                name: "Léna",
-                img: "/lena.png"
-            }
-        ],
-        messages: [
-            {
-                id: 405,
-                content: 'asodijaisodjaosdjioasdjiosioadoiasdoajoidjadasdsadsasadadasdasd',
-                senderId: 7,
-                receiverId: 42
-            }
-        ]
-    }
-]
-
-const testMatch = [
-    {
-        id: 7,
-        name: "Bingo",
-        img: "/bingo.png"
-    }, {
-        id: 89,
-        name: "Nana",
-        img: "/nana.png"
-    }
-]
+import Verify from './Verify'
+import AnotherConnection from './AnotherConnection'
 
 enum SpaceState {
     LOADING,
     READY,
-    DETAIL
+    DETAIL,
+    VERIFY
 }
 
 export default function MySpace() {
-    const { token, user } = useAuth();
-    const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList } = useUI();
+    const { httpAuthHeader, user, socket } = useAuth();
+    const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList, anotherConnection, toggleAnotherConnection } = useUI();
     const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
 
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
     const [matchList, setMatchList] = useState<any[]>([]);
+    const [chatRoomList, setChatRoomList] = useState<any[]>([]);
 
     useEffect(() => {
+        console.log('user', user)
         if (!user) return;
-        (!user?.date_of_birth) ? setSpaceState(SpaceState.DETAIL) : setSpaceState(SpaceState.READY);
+        // if (!user.account_verified)
+        //     setSpaceState(SpaceState.VERIFY);
+        //else 
+        if (!user?.date_of_birth)
+            setSpaceState(SpaceState.DETAIL)
+        else
+            setSpaceState(SpaceState.READY);
     }, [user])
 
     function fetchMatches() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/matches`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }).then(response => {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/matches`, httpAuthHeader).then(response => {
             console.log('matches', response.data)
             setMatchList(response.data)
         }).catch(error => {
@@ -109,19 +53,40 @@ export default function MySpace() {
         })
     }
 
+    function fetchChatRooms() {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/chatrooms`, httpAuthHeader).then(response => {
+            console.log('chats', response.data)
+            setChatRoomList(response.data)
+        }).catch(error => {
+            console.error(error)
+        })
+    }
+
     useEffect(() => {
-        if (!token) return;
+        if (!user) return;
 
         fetchMatches();
-    }, [token])
+        fetchChatRooms();
+    }, [user])
 
-    return spaceState === SpaceState.READY ? (
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('anotherConnectionFound', () => {
+            toggleAnotherConnection(true);
+        })
+    }, [socket])
+
+    return anotherConnection ? (
+           <AnotherConnection /> 
+        )
+        : spaceState === SpaceState.READY ? (
         <div className="w-full h-full flex fixed overflow-hidden">
             <div className="w-1/4 relative">
-                <Chat rooms={testChat} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+                <Chat rooms={chatRoomList} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
             </div>
             <div className="w-3/4 relative">
-                <Match setCurrentProfile={setCurrentProfile} />
+                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList}/>
             </div>
 
             {showLikesList && (
@@ -144,7 +109,7 @@ export default function MySpace() {
             )}
             {currentProfile !== null && (
                 <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 flex justify-center slide-in-right">
-                    <Profile profile={currentProfile} matchList={matchList} setCurrentProfile={setCurrentProfile}/>
+                    <Profile profile={currentProfile} matchList={matchList} setMatchList={setMatchList} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
         </div>
@@ -152,5 +117,9 @@ export default function MySpace() {
         <div className="w-full h-full">
             <Details />
         </div>
+    // ) : spaceState === SpaceState.VERIFY ? (
+    //     <div className="w-full h-full flex justify-center">
+    //         <Verify />
+    //     </div>
     ) : null
 }

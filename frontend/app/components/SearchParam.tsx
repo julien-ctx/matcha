@@ -16,7 +16,7 @@ interface SearchParamProps {
 }
 
 export default function SearchParam({ setLoadState, setModalOpen, ageRange, setAgeRange, kmWithin, setKmWithin, fameRatingRange, setFameRatingRange, tagsList, setTagsList }: SearchParamProps) {
-    const { user } = useAuth();
+    const { user, httpAuthHeader } = useAuth();
 
     const handleTagChange = (tag: string) => {
         if (tagsList.includes(tag)) {
@@ -128,12 +128,12 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                     <div key={tag}>
                         <input
                             type="checkbox"
-                            id={`interest-${tag}`}
+                            id={`tag-${tag}`}
                             className="checkbox-input"
                             checked={tagsList.includes(tag)}
                             onChange={() => handleTagChange(tag)}
                         />
-                        <label htmlFor={`interest-${tag}`} className="checkbox-label px-1 text-sm rounded-lg">
+                        <label htmlFor={`tag-${tag}`} className="checkbox-label px-1 text-sm rounded-lg">
                         #{tag}
                         </label>
                     </div>
@@ -151,11 +151,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         minFameRating: fameRatingRange[0],
                         maxFameRating: fameRatingRange[1],
                         tags: tagsList
-                    }, {
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                        }
-                    }).then(response => {
+                    }, httpAuthHeader).then(response => {
                         console.log("Filter applied successfully", response.data);
                         setModalOpen(false);
                     }).catch(error => {

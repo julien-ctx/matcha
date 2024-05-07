@@ -56,7 +56,6 @@ export function setupSocketEvents(io) {
       async ({ content, senderId, recipientId }, callback) => {
         try {
           await pool.query("BEGIN")
-
           let chatroom = await pool.query(
             `SELECT id FROM T_CHATROOM WHERE (user1_id = LEAST($1, $2) AND user2_id = GREATEST($1, $2));`,
             [senderId, recipientId],

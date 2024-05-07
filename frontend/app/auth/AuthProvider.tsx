@@ -27,6 +27,8 @@ const AuthProvider = ({ children }: Props) => {
   const [authStatus, setAuthStatus] = useState<AuthStatus>(AuthStatus.Validating);
   const [user, setUser] = useState<User | undefined>(undefined)
 
+  const [httpAuthHeader, setHttpAuthHeader] = useState<any | null>(null); // TODO type set
+
   function connectSocket(tok: string) {
     const newSocket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
       auth: {
@@ -36,16 +38,20 @@ const AuthProvider = ({ children }: Props) => {
     setSocket(newSocket);
   }
 
-  const login = (newToken: string) => {
-    localStorage.setItem("jwt", newToken)
-    setAuthToken(newToken)
+  const login = (data: any) => {
+    localStorage.setItem("jwt", data.jwt)
+    setAuthToken(data.jwt)
+    setHttpAuthHeader({ headers: { Authorization: `Bearer ${data.jwt}` }})
     setAuthStatus(AuthStatus.Validated)
+    setUser(data.user)
+    connectSocket(data.jwt)
   }
 
   const logout = () => {
     localStorage.removeItem("jwt")
     setAuthToken(null)
     setAuthStatus(AuthStatus.NotValidated)
+    setHttpAuthHeader(null)
     setUser(undefined)
     setSocket(null)
   }
@@ -54,12 +60,12 @@ const AuthProvider = ({ children }: Props) => {
     if (typeof window === "undefined") return;
 
     const storedToken = localStorage.getItem('jwt');
-    
     if (storedToken) {
       axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/jwt-status`, { token: storedToken })
         .then((response) => {
           if (response?.data?.user) {
               setAuthToken(storedToken);
+              setHttpAuthHeader({ headers: { Authorization: `Bearer ${storedToken}` }})
               setUser(response.data.user)
               if (response.data.user.date_of_birth) {
                 connectSocket(storedToken);
@@ -76,7 +82,7 @@ const AuthProvider = ({ children }: Props) => {
     }
   }, []);
 
-  return <AuthContext.Provider value={{ token, login, logout, authStatus, user, socket }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ token, login, logout, authStatus, user, socket, httpAuthHeader }}>{children}</AuthContext.Provider>
 } 
 
 export default AuthProvider

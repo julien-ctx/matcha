@@ -1,15 +1,20 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProfileType } from './profileTypes'
 import './Profile.css'
 import Modal from './Modal';
 import { useAuth } from '../auth/AuthProvider';
+import axios from 'axios';
+import { calculAge } from '../utils';
 
 interface ProfileProps {
     profile: ProfileType; 
     matchList: any[];
+    setMatchList: (matchList: any[]) => void;
     setCurrentProfile: (profile: ProfileType | null) => void; 
+    setCurrentChatRoom: (chatRoomId: number | null) => void;
+    setChatRoomList: (chatRoomList: any[]) => void;
 }
 
 const initialTestProfiles = [
@@ -19,7 +24,6 @@ const initialTestProfiles = [
         age: 20,
         bio: 'je cherche un plan chaud',
         fameRating: 3,
-        interests: ["Gaming", "Reading", "Coding"],
         distance: 10,
         pictures: [
             "/danielle1.jpeg",
@@ -31,7 +35,6 @@ const initialTestProfiles = [
         age: 20,
         bio: 'je cherche un plan serieux',
         fameRating: 4,
-        interests: ["Gaming", "Reading", "Coding"],
         distance: 20,
         pictures: [
             "/wonyoung1.jpeg",
@@ -41,11 +44,15 @@ const initialTestProfiles = [
     }
 ]
 
-export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
+export default function Profile({ profile, matchList, setMatchList, setCurrentProfile }: ProfileProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
     const [firstMessageModalOpen, setFirstMessageModalOpen] = useState<boolean>(false);
-    const { socket, user } = useAuth();
+    const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] = useState<boolean>(false);
+    const { socket, user, httpAuthHeader, token } = useAuth();
     const [message, setMessage] = useState<string>('');
+
+    console.log('profile', profile)
+
 
     function prevImage() {
         if (currentImageIndex === 0) return;
@@ -97,11 +104,20 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                         &gt;
                     </button>
 
-                    <button 
-                        onClick={() => setFirstMessageModalOpen(true)}
-                        className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90">
-                        <img className="w-9 h-9" src="/message.svg" alt="message" />
-                    </button>
+                    {matchList.find(match => match.id === profile.id) &&
+                        <div className="flex gap-2 absolute bottom-4 left-1/2 -translate-x-1/2">
+                            <button 
+                                onClick={() => setFirstMessageModalOpen(true)}
+                                className="bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90">
+                                <img className="w-9 h-9" src="/message.svg" alt="message" />
+                            </button>
+                            <button 
+                                onClick={() => setDeleteConfirmModalOpen(true)}
+                                className="bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90 justify-center items-center">
+                                <p className="font-mono text-3xl text-white w-9 h-9">X</p>
+                            </button>
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -114,7 +130,7 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                         </div>
                         <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Age</h1>
-                            {profile.age} TODO
+                            {calculAge(profile.date_of_birth)}
                         </div>
                         <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Status</h1>
@@ -131,7 +147,12 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                     <div className="flex h-32 gap-1 w-full">
                         <div className="infoBox w-3/5 h-full">
                             <h1 className="infoTitle">Fame Rating</h1>
-                            {profile.fame_rating} // TODO
+                            <div className="flex w-full">
+                            {[...Array(5)].map((_, i) => {
+                                const imagePath = i <= profile.fame_rating % 20 + 1 ? "/star_color.svg" : "/star_gray.svg";
+                                return <img className="w-1/5" key={i} src={imagePath} alt={i < profile.fame_rating ? "Color Star" : "Gray Star"} />;
+                            })}
+                            </div>
                         </div>
                         <div className="flex flex-col w-2/5 h-full gap-1 items-center justify-center">
                             <div className="infoBox-2 w-full">
@@ -147,9 +168,9 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                     <div className="flex h-24 w-full border-4 relative rounded-md">
                         <h1 className="infoTitle">tags</h1>
                         <div className="flex flex-wrap gap-2 ">
-                            {/* {profile.tags.map((interest, index) => (
+                            {/* {profile.tags.map((tag, index) => (
                                 <div key={index} className="bg-gradient-to-r-main rounded-full p-2 text-white">
-                                    {interest}
+                                    {tag}
                                 </div>
                             ))} */}
                         </div>
@@ -177,11 +198,55 @@ export default function Profile({ profile, setCurrentProfile }: ProfileProps) {
                                 socket?.emit('sendMessage', {
                                     content: message,
                                     senderId: user?.id,
-                                    receiverId: profile.id
+                                    recipientId: profile.id
+                                }, (res) => {
+                                    if (res.success) {
+                                        console.log('success: ', res);
+                                        setCurrentProfile(null);
+                                    }
                                 })
                             }}
                         >Send</button>
                     </form>
+                </div>
+            </Modal>
+                            
+            <Modal
+                isOpen={deleteConfirmModalOpen}
+                onClose={() => setDeleteConfirmModalOpen(false)}
+            >
+                <div className="w-full flex flex-col">
+                    <h1 className="text-3xl">Are you sure you want to delete this profile from match?</h1>
+                    <div className="flex gap-1">
+                        <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
+                            onClick={() => {
+                                axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/match/`, {
+                                    data: {
+                                        firstUserId: user?.id,
+                                        secondUserId: profile.id
+                                    },
+                                    headers: {
+                                        Authorization: `Bearer ${token}`
+                                    }
+                                })
+                                .then(response => {
+                                    console.log(response.data)
+                                    setCurrentProfile(null);
+                                }).catch(error => {
+                                    console.error(error)
+                                }
+                                )
+                                
+                                // TODO en cas de reussite apres request
+                                setMatchList(matchList.filter(match => match.id !== profile.id));
+                                setDeleteConfirmModalOpen(false);
+                                setCurrentProfile(null);
+                            }}
+                        >Yes</button>
+                        <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
+                            onClick={() => setDeleteConfirmModalOpen(false)}
+                        >No</button>
+                    </div>
                 </div>
             </Modal>
         </div>

@@ -32,13 +32,13 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                             {profiles.slice(0, 5).map((profile, index) => (
                                 <img 
                                     key={profile.id} 
-                                    src={profile.pictures[0]} 
+                                    src={`${process.env.NEXT_PUBLIC_API_URL}/${profile.pictures[0]}`} 
                                     alt="profile" 
                                     className="w-12 h-12 object-cover rounded-full absolute top-1/2 -translate-y-1/2 border-2 border-red-200"
                                     style={{
                                         left: `${index * 20}px`,
                                         zIndex: `${profiles.length - index}`,
-                                        filter: `blur(${Math.round(index) * 0.5}px)`,
+                                        filter: `blur(${Math.min(Math.round(index) * 0.5 + (user.isPremium ? 0 : 5), 5)}px)`,
                                         
                                     }}
                                 />
@@ -48,7 +48,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                     </div>
                     <button className="mt-2 bg-gradient-to-r-main rounded-full hover:brightness-95 w-16 h-10 text-white right-0 border-2"
                         onClick={() => {
-                            user.premium ? onClickButton(true) : setPremiumModalOpen(true);
+                            user.isPremium ? onClickButton(true) : setPremiumModalOpen(true);
                         }}>See all</button>
                 </>
                 : null

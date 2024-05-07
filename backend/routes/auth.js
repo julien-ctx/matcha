@@ -58,7 +58,7 @@ router.post("/register", async (req, res) => {
         { expiresIn: "24h" },
       )
 
-      sendVerificationEmail(user.id, user.email)
+      //sendVerificationEmail(user.id, user.email)
 
       res.status(201).send({
         message: "Registered successfully",

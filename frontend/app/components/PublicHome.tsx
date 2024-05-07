@@ -8,11 +8,13 @@ import './PublicHome.css'
 import Register from './Register';
 import Login from './Login';
 import { useUI } from '../contexts/UIContext';
+import RecoverPassword from './RecoverPassword';
 
 enum PublicHomeState {
     Home,
     Register,
-    Login
+    Login,
+    RecoverPassword
 }
 
 export default function PublicHome() {
@@ -52,7 +54,7 @@ export default function PublicHome() {
                 <div className="w-full h-full" style={{ transform: `translateX(-${currentImageIndex * 100}%)`, transition: 'transform 1s ease-out' }}>
                     {images.map((src, index) => (
                         <div key={index} className="image-container absolute w-full h-full inset-0 " style={{ left: `${index * 100}%` }}>
-                            <img src={src} alt={`front ${index + 1}`} className=" w-full h-full object-cover pointer-events-none"  />
+                            <img src={src} alt={`front ${index + 1}`} className=" w-full h-full object-cover"  />
                         </div>
                     ))}
                 </div>
@@ -78,7 +80,15 @@ export default function PublicHome() {
                                 setHomeState(PublicHomeState.Register)
                                 toggleLogin(false)
                             }}
+                            goRecover={() => {
+                                setHomeState(PublicHomeState.RecoverPassword)
+                                toggleLogin(false)
+                            }}
                         />
+                    </div>
+                ) : homeState === PublicHomeState.RecoverPassword ? (
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        <RecoverPassword />
                     </div>
                 ) : null}
             </div>

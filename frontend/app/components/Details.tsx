@@ -12,7 +12,7 @@ const enum CurrentDetail {
     Orientation,
     Photos,
     Bio,
-    Interests
+    Tags
 }
 
 const enum Gender {
@@ -32,7 +32,7 @@ const enum Orientation {
 
 const OrientationList = ['Male', 'Female', 'Both', 'Other']
 
-const interestsList = [
+const tagsList = [
     'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
     'musician', 'foodie', 'gamer', 'nature lover', 'fitness enthusiast',
     'traveler', 'bookworm', 'movie buff', 'science nerd', 'fashionista',
@@ -50,23 +50,28 @@ export default function Details() {
     const [orientation, setOrientation] = useState<Orientation | null>(null);
     const [photos, setPhotos] = useState<any>([]); // TODO type set
     const [bio, setBio] = useState<string>('');
-    const [interests, setInterests] = useState<string[]>([]);
+    const [tags, setTags] = useState<string[]>([]);
 
-    function nextDetail() { setCurrentDetail((prev) => (prev < CurrentDetail.Interests ? prev + 1 : prev)); }
+    function nextDetail() { setCurrentDetail((prev) => (prev < CurrentDetail.Tags ? prev + 1 : prev)); }
     function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Birthday ? prev - 1 : prev)); }
     
     function handleSubmit() {
-        console.log('here token', token, localStorage.getItem('jwt'))
-        axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
-            dateOfBirth: birthday,
-            gender: GenderList[gender],
-            sexualOrientation: OrientationList[orientation],
-            bio: bio,
-            tags: interests,
-            pictures: photos
-        }, {
+        const formData = new FormData();
+        const date = new Date(birthday);
+        formData.append('dateOfBirth', date.toISOString().split('T')[0]);
+        formData.append('gender', GenderList[gender]);
+        formData.append('sexualOrientation', OrientationList[orientation]);
+        formData.append('bio', bio);
+        formData.append('tags', tags.join(','));
+        
+        photos.forEach((photo, index) => {
+            formData.append(`pictures`, photo, `photo${index}.jpg`);
+        });
+    
+        axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, formData, {
             headers: {
-                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
             }
         }).then(res => {
             console.log('details return', res.data);
@@ -100,11 +105,11 @@ export default function Details() {
         setPhotos(photos.filter((_, i) => i !== index));
     };
 
-    function handleInterestChange(interest: string) : void {
-        if (interests.includes(interest)) {
-          setInterests(interests.filter(i => i !== interest));
-        } else if (interests.length < 10) {
-          setInterests([...interests, interest]);
+    function handleTagChange(tag: string) : void {
+        if (tags.includes(tag)) {
+          setTags(tags.filter(i => i !== tag));
+        } else if (tags.length < 10) {
+          setTags([...tags, tag]);
         }
       };
 
@@ -120,15 +125,15 @@ export default function Details() {
                 return photos.length > 0;
             case CurrentDetail.Bio:
                 return bio.trim().length > 0;
-            case CurrentDetail.Interests:
-                return interests.length > 0;
+            case CurrentDetail.Tags:
+                return tags.length > 0;
             default:
                 return false;
         }
     };
 
     const isFirstDetail = currentDetail === CurrentDetail.Birthday;
-    const isLastDetail = currentDetail === CurrentDetail.Interests;
+    const isLastDetail = currentDetail === CurrentDetail.Tags;
 
 
     const orientationOptions = [
@@ -180,10 +185,6 @@ export default function Details() {
         <div className="relative w-full h-full bg-white flex items-center justify-center flex-col fadeInAnimation"
         >
             <div className="relative w-3/5 max-h-full h-2/3 flex justify-center items-center">
-                {/* <p className="absolute top-0 left-3 text-2xl text-black font-yarndings12">adehijlmnqSTadehijlmnq</p>
-                <p className="rotate-90 -translate-x-1/2 translate-y-32 absolute top-2 left-2 text-2xl text-black font-yarndings12">adehijlmnqSTa</p>
-                <p className="absolute bottom-2 left-2 text-2xl text-black font-yarndings12">adehijlmnqSTadehijlmnq</p> */}
-                {/* <div className="bg-red-200 w-full absolute top-0 left-0">l</div> */}
                 {currentDetail === CurrentDetail.Birthday && <div className="flex flex-col items-center">
                         <h1 className="detail-title mb-8">When were you born?</h1>
                         <input
@@ -191,7 +192,7 @@ export default function Details() {
                             className="text-2xl"
                             value={birthday ? birthday.toISOString().split('T')[0] : ''}
                             onChange={(e) => setBirthday(new Date(e.target.value))}
-                            max={new Date().toISOString().split('T')[0]}
+                            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                         />
                     </div>
                 }
@@ -247,20 +248,20 @@ export default function Details() {
                         <p className="absolute right-2 text-slate-400" style={{bottom: "10%"}}>{bio.length} / 500</p>
                     </div>
                 </div>}
-                {currentDetail === CurrentDetail.Interests && <div className="w-full h-4/5 flex flex-col items-center justify-center">
+                {currentDetail === CurrentDetail.Tags && <div className="w-full h-4/5 flex flex-col items-center justify-center">
                     <h2 className="detail-title">Tags</h2>
                     <div className="flex flex-wrap gap-1 w-full h-full justify-center items-center gap-y-5 content-center">
-                        {interestsList.map(interest => (
-                            <div key={interest}>
+                        {tagsList.map(tag => (
+                            <div key={tag}>
                                 <input
                                     type="checkbox"
-                                    id={`interest-${interest}`}
+                                    id={`tag-${tag}`}
                                     className="checkbox-input"
-                                    checked={interests.includes(interest)}
-                                    onChange={() => handleInterestChange(interest)}
+                                    checked={tags.includes(tag)}
+                                    onChange={() => handleTagChange(tag)}
                                 />
-                                <label htmlFor={`interest-${interest}`} className="checkbox-label px-2 rounded-xl">
-                                #{interest}
+                                <label htmlFor={`tag-${tag}`} className="checkbox-label px-2 rounded-xl">
+                                #{tag}
                                 </label>
                             </div>
                         ))}
