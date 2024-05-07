@@ -21,6 +21,21 @@ router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
   const currentUserId = req.user.id
 
   try {
+    if (requestedUserId !== currentUserId) {
+      const blockCheckQuery = `
+        SELECT 1
+        FROM T_BLOCK
+        WHERE blocker_id = $1 AND blocked_id = $2;
+      `
+      const blockCheckResult = await pool.query(blockCheckQuery, [
+        requestedUserId,
+        currentUserId,
+      ])
+      if (blockCheckResult.rowCount > 0) {
+        return res.status(403).send({ message: "Access denied." })
+      }
+    }
+
     const usersQuery = `
       SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures,
       fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, registration_method, is_premium

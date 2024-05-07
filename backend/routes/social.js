@@ -14,6 +14,18 @@ router.post("/view/:userId", httpAuthenticateJWT, async (req, res) => {
   const viewedId = req.params.userId
 
   try {
+    const blockCheckQuery = `
+      SELECT 1
+      FROM T_BLOCK
+      WHERE blocker_id = $1 AND blocked_id = $2;
+    `
+    const blockCheckResult = await pool.query(blockCheckQuery, [
+      viewedId,
+      viewerId,
+    ])
+    if (blockCheckResult.rowCount > 0) {
+      return res.status(403).send({ message: "Access denied." })
+    }
     const query =
       "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW());"
     await pool.query(query, [viewerId, viewedId])
@@ -30,6 +42,19 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likedId = req.params.userId
 
   try {
+    const blockCheckQuery = `
+      SELECT 1
+      FROM T_BLOCK
+      WHERE blocker_id = $1 AND blocked_id = $2;
+    `
+    const blockCheckResult = await pool.query(blockCheckQuery, [
+      likedId,
+      likerId,
+    ])
+    if (blockCheckResult.rowCount > 0) {
+      return res.status(403).send({ message: "Access denied." })
+    }
+
     const userQuery = "SELECT is_premium FROM T_USER WHERE id = $1"
     const userResult = await pool.query(userQuery, [likerId])
     if (userResult.rowCount === 0 || !userResult.rows[0].is_premium) {
