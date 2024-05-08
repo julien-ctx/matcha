@@ -23,14 +23,14 @@ export function setupSocketEvents(io) {
   io.use(socketAuthenticateJWT)
 
   io.on("connection", (socket) => {
-    // if (userSocketMap.has(socket.userId)) {
-    //   socket.emit("error", {
-    //     errorCode: "ALREADY_CONNECTED",
-    //     message: "You are already connected from another device or tab.",
-    //   })
-    //   socket.disconnect()
-    //   return
-    // }
+    if (userSocketMap.has(socket.userId)) {
+      socket.emit("error", {
+        errorCode: "ALREADY_CONNECTED",
+        message: "You are already connected from another device or tab.",
+      })
+      socket.disconnect()
+      return
+    }
 
     setOnlineStatus(socket.userId, true)
     userSocketMap.set(socket.userId, socket.id)
