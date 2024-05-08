@@ -24,12 +24,13 @@ export function setupSocketEvents(io) {
 
   io.on("connection", (socket) => {
     if (userSocketMap.has(socket.userId)) {
-      socket.emit("error", {
-        errorCode: "ALREADY_CONNECTED",
-        message: "You are already connected from another device or tab.",
+      const existingSocketId = userSocketMap.get(socket.userId)
+      io.to(existingSocketId).emit("error", {
+        errorCode: "DISCONNECTED",
+        message:
+          "You have been disconnected because you logged in from another device or tab.",
       })
-      socket.disconnect()
-      return
+      io.sockets.sockets.get(existingSocketId)?.disconnect(true)
     }
 
     setOnlineStatus(socket.userId, true)
