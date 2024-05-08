@@ -25,7 +25,7 @@ export const setOnlineStatus = async (userId, isOnline) => {
  * @param {Socket} socket - The socket instance representing the new connection attempt.
  */
 export const checkAlreadyExistingConnection = (userSocketMap, io, socket) => {
-  const existingSocketId = userSocketMap.get(socket.userId)
+  const existingSocketId = userSocketMap.get(socket.user.id)
   if (existingSocketId) {
     io.to(existingSocketId).emit("anotherConnectionFound")
   }
@@ -37,16 +37,16 @@ export function setupSocketEvents(io) {
   io.use(socketAuthenticateJWT)
 
   io.on("connection", (socket) => {
-    if (userSocketMap.has(socket.userId)) {
+    if (userSocketMap.has(socket.user.id)) {
       checkAlreadyExistingConnection(userSocketMap, io, socket)
     }
 
-    setOnlineStatus(socket.userId, true)
-    userSocketMap.set(socket.userId, socket.id)
+    setOnlineStatus(socket.user.id, true)
+    userSocketMap.set(socket.user.id, socket.id)
 
     socket.on("disconnect", () => {
-      setOnlineStatus(socket.userId, false)
-      userSocketMap.delete(socket.userId)
+      setOnlineStatus(socket.user.id, false)
+      userSocketMap.delete(socket.user.id)
     })
 
     socket.on("useHere", () => {
@@ -54,9 +54,9 @@ export function setupSocketEvents(io) {
     })
 
     socket.on("setOnlineStatus", ({ isOnline }) => {
-      setOnlineStatus(socket.userId, isOnline)
+      setOnlineStatus(socket.user.id, isOnline)
       socket.broadcast.emit("userOnlineStatusChanged", {
-        userId: socket.userId,
+        userId: socket.user.id,
         isOnline,
       })
     })
@@ -64,13 +64,13 @@ export function setupSocketEvents(io) {
     socket.on("typing", ({ chatroomId }) => {
       socket
         .to(chatroomId)
-        .emit("userIsTyping", { userId: socket.userId, chatroomId })
+        .emit("userIsTyping", { userId: socket.user.id, chatroomId })
     })
 
     socket.on("stopTyping", ({ chatroomId }) => {
       socket
         .to(chatroomId)
-        .emit("userStoppedTyping", { userId: socket.userId, chatroomId })
+        .emit("userStoppedTyping", { userId: socket.user.id, chatroomId })
     })
 
     socket.on("sendMessage", async ({ content, senderId, recipientId }) => {
