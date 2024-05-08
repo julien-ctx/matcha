@@ -31,6 +31,21 @@ export const checkAlreadyExistingConnection = (userSocketMap, io, socket) => {
   }
 }
 
+/**
+ * Sends a custom socket event to a specific user.
+ * @param {Map} userSocketMap - The map storing user IDs and their corresponding socket IDs.
+ * @param {Server} io - The socket.io server instance.
+ * @param {number} userId - The ID of the user to whom the message will be sent.
+ * @param {string} eventType - The type of event to emit.
+ * @param {Object} data - The data to be sent with the event.
+ */
+const sendEventToUser = (userSocketMap, io, userId, eventType, data) => {
+  const socketId = userSocketMap.get(userId)
+  if (socketId) {
+    io.to(socketId).emit(eventType, data)
+  }
+}
+
 export function setupSocketEvents(io) {
   const userSocketMap = new Map()
 
@@ -61,19 +76,21 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("typing", ({ chatroomId }) => {
-      socket
-        .to(chatroomId)
-        .emit("userIsTyping", { userId: socket.user.id, chatroomId })
+    socket.on("typing", ({ chatroomId, recipientId }) => {
+      sendEventToUser(userSocketMap, io, recipientId, "userIsTyping", {
+        userId: socket.user.id,
+        chatroomId,
+      })
     })
 
-    socket.on("stopTyping", ({ chatroomId }) => {
-      socket
-        .to(chatroomId)
-        .emit("userStoppedTyping", { userId: socket.user.id, chatroomId })
+    socket.on("stopTyping", ({ chatroomId, recipientId }) => {
+      sendEventToUser(userSocketMap, io, recipientId, "userStoppedTyping", {
+        userId: socket.user.id,
+        chatroomId,
+      })
     })
 
-    socket.on("sendMessage", async ({ content, senderId, recipientId }) => {      
+    socket.on("sendMessage", async ({ content, senderId, recipientId }) => {
       try {
         await pool.query("BEGIN")
         let chatroom = await pool.query(
@@ -93,12 +110,6 @@ export function setupSocketEvents(io) {
 
         const chatroomId = chatroom.rows[0].id
 
-        socket.join(chatroomId)
-        const recipientSocketId = userSocketMap.get(recipientId)
-        if (recipientSocketId) {
-          io.sockets.sockets.get(recipientSocketId)?.join(chatroomId)
-        }
-
         const result = await pool.query(
           `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id, sender_id, content, sent_at, delivered_at, read_at;`,
           [chatroomId, senderId, content],
@@ -107,7 +118,7 @@ export function setupSocketEvents(io) {
 
         await pool.query("COMMIT")
 
-        io.to(chatroomId).emit("newMessage", {
+        sendEventToUser(userSocketMap, io, recipientId, "newMessage", {
           message,
           chatroomId,
           isNewRoom,
@@ -127,37 +138,6 @@ export function setupSocketEvents(io) {
         socket.emit("error", {
           errorCode: "BROADCAST_FAILED",
           message: "Message could not be sent.",
-        })
-      }
-    })
-
-    socket.on("markMessageAsRead", async ({ messageId }) => {
-      try {
-        await pool.query("BEGIN")
-
-        const updateResult = await pool.query(
-          `UPDATE T_MESSAGE SET read_at = NOW() WHERE id = $1 RETURNING sender_id, chatroom_id;`,
-          [messageId],
-        )
-
-        if (updateResult.rows.length > 0) {
-          await pool.query("COMMIT")
-
-          const { sender_id: senderId, chatroom_id: chatroomId } =
-            updateResult.rows[0]
-          const senderSocketId = userSocketMap.get(senderId)
-          if (senderSocketId) {
-            socket.to(chatroomId).emit("messageRead", { messageId })
-          }
-        } else {
-          await pool.query("ROLLBACK")
-        }
-      } catch (error) {
-        await pool.query("ROLLBACK")
-        console.error("Database error during markMessageAsRead:", error)
-        socket.emit("error", {
-          errorCode: "READ_FAILED",
-          message: "Failed to mark message as read.",
         })
       }
     })
