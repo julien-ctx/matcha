@@ -140,7 +140,6 @@ router.put("/details", httpAuthenticateJWT, upload.array('pictures'), async (req
       values.push(tagsArray);
     }
   
-    // new way to handle pictures
     if (req.files && req.files.length > 0) {
       const fileNames = req.files.map(file => file.path);
       if (fileNames.length > 0) {

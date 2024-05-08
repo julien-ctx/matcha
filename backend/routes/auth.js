@@ -403,4 +403,57 @@ router.get(
   },
 )
 
+router.delete("/delete-account", httpAuthenticateJWT, async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    await pool.query("BEGIN")
+
+    const chatroomsToDelete = await pool.query(
+      "SELECT id FROM T_CHATROOM WHERE user1_id = $1 OR user2_id = $1;",
+      [userId],
+    )
+    for (const chatroom of chatroomsToDelete.rows) {
+      await pool.query("DELETE FROM T_MESSAGE WHERE chatroom_id = $1;", [
+        chatroom.id,
+      ])
+    }
+
+    await pool.query(
+      "DELETE FROM T_CHATROOM WHERE user1_id = $1 OR user2_id = $1;",
+      [userId],
+    )
+
+    await pool.query(
+      "DELETE FROM T_VIEW WHERE viewer_id = $1 OR viewed_id = $1;",
+      [userId],
+    )
+    await pool.query(
+      "DELETE FROM T_LIKE WHERE liker_id = $1 OR liked_id = $1;",
+      [userId],
+    )
+    await pool.query(
+      "DELETE FROM T_REPORT WHERE reporter_id = $1 OR reported_id = $1;",
+      [userId],
+    )
+    await pool.query(
+      "DELETE FROM T_BLOCK WHERE blocker_id = $1 OR blocked_id = $1;",
+      [userId],
+    )
+    await pool.query("DELETE FROM T_FILTER WHERE user_id = $1;", [userId])
+
+    await pool.query("DELETE FROM T_USER WHERE id = $1;", [userId])
+
+    await pool.query("COMMIT")
+    res.send({ message: "Account successfully deleted." })
+  } catch (error) {
+    await pool.query("ROLLBACK")
+    console.error("Database error during account deletion:", error)
+    res.status(500).send({
+      message: "Failed to delete account",
+      error: error.message,
+    })
+  }
+})
+
 export default router
