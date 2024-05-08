@@ -73,7 +73,7 @@ export function setupSocketEvents(io) {
         .emit("userStoppedTyping", { userId: socket.user.id, chatroomId })
     })
 
-    socket.on("sendMessage", async ({ content, senderId, recipientId }) => {
+    socket.on("sendMessage", async ({ content, senderId, recipientId }) => {      
       try {
         await pool.query("BEGIN")
         let chatroom = await pool.query(

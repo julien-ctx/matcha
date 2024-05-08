@@ -23,7 +23,7 @@ interface Props {
 }
 
 export default function Match({ setCurrentProfile, setMatchList }: Props) {
-    const { httpAuthHeader, socket } = useAuth();
+    const { httpAuthHeader, socket, user } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState([18, 99]);
@@ -171,34 +171,37 @@ export default function Match({ setCurrentProfile, setMatchList }: Props) {
             </Modal>
 
             <Modal isOpen={matchModalOpen} onClose={() => setMatchModalOpen(false)}>
-                <div className="w-full flex flex-col">
-                    <h1>Congratulations! You got match with {capitalize(matchProfile?.first_name)}</h1>
-                    <h2 className="text-3xl">Send the first message!</h2>
-                    <form className="flex gap-1" action="">
-                        <input 
-                            type="textarea"
-                            className="w-full rounded-md bg-slate-100 p-2"
-                            placeholder="Type your message here..."
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                        />
-                        <button className=" bg-gradient-to-r-main text-white rounded-md px-3 border-1 "
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (message.trim() === '') return;
-                                socket?.emit('sendMessage', {
-                                    content: message,
-                                    senderId: user?.id,
-                                    receiverId: matchProfile.id
-                                }, (res) => {
-                                    if (res.success) {
-                                        console.log('success: ', res);
-                                        setMatchModalOpen(false);
-                                    }
-                                })
-                            }}
-                        >Send</button>
-                    </form>
+                <div className="w-full flex flex-col items-center">
+                    <h1 className="text-4xl">Congratulations!</h1>
+                    <h2 className="text-3xl">You got match with {capitalize(matchProfile?.first_name)}</h2>
+                    <div className="flex flex-col w-full mt-2 items-center">
+                        <h2 className="text-lg">Send the first message!</h2>
+                        <form className="flex gap-1 w-full" action="">
+                            <input 
+                                type="textarea"
+                                className="w-full rounded-md bg-slate-100 p-2"
+                                placeholder="Type your message here..."
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                            />
+                            <button className=" bg-gradient-to-r-main text-white rounded-md px-3 border-1 "
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (message.trim() === '') return;
+                                    socket?.emit('sendMessage', {
+                                        content: message,
+                                        senderId: user?.id,
+                                        receiverId: matchProfile.id
+                                    }, (res) => {
+                                        if (res.success) {
+                                            console.log('success: ', res);
+                                            setMatchModalOpen(false);
+                                        }
+                                    })
+                                }}
+                            >Send</button>
+                        </form>
+                    </div>
                 </div>
 
             </Modal>
