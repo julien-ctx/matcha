@@ -17,6 +17,20 @@ export const setOnlineStatus = async (userId, isOnline) => {
   }
 }
 
+/**
+ * Checks if there is an existing connection for a user and notifies it about a new attempted connection.
+ *
+ * @param {Map} userSocketMap - A map that stores user IDs and their corresponding socket IDs.
+ * @param {Server} io - The socket.io server instance to communicate with connected clients.
+ * @param {Socket} socket - The socket instance representing the new connection attempt.
+ */
+export const checkAlreadyExistingConnection = (userSocketMap, io, socket) => {
+  const existingSocketId = userSocketMap.get(socket.userId)
+  if (existingSocketId) {
+    io.to(existingSocketId).emit("anotherConnectionFound")
+  }
+}
+
 export function setupSocketEvents(io) {
   const userSocketMap = new Map()
 
@@ -24,13 +38,7 @@ export function setupSocketEvents(io) {
 
   io.on("connection", (socket) => {
     if (userSocketMap.has(socket.userId)) {
-      const existingSocketId = userSocketMap.get(socket.userId)
-      io.to(existingSocketId).emit("error", {
-        errorCode: "DISCONNECTED",
-        message:
-          "You have been disconnected because you logged in from another device or tab.",
-      })
-      io.sockets.sockets.get(existingSocketId)?.disconnect(true)
+      checkAlreadyExistingConnection(userSocketMap, io, socket)
     }
 
     setOnlineStatus(socket.userId, true)
@@ -39,6 +47,10 @@ export function setupSocketEvents(io) {
     socket.on("disconnect", () => {
       setOnlineStatus(socket.userId, false)
       userSocketMap.delete(socket.userId)
+    })
+
+    socket.on("useHere", () => {
+      checkAlreadyExistingConnection(userSocketMap, io, socket)
     })
 
     socket.on("setOnlineStatus", ({ isOnline }) => {
