@@ -20,6 +20,7 @@ export default function Login({ goBackHome, goRegister, goRecover }: LoginProps)
   })
   const { login } = useAuth()
   const router = useRouter()
+  const [errorMsg, setErrorMsg] = useState("")
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = event.target
@@ -31,6 +32,7 @@ export default function Login({ goBackHome, goRegister, goRecover }: LoginProps)
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
+    setErrorMsg("")
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, formData)
       .then((response) => {
@@ -39,9 +41,12 @@ export default function Login({ goBackHome, goRegister, goRecover }: LoginProps)
           console.log("login", response.data.user)
         } else {
           console.error("Backend didn't send JWT token")
+          setErrorMsg("Unknown error. Please try again.")
         }
       })
-      .catch((error) => console.error("Error:", error))
+      .catch((error) => {
+        setErrorMsg("Wrong ID or password. Please try again.")
+      })
   }
 
   const signInWithGoogle = () => {
@@ -61,9 +66,10 @@ export default function Login({ goBackHome, goRegister, goRecover }: LoginProps)
           <p className="text-xl">Connect with Google</p>
       </button>
         <div className="w-full flex flex-col justify-center items-center p-2 gap-1">
-          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-2 p-2 pr-4 pb-3 pt-6 items-center rounded-lg border-1"
+          <form onSubmit={handleSubmit} className="w-full flex flex-col gap-2 p-2 pr-4 pb-3 pt-9 items-center rounded-lg border-1 relative"
             style={{backgroundColor: 'rgba(255, 255, 255, 0.75)'}}
           >
+            <h2 className="absolute top-2 text-rose-500 w-full text-center">{errorMsg}</h2>
             <div className="loginLine">
               <label className="text-end pr-2" htmlFor="identifier">
                 Email / Username:
@@ -94,7 +100,7 @@ export default function Login({ goBackHome, goRegister, goRecover }: LoginProps)
                 className="bg-slate-100 px-2"
               />
             </div>
-            <button type="submit"  className="border-rose-500 border-2 text-rose-500 px-3 bg-white rounded-lg hover:brightness-95 duration-100 mt-3">
+            <button type="submit" className="border-rose-500 border-2 text-rose-500 px-3 bg-white rounded-lg hover:brightness-95 duration-100 mt-2">
               Login
             </button>
           </form>

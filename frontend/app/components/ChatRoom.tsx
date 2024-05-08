@@ -57,13 +57,15 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
         console.log(meTyping, newMessage)
         if (meTyping === false && newMessage.trim().length > 0) {
             socket.emit('typing', {
-                chatroomId: room.id
+                chatroomId: room.id,
+                recipientId: room.other_user.id
             })
             setMeTyping(true);
         }
         if (meTyping === true && newMessage.trim().length === 0) {
             socket.emit('stopTyping', {
-                chatroomId: room.id
+                chatroomId: room.id,
+                recipientId: room.other_user.id
             })
             setMeTyping(false);
         }
