@@ -52,7 +52,9 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
       likerId,
     ])
     if (blockCheckResult.rowCount > 0) {
-      return res.status(403).send({ message: "Access denied." })
+      return res
+        .status(403)
+        .send({ errorCode: "BLOCKED_USER", message: "Access denied." })
     }
 
     const userQuery = "SELECT is_premium FROM T_USER WHERE id = $1"
@@ -67,6 +69,7 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
       const likeCountResult = await pool.query(likeCountQuery, [likerId])
       if (parseInt(likeCountResult.rows[0].like_count, 10) >= 20) {
         return res.status(403).json({
+          errorCode: "LIKE_LIMIT_REACHED",
           message:
             "Like limit reached. Upgrade to premium for unlimited likes.",
         })
