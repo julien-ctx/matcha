@@ -355,6 +355,11 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
     JOIN T_LIKE AS l1 ON u.id = l1.liker_id
     JOIN T_LIKE AS l2 ON l1.liker_id = l2.liked_id AND l1.liked_id = l2.liker_id
     WHERE l1.liked_id = $1 AND l1.liker_id = l2.liked_id
+    AND NOT EXISTS (
+      SELECT 1 FROM T_CHATROOM
+      WHERE (user1_id = l1.liker_id AND user2_id = l1.liked_id) OR
+            (user1_id = l1.liked_id AND user2_id = l1.liker_id)
+    )
   `
 
   try {
@@ -365,7 +370,7 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
       [userId],
     )
     if (!currentUser.rows.length) {
-      res.json(result.rows)
+      return res.json(result.rows)
     }
     const resultWithDistance = result.rows.map((user) => {
       const distance = getDistance(
