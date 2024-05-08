@@ -52,7 +52,9 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
       likerId,
     ])
     if (blockCheckResult.rowCount > 0) {
-      return res.status(403).send({ message: "Access denied." })
+      return res
+        .status(403)
+        .send({ errorCode: "BLOCKED_USER", message: "Access denied." })
     }
 
     const userQuery = "SELECT is_premium FROM T_USER WHERE id = $1"
@@ -67,6 +69,7 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
       const likeCountResult = await pool.query(likeCountQuery, [likerId])
       if (parseInt(likeCountResult.rows[0].like_count, 10) >= 20) {
         return res.status(403).json({
+          errorCode: "LIKE_LIMIT_REACHED",
           message:
             "Like limit reached. Upgrade to premium for unlimited likes.",
         })
@@ -355,6 +358,11 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
     JOIN T_LIKE AS l1 ON u.id = l1.liker_id
     JOIN T_LIKE AS l2 ON l1.liker_id = l2.liked_id AND l1.liked_id = l2.liker_id
     WHERE l1.liked_id = $1 AND l1.liker_id = l2.liked_id
+    AND NOT EXISTS (
+      SELECT 1 FROM T_CHATROOM
+      WHERE (user1_id = l1.liker_id AND user2_id = l1.liked_id) OR
+            (user1_id = l1.liked_id AND user2_id = l1.liker_id)
+    )
   `
 
   try {
@@ -365,7 +373,7 @@ router.get("/matches", httpAuthenticateJWT, async (req, res) => {
       [userId],
     )
     if (!currentUser.rows.length) {
-      res.json(result.rows)
+      return res.json(result.rows)
     }
     const resultWithDistance = result.rows.map((user) => {
       const distance = getDistance(
