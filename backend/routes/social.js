@@ -14,6 +14,18 @@ router.post("/view/:userId", httpAuthenticateJWT, async (req, res) => {
   const viewedId = req.params.userId
 
   try {
+    const blockCheckQuery = `
+      SELECT 1
+      FROM T_BLOCK
+      WHERE blocker_id = $1 AND blocked_id = $2;
+    `
+    const blockCheckResult = await pool.query(blockCheckQuery, [
+      viewedId,
+      viewerId,
+    ])
+    if (blockCheckResult.rowCount > 0) {
+      return res.status(403).send({ message: "Access denied." })
+    }
     const query =
       "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW());"
     await pool.query(query, [viewerId, viewedId])
@@ -30,6 +42,19 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likedId = req.params.userId
 
   try {
+    const blockCheckQuery = `
+      SELECT 1
+      FROM T_BLOCK
+      WHERE blocker_id = $1 AND blocked_id = $2;
+    `
+    const blockCheckResult = await pool.query(blockCheckQuery, [
+      likedId,
+      likerId,
+    ])
+    if (blockCheckResult.rowCount > 0) {
+      return res.status(403).send({ message: "Access denied." })
+    }
+
     const userQuery = "SELECT is_premium FROM T_USER WHERE id = $1"
     const userResult = await pool.query(userQuery, [likerId])
     if (userResult.rowCount === 0 || !userResult.rows[0].is_premium) {
@@ -92,7 +117,10 @@ router.get("/likes", httpAuthenticateJWT, async (req, res) => {
       SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude
       FROM T_USER u
       JOIN T_LIKE l ON l.liker_id = u.id
-      WHERE l.liked_id = $1;
+      WHERE l.liked_id = $1
+      AND NOT EXISTS (
+        SELECT 1 FROM T_LIKE l2 WHERE l2.liker_id = $1 AND l2.liked_id = l.liker_id
+      );
     `
     const result = await pool.query(query, [userId])
 
@@ -101,7 +129,7 @@ router.get("/likes", httpAuthenticateJWT, async (req, res) => {
       [userId],
     )
     if (!currentUser.rows.length) {
-      res.json(result.rows)
+      return res.json(result.rows)
     }
     const resultWithDistance = result.rows.map((user) => {
       const distance = getDistance(
@@ -128,10 +156,12 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.longitude, u.latitude
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude
       FROM T_USER u
       JOIN T_VIEW v ON v.viewer_id = u.id
-      WHERE v.viewed_id = $1;
+      WHERE v.viewed_id = $1 AND NOT EXISTS (
+        SELECT 1 FROM T_LIKE l WHERE l.liker_id = u.id AND l.liked_id = $1
+      );
     `
     const result = await pool.query(query, [userId])
 
@@ -140,12 +170,14 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
       [userId],
     )
     if (!currentUser.rows.length) {
-      res.json(result.rows)
+      return res.json(result.rows)
     }
+    const currentCoordinates = currentUser.rows[0]
+
     const resultWithDistance = result.rows.map((user) => {
       const distance = getDistance(
-        currentUser.rows[0].latitude,
-        currentUser.rows[0].longitude,
+        currentCoordinates.latitude,
+        currentCoordinates.longitude,
         user.latitude,
         user.longitude,
       )
@@ -214,27 +246,57 @@ router.post("/report/:userId", httpAuthenticateJWT, async (req, res) => {
 /* The currently authenticated user blocks another user */
 router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
-  const blockedId = req.params.userId
+  const blockedId = parseInt(req.params.userId, 10)
 
   if (blockerId === parseInt(blockedId, 10)) {
     return res.status(400).send({ message: "Users cannot block themselves" })
   }
 
   try {
-    const query = `
-        INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
-        VALUES ($1, $2, NOW())
-        ON CONFLICT DO NOTHING;
+    await pool.query("BEGIN")
+
+    const chatroomQuery = `
+      SELECT id FROM T_CHATROOM
+      WHERE (user1_id = LEAST($1::int, $2::int) AND user2_id = GREATEST($1::int, $2::int));
     `
-    const result = await pool.query(query, [blockerId, blockedId])
-    if (result.rowCount === 0) {
-      res.status(409).send({ message: "User is already blocked" })
-    } else {
-      res.status(201).send({ message: "User successfully blocked" })
+    const chatroomResult = await pool.query(chatroomQuery, [
+      blockerId,
+      blockedId,
+    ])
+    if (chatroomResult.rows.length > 0) {
+      const chatroomId = chatroomResult.rows[0].id
+
+      const deleteMessagesQuery = `DELETE FROM T_MESSAGE WHERE chatroom_id = $1;`
+      await pool.query(deleteMessagesQuery, [chatroomId])
+
+      const deleteChatroomQuery = `DELETE FROM T_CHATROOM WHERE id = $1;`
+      await pool.query(deleteChatroomQuery, [chatroomId])
     }
+
+    const deleteLikesQuery = `
+      DELETE FROM T_LIKE
+      WHERE (liker_id = $1 AND liked_id = $2) OR (liker_id = $2 AND liked_id = $1);
+    `
+    await pool.query(deleteLikesQuery, [blockerId, blockedId])
+
+    const insertBlockQuery = `
+      INSERT INTO T_BLOCK (blocker_id, blocked_id, block_date)
+      VALUES ($1, $2, NOW())
+      ON CONFLICT DO NOTHING;
+    `
+    await pool.query(insertBlockQuery, [blockerId, blockedId])
+
+    await pool.query("COMMIT")
+
+    res.status(201).send({
+      message: "User successfully blocked and all related likes removed",
+    })
   } catch (error) {
-    console.error("Database error:", error)
-    res.status(500).send({ message: "Failed to block user" })
+    await pool.query("ROLLBACK")
+    console.error("Database error during block operation:", error)
+    res
+      .status(500)
+      .send({ message: "Failed to block user", error: error.message })
   }
 })
 
@@ -359,20 +421,49 @@ router.delete("/match", httpAuthenticateJWT, async (req, res) => {
         .send({ message: "No mutual like (match) found to delete." })
     }
 
+    const chatroomQuery = `
+      SELECT id FROM T_CHATROOM
+      WHERE (user1_id = LEAST($1::int, $2::int) AND user2_id = GREATEST($1::int, $2::int));
+    `
+    const chatroomResult = await pool.query(chatroomQuery, [
+      firstUserId,
+      secondUserId,
+    ])
+    if (chatroomResult.rows.length > 0) {
+      const chatroomId = chatroomResult.rows[0].id
+
+      const deleteMessagesQuery = `DELETE FROM T_MESSAGE WHERE chatroom_id = $1;`
+      await pool.query(deleteMessagesQuery, [chatroomId])
+
+      const deleteChatroomQuery = `DELETE FROM T_CHATROOM WHERE id = $1;`
+      await pool.query(deleteChatroomQuery, [chatroomId])
+    }
+
     const deleteMatchQuery = `
       DELETE FROM T_LIKE
       WHERE (liker_id = $1 AND liked_id = $2) OR (liker_id = $2 AND liked_id = $1);
     `
     await pool.query(deleteMatchQuery, [firstUserId, secondUserId])
+
+    const blockEachOtherQuery = `
+      INSERT INTO T_BLOCK (blocker_id, blocked_id)
+      VALUES ($1, $2), ($2, $1)
+      ON CONFLICT DO NOTHING;
+    `
+    await pool.query(blockEachOtherQuery, [firstUserId, secondUserId])
+
     await pool.query("COMMIT")
 
-    res.send({ message: "Match successfully deleted." })
+    res.send({
+      message: "Match and chatroom deleted, users blocked successfully.",
+    })
   } catch (error) {
     await pool.query("ROLLBACK")
     console.error("Database error during match deletion:", error)
-    res
-      .status(500)
-      .send({ message: "Failed to delete match", error: error.message })
+    res.status(500).send({
+      message: "Failed to delete match and chatroom, update block list",
+      error: error.message,
+    })
   }
 })
 
