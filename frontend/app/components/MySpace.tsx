@@ -47,19 +47,6 @@ export default function MySpace() {
     }, [currentChatRoom])
 
     useEffect(() => {
-        if (!socket) return;
-
-        socket.on('userIsTyping', (data) => {
-            console.log("typing", data);
-        })
-
-        socket.on("userStoppedTyping", (data) => {
-            console.log("stop typing", data)
-        })
-    }, [socket])
-
-
-    useEffect(() => {
         console.log('user', user)
         if (!user) return;
         // if (!user.account_verified)
@@ -76,10 +63,24 @@ export default function MySpace() {
         
         socket.on('userIsTyping', (data) => {
             console.log('user is typing', data)
+            if (data.userId === user.id) return;
+            setTypingMap(prev => {
+                const newMap = new Map(prev);
+                newMap.set(data.chatroomId, true);
+                return newMap;
+            })
+
         })
 
-        socket.on('useStoppedTyping', (data) => {
+        socket.on('userStoppedTyping', (data) => {
             console.log('user stopped typing', data)
+            if (data.userId === user.id) return;
+            setTypingMap(prev => {
+                const newMap = new Map(prev);
+                newMap.set(data.chatroomId, false);
+                return newMap;
+            })
+
         })
 
         return (() => {
@@ -173,7 +174,7 @@ export default function MySpace() {
             {currentChatRoom !== null && (
                 <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 slide-in-right">
                     <ChatRoom room={chatRoomList.filter(room => room.id === currentChatRoom)[0]} 
-                        setTypingMap={setTypingMap} typing={typingMap.get(currentChatRoom)}
+                        otherTyping={typingMap.get(currentChatRoom)}
                         setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
