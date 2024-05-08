@@ -17,33 +17,46 @@ export const setOnlineStatus = async (userId, isOnline) => {
   }
 }
 
+/**
+ * Checks if there is an existing connection for a user and notifies it about a new attempted connection.
+ *
+ * @param {Map} userSocketMap - A map that stores user IDs and their corresponding socket IDs.
+ * @param {Server} io - The socket.io server instance to communicate with connected clients.
+ * @param {Socket} socket - The socket instance representing the new connection attempt.
+ */
+export const checkAlreadyExistingConnection = (userSocketMap, io, socket) => {
+  const existingSocketId = userSocketMap.get(socket.user.id)
+  if (existingSocketId) {
+    io.to(existingSocketId).emit("anotherConnectionFound")
+  }
+}
+
 export function setupSocketEvents(io) {
   const userSocketMap = new Map()
 
   io.use(socketAuthenticateJWT)
 
   io.on("connection", (socket) => {
-    if (userSocketMap.has(socket.userId)) {
-      socket.emit("error", {
-        errorCode: "ALREADY_CONNECTED",
-        message: "You are already connected from another device or tab.",
-      })
-      socket.disconnect()
-      return
+    if (userSocketMap.has(socket.user.id)) {
+      checkAlreadyExistingConnection(userSocketMap, io, socket)
     }
 
-    setOnlineStatus(socket.userId, true)
-    userSocketMap.set(socket.userId, socket.id)
+    setOnlineStatus(socket.user.id, true)
+    userSocketMap.set(socket.user.id, socket.id)
 
     socket.on("disconnect", () => {
-      setOnlineStatus(socket.userId, false)
-      userSocketMap.delete(socket.userId)
+      setOnlineStatus(socket.user.id, false)
+      userSocketMap.delete(socket.user.id)
+    })
+
+    socket.on("useHere", () => {
+      checkAlreadyExistingConnection(userSocketMap, io, socket)
     })
 
     socket.on("setOnlineStatus", ({ isOnline }) => {
-      setOnlineStatus(socket.userId, isOnline)
+      setOnlineStatus(socket.user.id, isOnline)
       socket.broadcast.emit("userOnlineStatusChanged", {
-        userId: socket.userId,
+        userId: socket.user.id,
         isOnline,
       })
     })
@@ -51,13 +64,13 @@ export function setupSocketEvents(io) {
     socket.on("typing", ({ chatroomId }) => {
       socket
         .to(chatroomId)
-        .emit("userIsTyping", { userId: socket.userId, chatroomId })
+        .emit("userIsTyping", { userId: socket.user.id, chatroomId })
     })
 
     socket.on("stopTyping", ({ chatroomId }) => {
       socket
         .to(chatroomId)
-        .emit("userStoppedTyping", { userId: socket.userId, chatroomId })
+        .emit("userStoppedTyping", { userId: socket.user.id, chatroomId })
     })
 
     socket.on("sendMessage", async ({ content, senderId, recipientId }) => {
