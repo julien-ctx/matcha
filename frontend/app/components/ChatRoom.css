@@ -38,3 +38,7 @@
     background: white; /* Same gradient as text */
     padding: 1rem;
 }
+
+.modal-button {
+    @apply text-rose-500 text-xl h-12 flex w-full justify-center items-center hover:bg-rose-50 duration-150 rounded-md;
+}

@@ -14,10 +14,26 @@ interface ChatRoomProp {
     setCurrentProfile: (profile: any) => void
 }
 
+enum ModalState {
+    ReportOrLeave,
+    ReportDetail,
+    AreYouSure,
+    Confirmation
+}
+
+const reportReasons = [
+    'Inappropriate content',
+    'Spam',
+    'Harassment',
+    'Fake Profile',
+    'Other'
+];
 export default function ChatRoom({ room, typing, setTypingMap, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
     const [isModalOpen, setModalOpen] = useState(false);
     const [otherProfile, setOtherProfile] = useState(null);
     const { user, httpAuthHeader, socket } = useAuth();
+    const [modalState, setModalState] = useState(ModalState.ReportOrLeave);
+    const [reportRes, setReportRes] = useState('');
 
     function fetchProfile(userId: number) {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/details/${userId}`, httpAuthHeader)
@@ -84,6 +100,22 @@ export default function ChatRoom({ room, typing, setTypingMap, setCurrentRoom, s
         }
     };
 
+    function handleReport(reportType: string) {
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/report/${room.other_user.id}`, {
+            reason: reportType
+        }, httpAuthHeader)
+            .then((res) => {
+                console.log('report res', res.data);
+                setReportRes(res.data.message);
+                setModalState(ModalState.Confirmation);
+            }).catch((err) => {
+                if (err.response) {
+                    setReportRes(err.response.data.message);
+                    setModalState(ModalState.Confirmation);
+                }
+            })
+    }
+
     useEffect(() => {
         endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [room.messages.length]); // This ensures the view scrolls down every time a new message is added
@@ -136,11 +168,55 @@ export default function ChatRoom({ room, typing, setTypingMap, setCurrentRoom, s
 
             <Modal
                 isOpen={isModalOpen}
-                onClose={() => setModalOpen(false)}
+                onClose={() => {
+                    setModalOpen(false)
+                    setModalState(ModalState.ReportOrLeave)
+                }}
                 >
-                    <div className="flex flex-col">
-                        <button>Report User</button>
-                        <button>Leave Chat</button>
+                    <div className="p-4">
+                    {modalState === ModalState.ReportOrLeave ? (
+                        <div className="flex flex-col">
+                            <button className="modal-button"
+                                onClick={() => setModalState(ModalState.ReportDetail)}
+                            >Report User</button>
+                            <button className="modal-button"
+                                onClick={() => setModalState(ModalState.AreYouSure)}
+                            >Leave Chat</button>
+                        </div>
+                    ) : modalState === ModalState.ReportDetail ? (
+                        <div className="flex flex-col">
+                            {reportReasons.map(reason => (
+                                <button 
+                                    key={reason} 
+                                    className="modal-button" 
+                                    onClick={() => handleReport(reason)}
+                                >
+                                    {reason}
+                                </button>
+                            ))}
+                        </div>
+                    ) : modalState === ModalState.Confirmation ? ( 
+                        <div className="flex flex-col">
+                            <h2 className="w-full text-center text-lg">{reportRes}</h2>
+                        </div>
+                    ) : modalState === ModalState.AreYouSure ? (
+                        <div className="flex flex-col justify-center items-center gap-3">
+                            <p className="text-center text-lg">You will not be able to recover this chat and match if you leave. Are you sure?</p>
+                            <div className="flex gap-1">
+                                <button 
+                                    onClick={() => {
+                                        
+                                    }}
+                                className="px-4 rounded-md bg-white duration-100 hover:brightness-95 border-2 border-rose-500 text-rose-500">Yes</button>
+                                <button 
+                                    onClick={() => {
+                                        setModalState(ModalState.ReportOrLeave)
+                                        setModalOpen(false);
+                                    }}
+                                className="px-4 rounded-md bg-white duration-100 hover:brightness-95 border-2 border-rose-500 text-rose-500">No</button>
+                            </div>
+                        </div>
+                    ) : null}
                     </div>
             </Modal>
         </div>

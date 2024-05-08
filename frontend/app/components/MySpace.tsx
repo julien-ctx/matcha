@@ -124,19 +124,21 @@ export default function MySpace() {
         socket.on('newMessage', (data) => {
             console.log('new message here', data)
             setChatRoomList(prev => {
-                const targetRoom = prev.find(room => room.id === data.chatroomId);
-                const otherRooms = prev.filter(room => room.id !== data.chatroomId);
-    
-                if (targetRoom) {
-                    const updatedMessages = [...targetRoom.messages, data];
+                if (data.isNewRoom) {
+                    return [...prev, data.chatroomInfo]
+                } else {
+                    const targetRoom = prev.find(room => room.id === data.chatroomId);
+                    const otherRooms = prev.filter(room => room.id !== data.chatroomId);
+        
+                    if (!targetRoom) return prev;
+                    
+                    const updatedMessages = [...targetRoom.messages, data.message];
                     const updatedTargetRoom = { ...targetRoom, messages: updatedMessages };
     
                     return [updatedTargetRoom, ...otherRooms];
                 }
-    
-                return prev;
-            });
-            })
+                });
+        })
 
         return (() => {
             socket.off('anotherConnectionFound')
