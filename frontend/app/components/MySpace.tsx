@@ -27,37 +27,34 @@ export default function MySpace() {
     const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList, anotherConnection, toggleAnotherConnection } = useUI();
     const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
     const [typingMap, setTypingMap] = useState(new Map());
+    const [newMessageMap, setNewMessageMap] = useState(new Map());
 
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
     const [matchList, setMatchList] = useState<any[]>([]);
     const [chatRoomList, setChatRoomList] = useState<any[]>([]);
 
-    useEffect(() => {
+    function initTypingMap() {
         const initialTypingMap = new Map();
         chatRoomList.forEach(room => {
             initialTypingMap.set(room.id, false);
         });
     
         setTypingMap(initialTypingMap);
-    }, [chatRoomList]); 
+    }
+
+    function initNewMessageMap() {
+        const initialNewMessageMap = new Map();
+        chatRoomList.forEach(room => {
+            initialNewMessageMap.set(room.id, false);
+        });
+    
+        setNewMessageMap(initialNewMessageMap);
+    }
 
     useEffect(() => {
         console.log('current chat room', currentChatRoom)
     }, [currentChatRoom])
-
-    useEffect(() => {
-        if (!socket) return;
-
-        socket.on('userIsTyping', (data) => {
-            console.log("typing", data);
-        })
-
-        socket.on("userStoppedTyping", (data) => {
-            console.log("stop typing", data)
-        })
-    }, [socket])
-
 
     useEffect(() => {
         console.log('user', user)
@@ -76,10 +73,24 @@ export default function MySpace() {
         
         socket.on('userIsTyping', (data) => {
             console.log('user is typing', data)
+            if (data.userId === user.id) return;
+            setTypingMap(prev => {
+                const newMap = new Map(prev);
+                newMap.set(data.chatroomId, true);
+                return newMap;
+            })
+
         })
 
-        socket.on('useStoppedTyping', (data) => {
+        socket.on('userStoppedTyping', (data) => {
             console.log('user stopped typing', data)
+            if (data.userId === user.id) return;
+            setTypingMap(prev => {
+                const newMap = new Map(prev);
+                newMap.set(data.chatroomId, false);
+                return newMap;
+            })
+
         })
 
         return (() => {
@@ -102,6 +113,8 @@ export default function MySpace() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/chatrooms`, httpAuthHeader).then(response => {
             console.log('chats', response.data)
             setChatRoomList(response.data)
+            initTypingMap();
+            initNewMessageMap();
         }).catch(error => {
             console.error(error)
         })
@@ -137,14 +150,22 @@ export default function MySpace() {
     
                     return [updatedTargetRoom, ...otherRooms];
                 }
-                });
+            });
+
+            console.log('current chat room', currentChatRoom, 'data chat room', data.chatroomId)
+            if (data.chatroomId !== currentChatRoom)
+                setNewMessageMap(prev => {
+                    const newMap = new Map(prev);
+                    newMap.set(data.chatroomId, true);
+                    return newMap;
+                })
         })
 
         return (() => {
             socket.off('anotherConnectionFound')
             socket.off('newMessage')
         })
-    }, [socket])
+    }, [socket, currentChatRoom])
 
     return anotherConnection ? (
            <AnotherConnection /> 
@@ -152,7 +173,7 @@ export default function MySpace() {
         : spaceState === SpaceState.READY ? (
         <div className="w-full h-full flex fixed overflow-hidden">
             <div className="w-1/4 relative">
-                <Chat rooms={chatRoomList} typingMap={typingMap} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+                <Chat rooms={chatRoomList} typingMap={typingMap} newMessageMap={newMessageMap} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile} setNewMessageMap={setNewMessageMap}/>
             </div>
             <div className="w-3/4 relative">
                 <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList}/>
@@ -173,7 +194,7 @@ export default function MySpace() {
             {currentChatRoom !== null && (
                 <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 slide-in-right">
                     <ChatRoom room={chatRoomList.filter(room => room.id === currentChatRoom)[0]} 
-                        setTypingMap={setTypingMap} typing={typingMap.get(currentChatRoom)}
+                        otherTyping={typingMap.get(currentChatRoom)}
                         setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}

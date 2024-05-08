@@ -5,11 +5,11 @@ import './ChatRoom.css';
 import Modal from './Modal';
 import axios from 'axios';
 import { useAuth } from '../auth/AuthProvider';
+import { capitalize } from '../utils';
 
 interface ChatRoomProp {
     room: any[],
-    typing: boolean,
-    setTypingMap: (typingMap: any) => void,
+    otherTyping: boolean,
     setCurrentRoom: (roomId: number | null) => void,
     setCurrentProfile: (profile: any) => void
 }
@@ -28,12 +28,13 @@ const reportReasons = [
     'Fake Profile',
     'Other'
 ];
-export default function ChatRoom({ room, typing, setTypingMap, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
+export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
     const [isModalOpen, setModalOpen] = useState(false);
     const [otherProfile, setOtherProfile] = useState(null);
     const { user, httpAuthHeader, socket } = useAuth();
     const [modalState, setModalState] = useState(ModalState.ReportOrLeave);
     const [reportRes, setReportRes] = useState('');
+    const [meTyping, setMeTyping] = useState(false);
 
     function fetchProfile(userId: number) {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/details/${userId}`, httpAuthHeader)
@@ -53,29 +54,23 @@ export default function ChatRoom({ room, typing, setTypingMap, setCurrentRoom, s
     const endOfMessagesRef = useRef(null);
 
     useEffect(() => {
-        console.log(typing, newMessage)
-        if (typing === false && newMessage.trim().length > 0) {
+        console.log(meTyping, newMessage)
+        if (meTyping === false && newMessage.trim().length > 0) {
             socket.emit('typing', {
-                chatroomId: room.id
+                chatroomId: room.id,
+                recipientId: room.other_user.id
             })
-            setTypingMap(prev => {
-                const newMap = new Map(prev);
-                newMap.set(room.id, true);
-                return newMap;
-            })
+            setMeTyping(true);
         }
-        if (typing === true && newMessage.trim().length === 0) {
+        if (meTyping === true && newMessage.trim().length === 0) {
             socket.emit('stopTyping', {
-                chatroomId: room.id
+                chatroomId: room.id,
+                recipientId: room.other_user.id
             })
-            setTypingMap(prev => {
-                const newMap = new Map(prev);
-                newMap.set(room.id, false);
-                return newMap;
-            })
+            setMeTyping(false);
         }
 
-    }, [newMessage, typing])
+    }, [newMessage, meTyping])
 
     const sendMessage = () => {
         if (!socket) return;
@@ -142,7 +137,7 @@ export default function ChatRoom({ room, typing, setTypingMap, setCurrentRoom, s
                 </button>
             </div>
             <div className="flex flex-col bg-slate-50 w-full" style={{height: "calc(100% - 3.5rem)"}}>
-                <div className="flex flex-col gap-1 overflow-y-auto h-4/5 px-4 py-5 bg-white">
+                <div className=" flex flex-col gap-1 overflow-y-auto h-4/5 px-4 py-5 bg-white">
                     {room.messages.map(message => (
                         <div key={message.id} className={`message ${message.sender_id === user.id ? 'own' : 'other'}`}>
                             {message.content}
@@ -150,7 +145,12 @@ export default function ChatRoom({ room, typing, setTypingMap, setCurrentRoom, s
                     ))}
                     <div ref={endOfMessagesRef} />
                 </div>
-                <div className="h-1/5 w-full p-4 flex gap-1">
+                <div className="relative h-1/5 w-full p-4 flex gap-1">
+                    {otherTyping && 
+                    <div className="text-slate-400 absolute -top-6 left-5 flex gap-1">
+                        <p>{capitalize(room.other_user.first_name)} is typing...</p>
+                    </div>
+                    }
                     <textarea
                         value={newMessage}
                         onChange={e => setNewMessage(e.target.value)}

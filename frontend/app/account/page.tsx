@@ -360,10 +360,17 @@ const renderGenderOption = (option) => (
             <button className="bg-gradient-to-r-main text-white px-4 py-2 text-lg rounded-lg hover:brightness-95 duration-100"
               onClick={() => {
                 // TODO axios.
+                axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/auth/delete-account`, httpAuthHeader)
+                  .then(res => {
+                    console.log(res);
+                    logout();
+                    router.push('/goodbye'); // TODO should be able to redirect to a goodbye page
+                  }).catch(e => {
+                    console.error(e);
+                  })
 
                 // if success
                 // logout()
-                router.push('/goodbye')
               }}
             >Yes, delete my account</button>
             <button className="border-rose-500 text-rose-500 border-2 px-4 py-2 text-lg rounded-lg hover:brightness-95 bg-white duration-100" onClick={() => setDeleteAccountModal(false)}>No, keep my account</button>

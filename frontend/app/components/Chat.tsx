@@ -6,12 +6,14 @@ import MatchList from './MatchList';
 interface ChatRoomProp {
     rooms: any[],
     typingMap: any,
+    newMessageMap: any,
     matchList: any[],
     setCurrentRoom: (roomId: number) => void
     setCurrentProfile: (profile: any) => void
+    setNewMessageMap: (newMessageMap: any) => void
 }
 
-export default function Chat({ rooms, typingMap, matchList, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
+export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCurrentRoom, setCurrentProfile, setNewMessageMap }: ChatRoomProp) {
     const { user } = useAuth();
 
     return (
@@ -32,13 +34,24 @@ export default function Chat({ rooms, typingMap, matchList, setCurrentRoom, setC
                                             onClick={() => {
                                                 setCurrentProfile(null);
                                                 setCurrentRoom(room.id);
+                                                if (newMessageMap.get(room.id) === true) {
+                                                    setNewMessageMap(prev => {
+                                                        const newMap = new Map(prev);
+                                                        newMap.set(room.id, false);
+                                                        return newMap;
+                                                    });
+                                                }
                                             }}>
                                             <img src={`${process.env.NEXT_PUBLIC_API_URL}/${room.other_user.profile_picture}`} alt={room.other_user.name} className="w-16 h-16 object-cover rounded-full mr-2"/>
                                             <div className="flex flex-col font-jersey15 w-3/5">
                                                 <h2 className="text-xl">{room.other_user.first_name}</h2>
-                                                <p className="text-md text-ellipsis text-nowrap max-w-full overflow-hidden">{lastMessage?.content}</p>
+                                                    {typingMap.get(room.id) ? <p className="text-sm text-rose-500">Typing...</p> 
+                                                    : <p className="text-md text-ellipsis text-nowrap max-w-full overflow-hidden">{lastMessage?.content}</p>
+                                                }
                                             </div>
-                                            {lastMessage?.sender_id !== user.id && !lastMessage?.read_at && <div className="absolute right-3 top-2 w-3 h-3 rounded-full bg-rose-500"></div>}
+                                            {newMessageMap.get(room.id) &&
+                                                <div className="w-3 h-3 absolute top-3 right-3 rounded-full bg-rose-500 border-1 border-red-200"></div>
+                                            }    
                                         </li>
                                     );
                                 })}
