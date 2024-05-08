@@ -27,7 +27,7 @@ export const httpAuthenticateJWT = (req, res, next) => {
 }
 
 export const socketAuthenticateJWT = (socket, next) => {
-  const token = socket.handshake.auth.token
+  const token = socket.handshake.auth.token || socket.handshake.headers.token
 
   if (!token) {
     return next(new Error("Authentication error: Token not provided"))

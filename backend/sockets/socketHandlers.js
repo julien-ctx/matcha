@@ -23,6 +23,15 @@ export function setupSocketEvents(io) {
   io.use(socketAuthenticateJWT)
 
   io.on("connection", (socket) => {
+    if (userSocketMap.has(socket.userId)) {
+      socket.emit("error", {
+        errorCode: "ALREADY_CONNECTED",
+        message: "You are already connected from another device or tab.",
+      })
+      socket.disconnect()
+      return
+    }
+
     setOnlineStatus(socket.userId, true)
     userSocketMap.set(socket.userId, socket.id)
 
@@ -107,7 +116,10 @@ export function setupSocketEvents(io) {
         } catch (error) {
           await pool.query("ROLLBACK")
           console.error("Database error:", error)
-          socket.emit("error", { message: "Message could not be sent." })
+          socket.emit("error", {
+            errorCode: "BROADCAST_FAILED",
+            message: "Message could not be sent.",
+          })
 
           callback({
             success: false,
@@ -141,7 +153,10 @@ export function setupSocketEvents(io) {
       } catch (error) {
         await pool.query("ROLLBACK")
         console.error("Database error during markMessageAsRead:", error)
-        socket.emit("error", { message: "Failed to mark message as read." })
+        socket.emit("error", {
+          errorCode: "READ_FAILED",
+          message: "Failed to mark message as read.",
+        })
       }
     })
   })
