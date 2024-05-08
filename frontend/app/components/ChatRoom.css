@@ -14,7 +14,7 @@
 
 .own {
     margin-left: auto;
-    background: blue;
+    @apply border-2 border-red-100 bg-white;
 }
 
 .other {
