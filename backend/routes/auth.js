@@ -191,7 +191,7 @@ router.post("/jwt-status", async (req, res) => {
     `
     const { rows } = await pool.query(query, [userId])
     if (rows.length === 0) {
-      return res.status(404).send({ message: "User not found." })
+      return res.status(404).send({ message: "Authenticated user not found in database." })
     }
 
     const user = rows[0]
