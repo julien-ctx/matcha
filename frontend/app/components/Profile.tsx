@@ -52,6 +52,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     const [message, setMessage] = useState<string>('');
 
     console.log('profile', profile)
+    console.log('tags', profile.tags)
 
 
     function prevImage() {
@@ -61,7 +62,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     }
 
     function nextImage() {
-        if (currentImageIndex === initialTestProfiles[profile.id % 2].pictures.length - 1) return;
+        if (currentImageIndex === profile.pictures.length - 1) return;
 
         setCurrentImageIndex((prevIndex) => (prevIndex + 1));
     };
@@ -81,15 +82,14 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                         setCurrentProfile(profile);
                     }}>
                     {
-                    //profile.pictures.map((img, index) => { // TODO when we get random images
-                    initialTestProfiles[profile.id % 2].pictures.map((img, index) => (
+                    profile.pictures.map((img, index) => {
                         <img 
                             key={index} 
-                            src={img} 
+                            src={`${process.env.NEXT_PUBLIC_API_URL}/${img}`} 
                             alt={profile.first_name}
                             className={`absolute top-0 w-full rounded-2xl h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
                         />
-                    ))}
+                    })}
                     <button
                         onClick={prevImage}
                         className="photoButton left-1"
@@ -165,14 +165,14 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                             </div>
                         </div>
                     </div>
-                    <div className="flex h-24 w-full border-4 relative rounded-md">
+                    <div className="flex h-24 w-full border-4 relative rounded-md items-center">
                         <h1 className="infoTitle">tags</h1>
-                        <div className="flex flex-wrap gap-2 ">
-                            {/* {profile.tags.map((tag, index) => (
-                                <div key={index} className="bg-gradient-to-r-main rounded-full p-2 text-white">
+                        <div className="flex flex-wrap gap-1 px-2">
+                            {profile.tags.map((tag, index) => (
+                                <div key={`tag-${index}`} className="bg-gradient-to-r-main rounded-lg text-white py-0 px-2">
                                     {tag}
                                 </div>
-                            ))} */}
+                            ))}
                         </div>
                     </div>
                 </div>

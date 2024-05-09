@@ -3,7 +3,11 @@
 import React, { useState } from "react"
 import axios from "axios"
 
-export default function RecoverPassword() {
+interface RecoverPasswordProps {
+  goBackHome: Function;
+}
+
+export default function RecoverPassword({ goBackHome }: RecoverPasswordProps) {
   const [emailSent, setEmailSent] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -38,6 +42,10 @@ export default function RecoverPassword() {
 
   return (
     <div className="border-2 relative p-6 flex justify-center items-center flex-col gap-2 rounded-lg pt-8" style={{backgroundColor: 'rgba(255, 255, 255, 0.45)'}}>
+      <button className="absolute top-2 left-4 text-slate-200 text-5xl font-jersey200 hover:brightness-110 duration-100"
+        onClick={() => goBackHome()}
+      >&lt;</button>
+
       <h1 className="text-4xl">Recover Password</h1>
       {
         !emailSent ? (

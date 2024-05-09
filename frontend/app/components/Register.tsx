@@ -4,10 +4,15 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import React from "react"
 import { useAuth } from "../auth/AuthProvider"
-import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import "./Register.css"
+import { validatePassword } from "../utils"
 
-export default function Register() {
+interface RegisterProps {
+  goBackHome: Function;
+}
+
+export default function Register({ goBackHome }: RegisterProps) {
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -17,6 +22,7 @@ export default function Register() {
   })
   const { login } = useAuth()
   const router = useRouter()
+  const [errorMsg, setErrorMsg] = useState("")
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -28,6 +34,14 @@ export default function Register() {
 
   const handleSubmit = (event: React.SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setErrorMsg("")
+
+    const tryPassword = validatePassword(formData.password)
+    if (!tryPassword.result) {
+      setErrorMsg(tryPassword.message)
+      return;
+    }
+
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, formData)
       .then((response) => {
@@ -37,12 +51,21 @@ export default function Register() {
           console.error("Backend didn't send JWT token")
         }
       })
-      .catch((error) => console.error("Error:", error))
+      .catch((error) => {
+        console.error(error)
+        setErrorMsg("Please try again with different email or username.")
+      
+      })
   }
 
   return (
     <div className="flex flex-col justify-center items-center w-full h-full border-4 rounded-lg" style={{backgroundColor: 'rgba(255, 255, 255, 0.45)'}}>
+      <button className="absolute top-2 left-5 text-slate-200 text-5xl font-jersey200 hover:brightness-110 duration-100"
+        onClick={() => goBackHome()}
+      >&lt;</button>
+
       <div className="flex flex-col p-8 px-6 rouned-md rouned-sm justify-center items-center gap-2 ">
+        
         <h1 className="text-5xl mb-5">Join us</h1>
 
         <button className="bg-slate-50 flex gap-4 justify-center items-center px-3 py-2 rounded-lg border-2 hover:brightness-95 duration-150"
@@ -51,7 +74,8 @@ export default function Register() {
           <img className="w-6 h-6" src="/google.svg" alt="g" />
           <p className="text-xl">Connect with Google</p>
         </button>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2 justify-center items-center border-2 pl-4 pr-7 pb-4 pt-8 rounded-lg" style={{backgroundColor: 'rgba(255, 255, 255, 0.75)'}}>
+        <form onSubmit={handleSubmit} className="relative flex flex-col gap-2 justify-center items-center border-2 pl-4 pr-7 pb-5 pt-10 rounded-lg" style={{backgroundColor: 'rgba(255, 255, 255, 0.75)'}}>
+          <p className="absolute w-full text-center text-rose-500 top-2 left-0">{errorMsg}</p>
           <div className="registerLine">
             <label className="w-1/5 text-end" htmlFor="email">Email:</label>
             <input

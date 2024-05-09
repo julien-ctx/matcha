@@ -12,33 +12,6 @@ interface Props {
     setCurrentProfile: (profile: ProfileType) => void;
 }
 
-const initialTestProfiles = [
-    {
-        id: 1,
-        name: "Danielle",
-        age: 20,
-        bio: 'je cherche un plan chaud',
-        fameRating: 3,
-        distance: 10,
-        pictures: [
-            "/danielle1.jpeg",
-            "/danielle2.jpeg"
-        ]
-    }, {
-        id: 3,
-        name: "Wonyoung",
-        age: 20,
-        bio: 'je cherche un plan serieux',
-        fameRating: 4,
-        distance: 20,
-        pictures: [
-            "/wonyoung1.jpeg",
-            "/wonyoung2.jpeg",
-            "/wonyoung3.webp"
-        ]
-    }
-]
-
 export default function ProfileCard({ profile, setCurrentProfile }: Props){
     const { httpAuthHeader } = useAuth();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -51,8 +24,7 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
     }
 
     function nextImage() {
-        // if (currentImageIndex === profile.pictures.length - 1) return; /// TODO when we get random images
-        if (currentImageIndex === initialTestProfiles[profile.id % 2].pictures.length - 1) return;
+        if (currentImageIndex === profile.pictures.length - 1) return;
 
         setCurrentImageIndex((prevIndex) => (prevIndex + 1));
     };
@@ -70,16 +42,16 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
                         }
                         )
                     }}>
-                    {
-                    //profile.pictures.map((img, index) => { // TODO when we get random images
-                    initialTestProfiles[profile.id % 2].pictures.map((img, index) => (
-                        <img 
-                            key={index} 
-                            src={img} 
-                            alt={profile.first_name}
-                            className={`absolute w-full h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
-                        />
-                    ))}
+                    {profile.pictures.map((img, index) => {
+                        return (
+                            <img 
+                                key={index} 
+                                src={`${process.env.NEXT_PUBLIC_API_URL}/${img}`} 
+                                alt={profile.first_name}
+                                className={`absolute w-full h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
+                            />
+                        );
+                    })}
                     <div className="text-white absolute bottom-0 p-2 explanationBox h-1/6 overflow-hidden w-full flex flex-col gap-2 justify-center">
                         <h1 className="text-2xl font-semibold text-ellipsis px-1 w-4/5">{profile.first_name}, {calculAge(profile.date_of_birth)}, {Math.round(profile.distance)}km</h1>
                     </div>
