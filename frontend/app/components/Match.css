@@ -1,5 +1,5 @@
 .likeOrNotButton {
-    @apply absolute rounded-full w-40 h-40 top-1/2 flex justify-center items-center shadow-md text-7xl hover:-translate-y-4 duration-300;
+    @apply absolute rounded-full w-32 h-32 sm:w-40 sm:h-40 sm:top-1/2 -bottom-10 flex justify-center items-center shadow-md text-7xl hover:-translate-y-4 duration-300;
 }
 
 .match-container {
