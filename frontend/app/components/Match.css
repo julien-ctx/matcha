@@ -2,9 +2,7 @@
     @apply absolute rounded-full w-40 h-40 top-1/2 flex justify-center items-center shadow-md text-7xl hover:-translate-y-4 duration-300;
 }
 
-.container {
-    /* background-image: url('/back4.png'), linear-gradient(180deg,#20BDFF,#A5FECB); */
-    /* background-color: rgba(255, 255, 255, 0.4); */
+.match-container {
     background-image: linear-gradient(180deg,#79d1f7,#A5FECB);
     background-size: cover;
 }
@@ -29,31 +27,6 @@
 
 .range-slider-wrapper {
     @apply w-full h-full flex items-center;
-}
-
-/* .container::before {
-    content: "";
-    position: absolute;
-    top: 0%;  
-    right: 0%;
-    width: 80%;  
-    height: 100%;
-    background-image: linear-gradient(
-        to right, 
-        rgba(255, 255, 255, 0) 0%, 
-        rgba(255, 255, 255, 0.25) 50%, 
-        rgba(255, 255, 255, 0) 100%
-    );
-    transform: rotate(90deg); 
-}
- */
-@keyframes shine {
-    from {
-        transform: translateX(-50%) rotate(30deg);
-    }
-    to {
-        transform: translateX(300%) rotate(30deg);
-    }
 }
 
 /* HTML: <div class="loader"></div> */

@@ -193,6 +193,7 @@ export default function Details() {
                             value={birthday ? birthday.toISOString().split('T')[0] : ''}
                             onChange={(e) => setBirthday(new Date(e.target.value))}
                             max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                            min={new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]}
                         />
                     </div>
                 }

@@ -20,9 +20,10 @@ enum LoadState {
 interface Props {
     setCurrentProfile: (profile: ProfileType) => void
     setMatchList: any //TODO
+    setShowChatResponsive: (show: boolean) => void
 }
 
-export default function Match({ setCurrentProfile, setMatchList }: Props) {
+export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive }: Props) {
     const { httpAuthHeader, socket, user } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
@@ -130,7 +131,12 @@ export default function Match({ setCurrentProfile, setMatchList }: Props) {
     };
 
     return (
-        <div className="fixed top-0 right-0 container h-full w-[72.5%] z-0 pt-20 flex justify-center items-center">
+        <div className="w-full match-container h-full pt-20 flex justify-center items-center">
+            <button className="md:hidden absolute top-24 right-4"
+                onClick={() => setShowChatResponsive(true)}
+            >
+                <img className="w-8 h-8" src="/message_fill.svg" alt="chat" />
+            </button>
             {loadState === LoadState.Loading ? (
                 <div className="w-[18%] aspect-square bg-white rounded-full flex items-center justify-center shadow-lg">
                     <div className="loader"></div>
