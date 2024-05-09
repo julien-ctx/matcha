@@ -61,7 +61,7 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
       userId,
     ])
     if (!currentUser.rows.length) {
-      return res.status(404).json({ message: "User not found" })
+      return res.status(404).json({ message: "Authenticated user not found in database." })
     }
 
     const { latitude, longitude, sexual_orientation, gender } =

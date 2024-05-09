@@ -101,7 +101,7 @@ router.delete("/unlike/:userId", httpAuthenticateJWT, async (req, res) => {
     const query = "DELETE FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2"
     const result = await pool.query(query, [likerId, likedId])
     if (result.rowCount === 0) {
-      res.status(404).send({ message: "Like not found or already removed" })
+      res.status(200).send({ message: "Like not found or already removed" })
     } else {
       res.status(200).send({ message: "Profile unlike successful" })
     }
@@ -316,7 +316,7 @@ router.delete("/unblock/:userId", httpAuthenticateJWT, async (req, res) => {
     const result = await pool.query(query, [blockerId, blockedId])
     if (result.rowCount === 0) {
       res
-        .status(404)
+        .status(200)
         .send({ message: "No existing block found or already unblocked" })
     } else {
       res.status(200).send({ message: "User successfully unblocked" })
@@ -425,7 +425,7 @@ router.delete("/match", httpAuthenticateJWT, async (req, res) => {
     if (matchCheckResult.rows[0].count !== "1") {
       await pool.query("ROLLBACK")
       return res
-        .status(404)
+        .status(200)
         .send({ message: "No mutual like (match) found to delete." })
     }
 
