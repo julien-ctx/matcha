@@ -67,7 +67,7 @@ export default function PublicHome() {
                     </div>    
                 ) : homeState === PublicHomeState.Register ? (
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <Register />
+                        <Register goBackHome={() => setHomeState(PublicHomeState.Home)}/>
                     </div>
                 ) : homeState === PublicHomeState.Login ? (
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -88,7 +88,7 @@ export default function PublicHome() {
                     </div>
                 ) : homeState === PublicHomeState.RecoverPassword ? (
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <RecoverPassword />
+                        <RecoverPassword goBackHome={() => setHomeState(PublicHomeState.Home)}/>
                     </div>
                 ) : null}
             </div>
