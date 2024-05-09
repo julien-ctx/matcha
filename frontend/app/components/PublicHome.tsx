@@ -26,10 +26,10 @@ export default function PublicHome() {
     const { showLogin, toggleLogin } = useUI();
 
     useEffect(() => {
-        const cookieToken = Cookies.get("token")
-        if (cookieToken) {
-          login(cookieToken)
-          Cookies.remove("token")
+        const userData = Cookies.get("userData")
+        if (userData) {
+          login(JSON.parse(userData))
+          Cookies.remove("userData")
           router.replace("/")
         }
       }, [])

@@ -159,10 +159,14 @@ router.get(
       process.env.AUTH_JWT_SECRET,
       { expiresIn: "24h" },
     )
-    res.cookie("token", token, {
-      maxAge: 300000,
-      sameSite: "Strict",
-    })
+    res.cookie(
+      "userData",
+      JSON.stringify({ ...user, password: undefined, jwt: token }),
+      {
+        maxAge: 300000,
+        sameSite: "Strict",
+      },
+    )
     res.redirect(`${process.env.FRONT_URL}`)
   },
   (err, req, res, next) => {
@@ -191,7 +195,9 @@ router.post("/jwt-status", async (req, res) => {
     `
     const { rows } = await pool.query(query, [userId])
     if (rows.length === 0) {
-      return res.status(404).send({ message: "Authenticated user not found in database." })
+      return res
+        .status(404)
+        .send({ message: "Authenticated user not found in database." })
     }
 
     const user = rows[0]
