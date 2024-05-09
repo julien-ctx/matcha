@@ -34,6 +34,8 @@ export default function MySpace() {
     const [matchList, setMatchList] = useState<any[]>([]);
     const [chatRoomList, setChatRoomList] = useState<any[]>([]);
 
+    const [showChatResponsive, setShowChatResponsive] = useState(false);
+
     function initTypingMap() {
         const initialTypingMap = new Map();
         chatRoomList.forEach(room => {
@@ -171,18 +173,18 @@ export default function MySpace() {
            <AnotherConnection /> 
         )
         : spaceState === SpaceState.READY ? (
-        <div className="w-full h-full flex fixed overflow-hidden">
-            <div className="w-1/4 relative">
-                <Chat rooms={chatRoomList} typingMap={typingMap} newMessageMap={newMessageMap} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile} setNewMessageMap={setNewMessageMap}/>
+        <div className="w-full h-full flex relative overflow-hidden">
+            <div className={`md:w-[27.5%] absolute left-0 top-0 md:block z-10 h-full w-full ${showChatResponsive ? 'block' : 'hidden'}`}>
+                <Chat rooms={chatRoomList} typingMap={typingMap} newMessageMap={newMessageMap} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile} setNewMessageMap={setNewMessageMap} setShowChatResponsive={setShowChatResponsive}/>
             </div>
-            <div className="w-3/4 relative">
-                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList}/>
+            <div className="absolute w-full md:w-[72.5%] h-full right-0 top-0 z-0">
+                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList} setShowChatResponsive={setShowChatResponsive}/>
             </div>
 
             {showLikesList && (
                 <div className="h-full absolute right-0 top-0 pt-24 w-[72.5%] flex justify-center" style={{zIndex: 999}}>
                     <InteractionList isLike={true} toggleShow={toggleLikesList} setCurrentProfile={setCurrentProfile} />
-                </div>    
+                </div>
             )}
 
             {showVisitsList && (
@@ -192,14 +194,14 @@ export default function MySpace() {
             )}
 
             {currentChatRoom !== null && (
-                <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 slide-in-right">
+                <div className="absolute top-0 right-0 md:w-[72.5%] h-full bg-white z-10 w-full">
                     <ChatRoom room={chatRoomList.filter(room => room.id === currentChatRoom)[0]} 
                         otherTyping={typingMap.get(currentChatRoom)}
                         setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}
             {currentProfile !== null && (
-                <div className="absolute top-0 right-0 w-[72.5%] h-full bg-white z-10 flex justify-center slide-in-right">
+                <div className="absolute top-0 right-0 w-full md:w-[72.5%] h-full bg-white z-10 flex justify-center">
                     <Profile profile={currentProfile} matchList={matchList} setMatchList={setMatchList} setCurrentProfile={setCurrentProfile}/>
                 </div>
             )}

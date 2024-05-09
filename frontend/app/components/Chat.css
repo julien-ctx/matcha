@@ -1,5 +1,5 @@
 .chat-container {
-    @apply h-full w-[27.5%] pt-20 fixed shadow-md shadow-white z-40 border-r-2;
+    @apply h-full w-full pt-20 shadow-md shadow-white border-r-2;
     background-image: linear-gradient(180deg, #f3f5f9, #f2f7fd);
 }
 

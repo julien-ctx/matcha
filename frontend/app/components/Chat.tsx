@@ -11,13 +11,17 @@ interface ChatRoomProp {
     setCurrentRoom: (roomId: number) => void
     setCurrentProfile: (profile: any) => void
     setNewMessageMap: (newMessageMap: any) => void
+    setShowChatResponsive: (show: boolean) => void
 }
 
-export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCurrentRoom, setCurrentProfile, setNewMessageMap }: ChatRoomProp) {
+export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCurrentRoom, setCurrentProfile, setNewMessageMap, setShowChatResponsive }: ChatRoomProp) {
     const { user } = useAuth();
 
     return (
         <div className="chat-container" style={{backgroundColor: "rgba(255, 255, 255, 0.8)"}}>
+            <button className="md:hidden absolute right-5 text-3xl text-rose-400" style={{top: "5.6rem"}}
+                onClick={() => setShowChatResponsive(false)}
+            >X</button>
             {user && (
                 <>
                 <MatchList matches={matchList} setCurrentProfile={setCurrentProfile}/>

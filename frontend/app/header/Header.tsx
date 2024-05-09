@@ -10,7 +10,7 @@ const Header : React.FC = () => {
     const { authStatus } = useAuth();
 
     return (
-        <header className="absolute h-20 flex w-full z-30 text-white shadow-md">
+        <header className="absolute h-20 flex w-full z-50 text-white shadow-md">
             {authStatus === AuthStatus.NotValidated ? (
                 <PublicHeader />
             ) : authStatus === AuthStatus.Validated ? (

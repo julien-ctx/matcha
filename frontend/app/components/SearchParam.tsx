@@ -18,6 +18,8 @@ interface SearchParamProps {
 export default function SearchParam({ setLoadState, setModalOpen, ageRange, setAgeRange, kmWithin, setKmWithin, fameRatingRange, setFameRatingRange, tagsList, setTagsList }: SearchParamProps) {
     const { user, httpAuthHeader } = useAuth();
 
+    console.log("tagsList", tagsList)
+
     const handleTagChange = (tag: string) => {
         if (tagsList.includes(tag)) {
             setTagsList(tagsList.filter(t => t !== tag));

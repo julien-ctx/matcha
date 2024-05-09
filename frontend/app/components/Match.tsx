@@ -20,9 +20,10 @@ enum LoadState {
 interface Props {
     setCurrentProfile: (profile: ProfileType) => void
     setMatchList: any //TODO
+    setShowChatResponsive: (show: boolean) => void
 }
 
-export default function Match({ setCurrentProfile, setMatchList }: Props) {
+export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive }: Props) {
     const { httpAuthHeader, socket, user } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
@@ -42,17 +43,22 @@ export default function Match({ setCurrentProfile, setMatchList }: Props) {
 
     function fetchFilter() {
 
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader).then(response => {
-            console.log("Filter fetched successfully", response.data);
-            setAgeRange([response.data.ageMin, response.data.ageMax]);
-            setKmWithin([response.data.locationRadius]);
-            setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
-            setTagsList(response.data.tags);
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
+            .then(response => {
+                if (response.data.message) {
+                    setAgeRange([18, 99]);
+                    setKmWithin([30]);
+                    setFameRatingRange([1, 5]);
+                    setTagsList([]);
+                } else {
+                    console.log("Filter fetched successfully", response);
+                    setAgeRange([response.data.ageMin, response.data.ageMax]);
+                    setKmWithin([response.data.locationRadius]);
+                    setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
+                    setTagsList(response.data.tags);
+                }
         }).catch(error => {
-            setAgeRange([18, 99]);
-            setKmWithin([30]);
-            setFameRatingRange([1, 5]);
-            setTagsList([]);
+            console.log('filter err', error)
         })
     }
 
@@ -130,7 +136,12 @@ export default function Match({ setCurrentProfile, setMatchList }: Props) {
     };
 
     return (
-        <div className="fixed top-0 right-0 container h-full w-[72.5%] z-0 pt-20 flex justify-center items-center">
+        <div className="w-full match-container h-full pt-20 flex flex-col justify-center items-center">
+            <button className="md:hidden absolute top-24 right-4"
+                onClick={() => setShowChatResponsive(true)}
+            >
+                <img className="w-8 h-8" src="/message_fill.svg" alt="chat" />
+            </button>
             {loadState === LoadState.Loading ? (
                 <div className="w-[18%] aspect-square bg-white rounded-full flex items-center justify-center shadow-lg">
                     <div className="loader"></div>
@@ -143,8 +154,8 @@ export default function Match({ setCurrentProfile, setMatchList }: Props) {
                             <p>Settings</p>
                         </div>
                     </button>
-                    <button className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 -left-16" onClick={() => handleDecision(false)}>X</button>
-                    <button style={{backgroundColor: 'rgb(250, 254, 250)'}} className="likeOrNotButton text-green-300 hover:brightness-105 -right-16" onClick={() => handleDecision(true)}>O</button>
+                    <button className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleDecision(false)}>X</button>
+                    <button style={{backgroundColor: 'rgb(250, 254, 250)'}} className="likeOrNotButton text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleDecision(true)}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (
