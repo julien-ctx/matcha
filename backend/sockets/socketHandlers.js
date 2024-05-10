@@ -1,5 +1,6 @@
 import { socketAuthenticateJWT } from "../middleware/auth.js"
 import pool from "../database/db.js"
+import { getDistance } from "../queries/location.js"
 
 /**
  * Update the user's online status in the database.
@@ -152,9 +153,37 @@ export function setupSocketEvents(io) {
       )
 
       let isMatch = reverseLike.rows[0].exists
+
+      const senderInfo = await pool.query(
+        "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
+        [senderId],
+      )
+      if (!senderInfo.rowCount) {
+        socket.emit("error", {
+          errorCode: "INVALID_SENDER_ID",
+          message: "Like could not be sent.",
+        })
+      }
+      const recipientInfo = await pool.query(
+        "SELECT longitude, latitude FROM T_USER WHERE id = $1",
+        [recipientId],
+      )
+      if (!recipientInfo.rowCount) {
+        socket.emit("error", {
+          errorCode: "INVALID_RECIPIENT_ID",
+          message: "Like could not be sent.",
+        })
+      }
+      const distance = getDistance(
+        senderInfo.rows[0].latitude,
+        senderInfo.rows[0].longitude,
+        recipientInfo.rows[0].latitude,
+        recipientInfo.rows[0].longitude,
+      )
       sendEventToUser(userSocketMap, io, recipientId, "profileLiked", {
-        likerId: senderId,
-        isMatch,
+        ...senderInfo.rows[0],
+        distance,
+        is_match: isMatch,
       })
     })
 
@@ -165,6 +194,7 @@ export function setupSocketEvents(io) {
     })
 
     socket.on("view", async ({ senderId, recipientId }) => {
+      
       sendEventToUser(userSocketMap, io, recipientId, "profileViewed", {
         viewerId: senderId,
       })
