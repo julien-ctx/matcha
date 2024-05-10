@@ -7,6 +7,7 @@ import passport from "passport"
 import {
   sendPasswordRecoveryEmail,
   sendVerificationEmail,
+  validatePassword,
 } from "../queries/auth.js"
 import { httpAuthenticateJWT } from "../middleware/auth.js"
 
@@ -21,6 +22,11 @@ router.post("/register", async (req, res) => {
     return res.status(400).send({
       message: "One or several fields are missing",
     })
+  }
+
+  const tryPassword = validatePassword(password)
+  if (!tryPassword.result) {
+    return res.status(400).json({ message: tryPassword.message })
   }
 
   bcrypt.hash(password, 10, async (error, hashedPassword) => {
