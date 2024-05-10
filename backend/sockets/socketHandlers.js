@@ -145,46 +145,54 @@ export function setupSocketEvents(io) {
     })
 
     socket.on("like", async ({ senderId, recipientId }) => {
-      let reverseLike = await pool.query(
-        `SELECT EXISTS (
+      try {
+        let reverseLike = await pool.query(
+          `SELECT EXISTS (
             SELECT 1 FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2
         ) AS "exists";`,
-        [recipientId, senderId],
-      )
+          [recipientId, senderId],
+        )
 
-      let isMatch = reverseLike.rows[0].exists
+        let isMatch = reverseLike.rows[0].exists
 
-      const senderInfo = await pool.query(
-        "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
-        [senderId],
-      )
-      if (!senderInfo.rowCount) {
+        const senderInfo = await pool.query(
+          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
+          [senderId],
+        )
+        if (!senderInfo.rowCount) {
+          socket.emit("error", {
+            errorCode: "INVALID_SENDER_ID",
+            message: "Like could not be sent.",
+          })
+        }
+        const recipientInfo = await pool.query(
+          "SELECT longitude, latitude FROM T_USER WHERE id = $1",
+          [recipientId],
+        )
+        if (!recipientInfo.rowCount) {
+          socket.emit("error", {
+            errorCode: "INVALID_RECIPIENT_ID",
+            message: "Like could not be sent.",
+          })
+        }
+        const distance = getDistance(
+          senderInfo.rows[0].latitude,
+          senderInfo.rows[0].longitude,
+          recipientInfo.rows[0].latitude,
+          recipientInfo.rows[0].longitude,
+        )
+        sendEventToUser(userSocketMap, io, recipientId, "profileLiked", {
+          ...senderInfo.rows[0],
+          distance,
+          is_match: isMatch,
+        })
+      } catch (error) {
+        console.error("Database error:", error)
         socket.emit("error", {
-          errorCode: "INVALID_SENDER_ID",
+          errorCode: "BROADCAST_FAILED",
           message: "Like could not be sent.",
         })
       }
-      const recipientInfo = await pool.query(
-        "SELECT longitude, latitude FROM T_USER WHERE id = $1",
-        [recipientId],
-      )
-      if (!recipientInfo.rowCount) {
-        socket.emit("error", {
-          errorCode: "INVALID_RECIPIENT_ID",
-          message: "Like could not be sent.",
-        })
-      }
-      const distance = getDistance(
-        senderInfo.rows[0].latitude,
-        senderInfo.rows[0].longitude,
-        recipientInfo.rows[0].latitude,
-        recipientInfo.rows[0].longitude,
-      )
-      sendEventToUser(userSocketMap, io, recipientId, "profileLiked", {
-        ...senderInfo.rows[0],
-        distance,
-        is_match: isMatch,
-      })
     })
 
     socket.on("unlike", async ({ senderId, recipientId }) => {
@@ -194,10 +202,44 @@ export function setupSocketEvents(io) {
     })
 
     socket.on("view", async ({ senderId, recipientId }) => {
-      
-      sendEventToUser(userSocketMap, io, recipientId, "profileViewed", {
-        viewerId: senderId,
-      })
+      try {
+        const senderInfo = await pool.query(
+          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
+          [senderId],
+        )
+        if (!senderInfo.rowCount) {
+          socket.emit("error", {
+            errorCode: "INVALID_SENDER_ID",
+            message: "View could not be sent.",
+          })
+        }
+        const recipientInfo = await pool.query(
+          "SELECT longitude, latitude FROM T_USER WHERE id = $1",
+          [recipientId],
+        )
+        if (!recipientInfo.rowCount) {
+          socket.emit("error", {
+            errorCode: "INVALID_RECIPIENT_ID",
+            message: "View could not be sent.",
+          })
+        }
+        const distance = getDistance(
+          senderInfo.rows[0].latitude,
+          senderInfo.rows[0].longitude,
+          recipientInfo.rows[0].latitude,
+          recipientInfo.rows[0].longitude,
+        )
+        sendEventToUser(userSocketMap, io, recipientId, "profileViewed", {
+          ...senderInfo.rows[0],
+          distance,
+        })
+      } catch (error) {
+        console.error("Database error:", error)
+        socket.emit("error", {
+          errorCode: "BROADCAST_FAILED",
+          message: "View could not be sent.",
+        })
+      }
     })
   })
 }
