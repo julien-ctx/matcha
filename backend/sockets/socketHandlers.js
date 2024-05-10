@@ -145,13 +145,13 @@ export function setupSocketEvents(io) {
 
     socket.on("like", async ({ senderId, recipientId }) => {
       let reverseLike = await pool.query(
-        `SELECT id FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2;`,
+        `SELECT EXISTS (
+            SELECT 1 FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2
+        ) AS "exists";`,
         [recipientId, senderId],
       )
-      let isMatch = false
-      if (reverseLike.rowCount !== 0) {
-        isMatch = true
-      }
+
+      let isMatch = reverseLike.rows[0].exists
       sendEventToUser(userSocketMap, io, recipientId, "profileLiked", {
         likerId: senderId,
         isMatch,
