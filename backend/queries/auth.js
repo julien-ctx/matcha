@@ -72,3 +72,42 @@ export const sendPasswordRecoveryEmail = async (
     html: `<p>Please click the following link to recover your password: <a href="${recoverUrl}">Recover now</a></p>`,
   })
 }
+
+/**
+ * Validates a password based on several criteria including length,
+ * presence of uppercase and lowercase letters, and inclusion of special characters.
+ *
+ * @param {string} password - The password to validate.
+ * @returns {object} An object containing a boolean `result` and a `string` message indicating the validation outcome.
+ */
+export const validatePassword = (password) => {
+  if (password.length < 8) {
+    return {
+      result: false,
+      message: "Password must be at least 8 characters long.",
+    }
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    return {
+      result: false,
+      message: "Password must contain at least one uppercase letter.",
+    }
+  }
+
+  if (!/[a-z]/.test(password)) {
+    return {
+      result: false,
+      message: "Password must contain at least one lowercase letter.",
+    }
+  }
+
+  if (!/[!@#$%^&*(),.?":{}|<>/]/.test(password)) {
+    return {
+      result: false,
+      message: "Password must contain at least one special character.",
+    }
+  }
+
+  return { result: true, message: "Password is valid." }
+}
