@@ -6,7 +6,7 @@ import { AuthStatus } from "../auth/authTypes"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import './account.css'
-import { calculAge, capitalize } from "../utils"
+import { calculAge, capitalize, validatePassword } from "../utils"
 import Modal from "../components/Modal"
 
 const tagsList = [
@@ -27,10 +27,12 @@ export default function Account() {
   const [bio, setBio] = useState('');
   const [tags, setTags] = useState([]);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
+  const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
 
   const [passwordFormData, setPasswordFormData] = useState({
-    firstPassword: "",
-    secondPassword: "",
+    currentPassword: "",
+    newPasswordFirst: "",
+    newPasswordSecond: "",
   });
 
   useEffect(() => {
@@ -67,19 +69,32 @@ export default function Account() {
 
   const handlePasswordSubmit = (event: React.SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault()
+    setPasswordErrorMsg("")
+
+    if (passwordFormData.newPasswordFirst !== passwordFormData.newPasswordSecond) {
+      setPasswordErrorMsg("New passwords do not match")
+      return
+    }
+
+    if (validatePassword(passwordFormData.newPasswordFirst).result === false) {
+      setPasswordErrorMsg(validatePassword(passwordFormData.newPasswordFirst).message)
+      return
+    }
+
     axios
-      .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/update-password`, {
+      .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/internal-update-password`, {
         token: token,
-        password: passwordFormData.firstPassword,
-      })
+        password: passwordFormData.currentPassword,
+        newPassword: passwordFormData.newPasswordFirst,
+      }, httpAuthHeader)
       .then((res) => {
         console.log(res);
-        // logout()
+        logout()
         // router.replace("/")
       })
       .catch((error) => {
-        // display error message in the UI
         console.error("Error:", error)
+        setPasswordErrorMsg("Current password is incorrect")
       })
   }
 
@@ -301,41 +316,64 @@ const renderGenderOption = (option) => (
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
               />
-              <button className="save-btn">Modify E-mail</button>
+              <button className="save-btn"
+                onClick={() => {
+                  axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, { email }, httpAuthHeader)
+                    .then(res => {
+                      console.log('email return', res.data);
+                      window.location.href = '/';
+                    }).catch(e => {
+                      console.log('error:', e);
+                    })
+                }}
+              >Modify E-mail</button>
             </div>
 
             <div className="section">
               <h1 className="text-4xl">Security</h1>
               <p className="text-2xl">Your Password</p>
-              <form className="w-4/5 flex flex-col gap-1" onSubmit={handlePasswordSubmit}>
+              <form className="w-4/5 flex flex-col gap-1 relative items-center" onSubmit={handlePasswordSubmit}>
+                <div className="flex w-full gap-2 mb-2 items-center">
+                    <label className="w-1/3 text-end" htmlFor="currentPassword">Current password:</label>
+                    <input
+                      type="password"
+                      id="currentPassword"
+                      name="currentPassword"
+                      value={passwordFormData.currentPassword}
+                      onChange={handlePasswordChange}
+                      required
+                      className="bg-slate-100 h-8 w-48 px-2 rounded-md"
+                    />
+                </div>
                 <div className="flex w-full gap-2 items-center">
-                  <label className="w-1/3 text-end" htmlFor="firstPassword">Password:</label>
+                  <label className="w-1/3 text-end" htmlFor="newPasswordFirst">New password:</label>
                   <input
-                    type="firstPassword"
-                    id="firstPassword"
-                    name="firstPassword"
-                    value={passwordFormData.firstPassword}
+                    type="password"
+                    id="newPasswordFirst"
+                    name="newPasswordFirst"
+                    value={passwordFormData.newPasswordFirst}
                     onChange={handlePasswordChange}
                     required
                     className="bg-slate-100 h-8 w-48 px-2 rounded-md"
                   />
                 </div>
                 <div className="flex w-full gap-2 items-center">
-                  <label className="w-1/3 text-end" htmlFor="secondPassword">Confirm password:</label>
+                  <label className="w-1/3 text-end" htmlFor="newPasswordSecond">Confirm new password:</label>
                   <input
-                    type="secondPassword"
-                    id="secondPassword"
-                    name="secondPassword"
-                    value={passwordFormData.secondPassword}
+                    type="password"
+                    id="newPasswordSecond"
+                    name="newPasswordSecond"
+                    value={passwordFormData.newPasswordSecond}
                     onChange={handlePasswordChange}
                     required
                     className="bg-slate-100 h-8 w-48 px-2 rounded-md"
                   />
                 </div>
-              </form>
+              <p className="absolute bottom-16 text-red-500 left-1/2 -translate-x-1/2 text-nowrap">{passwordErrorMsg}</p>
               <button type="submit" className="save-btn">
                 Change password
               </button>
+              </form>
 
             </div>
             <div className="section">
@@ -359,18 +397,13 @@ const renderGenderOption = (option) => (
           <div className="flex flex-col gap-1">
             <button className="bg-gradient-to-r-main text-white px-4 py-2 text-lg rounded-lg hover:brightness-95 duration-100"
               onClick={() => {
-                // TODO axios.
                 axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/auth/delete-account`, httpAuthHeader)
                   .then(res => {
-                    console.log(res);
                     logout();
                     router.push('/goodbye'); // TODO should be able to redirect to a goodbye page
                   }).catch(e => {
                     console.error(e);
                   })
-
-                // if success
-                // logout()
               }}
             >Yes, delete my account</button>
             <button className="border-rose-500 text-rose-500 border-2 px-4 py-2 text-lg rounded-lg hover:brightness-95 bg-white duration-100" onClick={() => setDeleteAccountModal(false)}>No, keep my account</button>

@@ -19,7 +19,7 @@ export default function Verify() {
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, { token: verificationToken })
         .then((response) => {
           setDisplayMessage("Successfully verified")
-          router.push('/')
+          window.location.href = '/';
         })
         .catch((error) => {
           setDisplayMessage(error?.response?.data?.message ?? "")

@@ -63,8 +63,7 @@ export default function MySpace() {
         if (!user) return;
         if (!user.account_verified)
             setSpaceState(SpaceState.VERIFY);
-        else 
-        if (!user?.date_of_birth)
+        else if (!user?.date_of_birth)
             setSpaceState(SpaceState.DETAIL)
         else
             setSpaceState(SpaceState.READY);

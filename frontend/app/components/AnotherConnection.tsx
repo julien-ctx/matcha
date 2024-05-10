@@ -15,7 +15,7 @@ export default function AnotherConnection() {
           style={{
             backgroundImage: "url('/girl_waiting.webp')",
             backgroundSize: "cover",
-            backgroundPosition: "50% -2%",
+            backgroundPosition: "50% 0%",
             backgroundRepeat: "no-repeat",
           }}
         >

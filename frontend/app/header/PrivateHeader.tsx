@@ -8,7 +8,7 @@ import InteractionPopup from '../components/InteractionPopup';
 import { useSocial } from '../contexts/SocialContext';
 
 export default function PrivateHeader() {
-    const { logout, user } = useAuth();
+    const { logout, user, socket } = useAuth();
     const { toggleLikesList, toggleVisitsList, anotherConnection } = useUI();
     const router = useRouter();
     const {visits, likes} = useSocial();
@@ -45,6 +45,22 @@ export default function PrivateHeader() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('profileLiked', (data) => {
+            console.log(data)
+        })
+
+        socket.on('profileViewed', (data) => {
+            console.log(data)
+        })
+
+        socket.on('profileUnliked', (data) => {
+            console.log(data)
+        })
+    }, [socket])
+
     return (
         <div className="w-full h-full bg-gradient-to-r-main">
             <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => {
@@ -62,7 +78,7 @@ export default function PrivateHeader() {
                             u
                         </button>
                         <div className="popup-content">
-                            <InteractionPopup typeStr="Visit" profiles={visits} onClick={() => {
+                            <InteractionPopup typeStr="visit" profiles={visits} onClick={() => {
                                 toggleVisitsList(true);
                                 const activeElement = document.activeElement;
                                 if (visitListRef.current && visitListRef.current.contains(activeElement))
@@ -75,7 +91,7 @@ export default function PrivateHeader() {
                             y
                         </button>
                         <div className="popup-content">
-                            <InteractionPopup typeStr="Like" profiles={likes} onClick={() => {
+                            <InteractionPopup typeStr="like" profiles={likes} onClick={() => {
                                 toggleLikesList(true);
                                 const activeElement = document.activeElement;
                                 if (likeListRef.current && likeListRef.current.contains(activeElement))

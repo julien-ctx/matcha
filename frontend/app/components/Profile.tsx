@@ -17,33 +17,6 @@ interface ProfileProps {
     setChatRoomList: (chatRoomList: any[]) => void;
 }
 
-const initialTestProfiles = [
-    {
-        id: 1,
-        name: "Danielle",
-        age: 20,
-        bio: 'je cherche un plan chaud',
-        fameRating: 3,
-        distance: 10,
-        pictures: [
-            "/danielle1.jpeg",
-            "/danielle2.jpeg"
-        ]
-    }, {
-        id: 3,
-        name: "Wonyoung",
-        age: 20,
-        bio: 'je cherche un plan serieux',
-        fameRating: 4,
-        distance: 20,
-        pictures: [
-            "/wonyoung1.jpeg",
-            "/wonyoung2.jpeg",
-            "/wonyoung3.webp"
-        ]
-    }
-]
-
 export default function Profile({ profile, matchList, setMatchList, setCurrentProfile }: ProfileProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
     const [firstMessageModalOpen, setFirstMessageModalOpen] = useState<boolean>(false);
@@ -52,7 +25,13 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     const [message, setMessage] = useState<string>('');
 
     console.log('profile', profile)
-    console.log('tags', profile.tags)
+
+    useEffect(() => {
+        socket.emit('view', {
+            senderId: user?.id,
+            recipientId: profile.id
+        })
+    }, [])
 
 
     function prevImage() {
@@ -68,27 +47,27 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     };
 
     return (
-        <div className="relative w-full h-full pl-14 px-5 pt-20 profil-container overflow-y-auto flex items-center gap-4">
+        <div className="relative w-full h-full lg:pl-14 px-5 pt-40 lg:pt-20 profil-container overflow-y-auto flex flex-col lg:flex-row items-center gap-4">
             <div className="absolute top-24 duration-100 w-12 h-12 rounded-full left-1 text-4xl font-jersey20 hover:brightness-90 bg-white border-2">
                 <button onClick={() => setCurrentProfile(null)} className="w-full h-full bg-gradient-to-r-main text-transparent bg-clip-text">
                     &lt;
                 </button>
             </div>
 
-            <div className="flex w-[35%] h-[80%] justify-center rounded-xl bg-slate-900 ">
+            <div className="flex w-full h-[28rem] lg:w-[35%] lg:h-[80%] justify-center rounded-xl bg-slate-900 ">
 
-                <div className="relative w-full h-full border-4 border-orange-50 rounded-xl cursor-pointer"
+                <div className="relative w-full h-[28rem] lg:h-full border-4 border-orange-50 rounded-xl cursor-pointer"
                     onClick={() => {
                         setCurrentProfile(profile);
                     }}>
                     {
                     profile.pictures.map((img, index) => {
-                        <img 
+                        return (<img 
                             key={index} 
                             src={`${process.env.NEXT_PUBLIC_API_URL}/${img}`} 
                             alt={profile.first_name}
-                            className={`absolute top-0 w-full rounded-2xl h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
-                        />
+                            className={`absolute top-0 w-full rounded-2xl h-[28rem] lg:h-full object-cover duration-250 ease-in-out ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`} 
+                        />)
                     })}
                     <button
                         onClick={prevImage}
@@ -121,7 +100,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                 </div>
             </div>
 
-            <div className="bg-gradient-to-r-main h-[98%] w-3/5 rounded-xl flex p-4">
+            <div className="bg-gradient-to-r-main lg:h-[98%] w-full lg:w-3/5 rounded-xl flex p-4">
                 <div className="bg-slate-50 rounded-xl p-12 w-full min-h-full overflow-y-auto flex flex-wrap gap-1 border-2">
                     <div className="flex h-24 gap-1 w-full">
                         <div className="infoBox w-1/2">

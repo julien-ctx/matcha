@@ -95,6 +95,7 @@ const AuthProvider = ({ children }: Props) => {
       logout();
     }
   }, []);
+  console.log('user', user)
 
   return <AuthContext.Provider value={{ token, login, logout, authStatus, user, socket, httpAuthHeader }}>{children}</AuthContext.Provider>
 } 

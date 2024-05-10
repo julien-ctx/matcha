@@ -103,7 +103,7 @@ app.use(
 
 app.use(express.json())
 app.use('/uploads', express.static('uploads'));
-app.use('/fake_profiles', express.static('fake_profiles'));
+app.use('/fake_profile', express.static('fake_profile'));
 
 app.use("/auth", auth)
 app.use("/profile", profile)

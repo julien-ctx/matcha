@@ -118,9 +118,12 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     }
 
     const handleDecision = (accept: boolean) => {
-        // TODO Protection needed
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
                 console.log(res.data);
+                socket.emit(accept ? 'like' : 'unlike', {
+                    senderId: user?.id,
+                    receiverId: profiles[currentProfileIndex]?.id,
+                })
                 if (accept && res.data.isMatch) {
                     setMatchList((currentMatches) => [profiles[currentProfileIndex], ...currentMatches]);
                     setMatchProfile(profiles[currentProfileIndex]);
