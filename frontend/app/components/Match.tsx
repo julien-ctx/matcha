@@ -10,12 +10,7 @@ import './Match.css'
 import SearchParam from './SearchParam';
 import { useAuth } from '../auth/AuthProvider'
 import { capitalize } from '../utils'
-
-enum LoadState {
-    Loading,
-    Loaded,
-    Error
-}
+import { LoadState } from './types'
 
 interface Props {
     setCurrentProfile: (profile: ProfileType) => void
@@ -24,7 +19,7 @@ interface Props {
 }
 
 export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive }: Props) {
-    const { httpAuthHeader, socket, user } = useAuth();
+    const { httpAuthHeader, socket, user, token } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState([18, 99]);
@@ -42,7 +37,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [message, setMessage] = useState('');
 
     function fetchFilter() {
-
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
             .then(response => {
                 if (response.data.message) {
@@ -63,7 +57,19 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     }
 
     function browseProfile() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, httpAuthHeader)
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            data: {
+                ageMin: ageRange[0],
+                ageMax: ageRange[1],
+                locationRadius: kmWithin[0],
+                minFameRating: fameRatingRange[0],
+                maxFameRating: fameRatingRange[1],
+                tags: tagsList
+            }
+        })
         .then((response) => {
             console.log('profiles: ', response.data)
             setProfiles(response.data);
@@ -75,6 +81,13 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
             console.error(error);
         });
     }
+
+    useEffect(() => {
+        if (profiles.length > 0) return;
+        console.log('reload!!')
+        setLoadState(LoadState.Loading);
+        browseProfile();
+    }, [profiles])
 
     useEffect(() => {
         if (!httpAuthHeader) return;
@@ -184,6 +197,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     tagsList={tagsList}
                     setTagsList={setTagsList}
                     setModalOpen={setModalOpen}
+                    setProfiles={setProfiles}
                 />
             </Modal>
 

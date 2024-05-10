@@ -1,9 +1,13 @@
+"use client"
+
 import { Range } from 'react-range';
 import axios from 'axios'
 import { useAuth } from '../auth/AuthProvider';
+import { LoadState } from './types';
+import { useEffect, useState } from 'react';
 
 interface SearchParamProps {
-    setLoadState: (loading: boolean) => void,
+    setLoadState: (loadState: LoadState) => void,
     setModalOpen: (open: boolean) => void,
     ageRange: [number, number],
     setAgeRange: (range: [number, number]) => void,
@@ -13,20 +17,56 @@ interface SearchParamProps {
     setFameRatingRange: (range: [number, number]) => void,
     tagsList: string[],
     setTagsList: (tags: string[]) => void
+
+    setProfiles: (profiles: any[]) => void,
 }
 
-export default function SearchParam({ setLoadState, setModalOpen, ageRange, setAgeRange, kmWithin, setKmWithin, fameRatingRange, setFameRatingRange, tagsList, setTagsList }: SearchParamProps) {
+export default function SearchParam({ setLoadState, setModalOpen, ageRange, setAgeRange, kmWithin, setKmWithin, fameRatingRange, setFameRatingRange, tagsList, setTagsList
+    , setProfiles
+}: SearchParamProps) {
     const { user, httpAuthHeader } = useAuth();
+    const [initialValues, setInitialValues] = useState({
+        ageRange: [...ageRange],
+        kmWithin: [...kmWithin],
+        fameRatingRange: [...fameRatingRange],
+        tagsList: [...tagsList]
+    });
+    const [hasModified, setHasModified] = useState(false);
+    const [modalData, setModalData] = useState({
+        ageRange: [...ageRange],
+        kmWithin: [...kmWithin],
+        fameRatingRange: [...fameRatingRange],
+        tagsList: [...tagsList]
+    });
 
-    console.log("tagsList", tagsList)
+    useEffect(() => {
+        const hasModified = JSON.stringify({
+            ageRange: ageRange,
+            kmWithin: kmWithin,
+            fameRatingRange: fameRatingRange,
+            tagsList: tagsList
+        }) !== JSON.stringify(modalData);
+        setHasModified(hasModified);
+    }, [modalData]);
 
-    const handleTagChange = (tag: string) => {
-        if (tagsList.includes(tag)) {
-            setTagsList(tagsList.filter(t => t !== tag));
-        } else {
-            setTagsList([...tagsList, tag]);
-        }
-    }
+    const handleAgeRangeChange = (range) => {
+        setModalData(prev => ({ ...prev, ageRange: range }));
+    };
+
+    const handleKmWithinChange = (range) => {
+        setModalData(prev => ({ ...prev, kmWithin: range }));
+    };
+
+    const handleFameRatingRangeChange = (range) => {
+        setModalData(prev => ({ ...prev, fameRatingRange: range }));
+    };
+
+    const handleTagChange = (tag) => {
+        setModalData(prev => {
+            const updatedTags = prev.tagsList.includes(tag) ? prev.tagsList.filter(t => t !== tag) : [...prev.tagsList, tag];
+            return { ...prev, tagsList: updatedTags };
+        });
+    };
 
     return (
         <div className="flex flex-col items-center gap-2">
@@ -38,8 +78,8 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         step={1}
                         min={18}
                         max={99}
-                        values={ageRange}
-                        onChange={(e) => setAgeRange(e)}
+                        values={modalData.ageRange}
+                        onChange={(e) => handleAgeRangeChange(e)}
                         renderTrack={({ props, children }) => (
                             <div
                                 {...props}
@@ -54,7 +94,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                                 className="range-thumb"
                             >
                                 <div className="range-value">
-                                    {ageRange[index]}
+                                    {modalData.ageRange[index]}
                                 </div>
                             </div>
                         )}
@@ -68,8 +108,8 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         step={1}
                         min={1}
                         max={100}
-                        values={kmWithin}
-                        onChange={(e) => setKmWithin(e)}
+                        values={modalData.kmWithin}
+                        onChange={(e) => handleKmWithinChange(e)}
                         renderTrack={({ props, children }) => (
                             <div
                                 {...props}
@@ -84,7 +124,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                                 className='range-thumb'
                             >
                                 <div className='range-value text-nowrap'>
-                                    {kmWithin[0] < 100 ? kmWithin[0] : '100 ~'} km
+                                    {modalData.kmWithin[0] < 100 ? modalData.kmWithin[0] : '100 ~'} km
                                 </div>
                             </div>
                         )}
@@ -100,8 +140,8 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         step={1}
                         min={1}
                         max={5}
-                        values={[fameRatingRange[0], fameRatingRange[1]]}
-                        onChange={(e) => setFameRatingRange(e)}
+                        values={[modalData.fameRatingRange[0], modalData.fameRatingRange[1]]}
+                        onChange={(e) => handleFameRatingRangeChange(e)}
                         renderTrack={({ props, children }) => (
                             <div
                                 {...props}
@@ -116,7 +156,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                                 className='range-thumb'
                             >
                                 <div className="range-value">
-                                    {fameRatingRange[index]}
+                                    {modalData.fameRatingRange[index]}
                                 </div>
                             </div>
                         )}
@@ -132,7 +172,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                             type="checkbox"
                             id={`tag-${tag}`}
                             className="checkbox-input"
-                            checked={tagsList.includes(tag)}
+                            checked={modalData.tagsList.includes(tag)}
                             onChange={() => handleTagChange(tag)}
                         />
                         <label htmlFor={`tag-${tag}`} className="checkbox-label px-1 text-sm rounded-lg">
@@ -146,21 +186,34 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
             </div>
             <div className="flex gap-2">
                 <button className="bg-gradient-to-r-main text-white border-2 border-slate-300 rounded-lg px-4 py-2 hover:brightness-95" onClick={() => {
+                    if (!hasModified) {
+                        setModalOpen(false);
+                        return;
+                    }
+                    
                     axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
-                        ageMin: ageRange[0],
-                        ageMax: ageRange[1],
-                        locationRadius: kmWithin[0],
-                        minFameRating: fameRatingRange[0],
-                        maxFameRating: fameRatingRange[1],
-                        tags: tagsList
+                        ageMin: modalData.ageRange[0],
+                        ageMax: modalData.ageRange[1],
+                        locationRadius: modalData.kmWithin[0],
+                        minFameRating: modalData.fameRatingRange[0],
+                        maxFameRating: modalData.fameRatingRange[1],
+                        tags: modalData.tagsList
                     }, httpAuthHeader).then(response => {
                         console.log("Filter applied successfully", response.data);
+                        setLoadState(LoadState.Loading)
+                        setAgeRange(modalData.ageRange);
+                        setKmWithin(modalData.kmWithin);
+                        setFameRatingRange(modalData.fameRatingRange);
+                        setTagsList(modalData.tagsList);
+                        setProfiles([]);
                         setModalOpen(false);
                     }).catch(error => {
                         console.error("Error applying filter", error);
                     });
                 }}>Save</button>
-                <button className="bg-white text-slate-600 border-2 border-slate-600 rounded-lg px-4 py-2 hover:brightness-95" onClick={() => setModalOpen(false)}>Close</button>
+                <button className="bg-white text-slate-600 border-2 border-slate-600 rounded-lg px-4 py-2 hover:brightness-95" onClick={() => {
+                    setModalOpen(false);
+                }}>Close</button>
             </div>
         </div>
 
