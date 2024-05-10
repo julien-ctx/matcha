@@ -213,7 +213,6 @@ router.post("/jwt-status", async (req, res) => {
       message: "Token is valid",
     })
   } catch (error) {
-    console.error("JWT or Database error:", error)
     return res.status(401).send({
       message: "Token is invalid.",
     })

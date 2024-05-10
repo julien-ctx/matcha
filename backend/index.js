@@ -42,6 +42,20 @@ passport.deserializeUser(async (id, done) => {
   }
 })
 
+const generateUniqueUsername = async (baseUsername) => {
+  let newUsername = baseUsername
+  let suffix = 1
+  while (true) {
+    const res = await pool.query(
+      "SELECT username FROM T_USER WHERE username = $1",
+      [newUsername],
+    )
+    if (res.rowCount === 0) return newUsername
+    newUsername = `${baseUsername}${suffix}`
+    suffix++
+  }
+}
+
 passport.use(
   new GoogleStrategy(
     {
@@ -61,9 +75,11 @@ passport.use(
         } else if (rows.length) {
           return done(null, rows[0])
         } else {
+          const baseUsername = `${email.split("@")[0]}`
+          const uniqueUsername = await generateUniqueUsername(baseUsername)
           const newUser = {
             email,
-            username: profile.displayName,
+            username: uniqueUsername,
             first_name: profile.name.givenName,
             last_name: profile.name.familyName,
           }
@@ -102,8 +118,8 @@ app.use(
 )
 
 app.use(express.json())
-app.use('/uploads', express.static('uploads'));
-app.use('/fake_profiles', express.static('fake_profiles'));
+app.use("/uploads", express.static("uploads"))
+app.use("/fake_profiles", express.static("fake_profiles"))
 
 app.use("/auth", auth)
 app.use("/profile", profile)
