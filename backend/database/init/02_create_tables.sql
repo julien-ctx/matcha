@@ -7,6 +7,7 @@ CREATE TYPE tag AS ENUM (
     'social butterfly', 'homebody', 'pet lover', 'diy enthusiast'
 );
 CREATE TYPE registration_method AS ENUM ('Default', 'Google');
+CREATE TYPE notification_type AS ENUM ('Message');
 
 CREATE TABLE IF NOT EXISTS T_USER (
     id SERIAL PRIMARY KEY,
@@ -99,4 +100,14 @@ CREATE TABLE IF NOT EXISTS T_MESSAGE (
     sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     delivered_at TIMESTAMP WITH TIME ZONE,
     read_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS T_UNREAD_NOTIFICATION (
+    id SERIAL PRIMARY KEY,
+    sender_id INTEGER NOT NULL REFERENCES T_USER(id),
+    recipient_id INTEGER NOT NULL REFERENCES T_USER(id),
+    notification_type notification_type,
+    content TEXT NOT NULL,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(sender_id, recipient_id)
 );

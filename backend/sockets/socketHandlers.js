@@ -92,7 +92,8 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("sendMessage", async ({ content, senderId, recipientId }) => {
+    socket.on("sendMessage", async ({ content, recipientId }) => {
+      const senderId = socket.user.id
       try {
         await pool.query("BEGIN")
         let chatroom = await pool.query(
@@ -111,6 +112,21 @@ export function setupSocketEvents(io) {
         }
 
         const chatroomId = chatroom.rows[0].id
+
+        const notification = `
+          INSERT INTO T_UNREAD_NOTIFICATION (notification_type, sender_id, recipient_id, content, sent_at)
+          VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+          ON CONFLICT (sender_id, recipient_id) 
+          DO UPDATE SET 
+            content = EXCLUDED.content, 
+            sent_at = CURRENT_TIMESTAMP
+        `
+        await pool.query(notification, [
+          "Message",
+          senderId,
+          recipientId,
+          content,
+        ])
 
         const result = await pool.query(
           `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id, sender_id, content, sent_at, delivered_at, read_at;`,
@@ -144,7 +160,8 @@ export function setupSocketEvents(io) {
       }
     })
 
-    socket.on("like", async ({ senderId, recipientId }) => {
+    socket.on("like", async ({ recipientId }) => {
+      const senderId = socket.user.id
       try {
         let reverseLike = await pool.query(
           `SELECT EXISTS (
@@ -195,13 +212,15 @@ export function setupSocketEvents(io) {
       }
     })
 
-    socket.on("unlike", async ({ senderId, recipientId }) => {
+    socket.on("unlike", async ({ recipientId }) => {
+      const senderId = socket.user.id
       sendEventToUser(userSocketMap, io, recipientId, "profileUnliked", {
         unlikerId: senderId,
       })
     })
 
-    socket.on("view", async ({ senderId, recipientId }) => {
+    socket.on("view", async ({ recipientId }) => {
+      const senderId = socket.user.id
       try {
         const senderInfo = await pool.query(
           "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
@@ -238,6 +257,28 @@ export function setupSocketEvents(io) {
         socket.emit("error", {
           errorCode: "BROADCAST_FAILED",
           message: "View could not be sent.",
+        })
+      }
+    })
+
+    socket.on("readNotification", async ({ recipientId }) => {
+      const senderId = socket.user.id
+      try {
+        const result = await pool.query(
+          "DELETE FROM T_UNREAD_NOTIFICATION WHERE sender_id = $1 AND recipient_id = $2",
+          [recipientId, senderId],
+        )
+        if (result.rowCount) {
+          sendEventToUser(userSocketMap, io, recipientId, "messageRead", {
+            senderId,
+          })
+        }
+      } catch (error) {
+        await pool.query("ROLLBACK")
+        console.error("Database error:", error)
+        socket.emit("error", {
+          errorCode: "BROADCAST_FAILED",
+          message: "Read receipt could not be sent.",
         })
       }
     })
