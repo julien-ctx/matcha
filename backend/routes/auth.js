@@ -37,7 +37,7 @@ router.post("/register", async (req, res) => {
     const query = `
       INSERT INTO T_USER (email, username, first_name, last_name, password, registration_method)
       VALUES($1, $2, $3, $4, $5, $6)
-      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country;
+      RETURNING id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, is_premium;
     `
     const values = [
       email,
@@ -92,7 +92,7 @@ router.post("/login", async (req, res) => {
 
   try {
     const query = `
-      SELECT id, email, username, password, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, registration_method
+      SELECT id, email, username, password, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, registration_method, is_premium
       FROM T_USER
       WHERE email = $1 OR username = $1;
     `
