@@ -35,6 +35,20 @@ const AuthProvider = ({ children }: Props) => {
         token: tok
       }
     });
+
+    newSocket.on('connect', () => {
+      console.log('Connected to server successfully!');
+      setSocket(newSocket);
+    });
+  
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection failed:', error);
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('Socket disconnected.');
+    });
+  
     setSocket(newSocket);
   }
 

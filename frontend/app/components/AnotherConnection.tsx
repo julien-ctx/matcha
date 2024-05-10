@@ -19,7 +19,7 @@ export default function AnotherConnection() {
             backgroundRepeat: "no-repeat",
           }}
         >
-        <h1 className="text-5xl text-white absolute top-32">You are connected somewhere else!</h1>
+        <h1 className="text-5xl text-white absolute top-32 text-center w-full">You are connected somewhere else!</h1>
     
           <div
             className="border-1 rounded-xl p-8 py-12 flex flex-col gap-4 items-center justify-around absolute top-1/2 -translate-y-1/2 border-rose-200"

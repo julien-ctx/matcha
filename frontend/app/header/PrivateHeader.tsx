@@ -56,7 +56,7 @@ export default function PrivateHeader() {
 
             {
                 user?.date_of_birth && !anotherConnection &&
-                <div className="flex justify-center gap-8 absolute top-0 right-0 h-full items-center">
+                <div className="flex justify-center gap-1 gap-2 sm:gap-8 absolute top-0 right-0 h-full items-center">
                     <div ref={visitListRef} className="popup-container">
                         <button className="popup-button">
                             u
@@ -85,7 +85,7 @@ export default function PrivateHeader() {
                     </div>
                     <div className="relative h-full flex-wrap flex py-1 ">
                         <input ref={menuToggleRef} className="hidden" id="menu-toggle" type="checkbox" />
-                        <label className='menu-toggle duration-200 flex flex-wrap h-full w-full px-2 mr-4 ml-6 rounded-3xl cursor-pointer' htmlFor="menu-toggle">
+                        <label className='menu-toggle duration-200 flex flex-wrap h-full w-full px-2 mr-3 sm:mr-4 sm:ml-6 rounded-3xl cursor-pointer' htmlFor="menu-toggle">
                             <div className="flex items-center">
                                 <img className="w-14 h-14 object-cover rounded-full select-none" src={`${process.env.NEXT_PUBLIC_API_URL}/${user.pictures[0]}`} alt="profile" />
                             </div>

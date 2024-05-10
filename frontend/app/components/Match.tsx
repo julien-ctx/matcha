@@ -137,10 +137,13 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
 
     return (
         <div className="w-full match-container h-full pt-20 flex flex-col justify-center items-center">
-            <button className="md:hidden absolute top-24 right-4"
+            <button className="chat-button md:hidden absolute top-20 -translate-y-[45%]  right-0 translate-x-[45%] rounded-full w-48 border-1 h-48 shadow-md"
+                style={{backgroundColor: "rgba(255, 255, 255, 0.25)"}}
                 onClick={() => setShowChatResponsive(true)}
             >
-                <img className="w-8 h-8" src="/message_fill.svg" alt="chat" />
+                <div className="w-full h-full relative">
+                    <img className="w-14 h-14 bottom-[20%] left-[20%] absolute" src="/message2.svg" alt="chat" />
+                </div>
             </button>
             {loadState === LoadState.Loading ? (
                 <div className="w-[18%] aspect-square bg-white rounded-full flex items-center justify-center shadow-lg">
@@ -148,7 +151,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                 </div>
             ) : loadState === LoadState.Loaded ? (
                 <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
-                    <button className="absolute -top-8 right-20 bg-gray-200 hover:bg-rose-400 duration-200 py-1 px-4 rounded-t-2xl" onClick={() => setModalOpen(true)}>
+                    <button className="absolute -top-8 left-20 bg-gray-200 hover:bg-rose-400 duration-200 py-1 px-4 rounded-t-xl" onClick={() => setModalOpen(true)}>
                         <div className="text-white flex gap-2 items-center justify-center">
                             <img className="w-5 h-5" src="parameters.svg" alt="parameters" />
                             <p>Settings</p>

@@ -160,10 +160,10 @@ const renderGenderOption = (option) => (
   return (
     <div className="w-full pt-20 flex justify-center h-full min-h-full grow" style={{backgroundImage: "linear-gradient(180deg,#79d1f7,#A5FECB)"}}>
       {authStatus === AuthStatus.Validated && (
-        <div className="w-3/4 h-full bg-white p-12 flex-col flex items-center overflow-y-scroll">
+        <div className="w-[97%] sm:w-[93%] md:w-3/4 h-full bg-white p-2 md:p-12 flex-col flex items-center overflow-y-scroll">
           <h1 className="text-5xl">Account Settings</h1>
           {user && (
-          <div className="flex flex-col w-4/5">
+          <div className="flex flex-col w-full sm:w-[90%] md:w-4/5 items-center">
             <div className="section">
               <h1 className="text-4xl">Profile Photos</h1>
               <div className="photo-grid bg-gradient-to-r-main p-2">
