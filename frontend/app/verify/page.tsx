@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useAuth } from "../auth/AuthProvider"
-import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation"
+import { ReadonlyURLSearchParams, useSearchParams, useRouter } from "next/navigation"
 import axios from "axios"
 import { AuthStatus } from "../auth/authTypes"
 
@@ -11,6 +11,7 @@ export default function Verify() {
   const searchParams: ReadonlyURLSearchParams = useSearchParams()
   const verificationToken: string | null = searchParams.get("token")
   const [displayMessage, setDisplayMessage] = useState<string>("")
+  const router = useRouter()
 
   useEffect(() => {
     if (authStatus !== AuthStatus.Validating && token) {
@@ -18,7 +19,7 @@ export default function Verify() {
         .post(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify`, { token: verificationToken })
         .then((response) => {
           setDisplayMessage("Successfully verified")
-          // TODO redirect to home page
+          window.location.href = '/';
         })
         .catch((error) => {
           setDisplayMessage(error?.response?.data?.message ?? "")

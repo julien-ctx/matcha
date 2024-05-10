@@ -10,12 +10,7 @@ import './Match.css'
 import SearchParam from './SearchParam';
 import { useAuth } from '../auth/AuthProvider'
 import { capitalize } from '../utils'
-
-enum LoadState {
-    Loading,
-    Loaded,
-    Error
-}
+import { LoadState } from './types'
 
 interface Props {
     setCurrentProfile: (profile: ProfileType) => void
@@ -24,7 +19,7 @@ interface Props {
 }
 
 export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive }: Props) {
-    const { httpAuthHeader, socket, user } = useAuth();
+    const { httpAuthHeader, socket, user, token } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
     const [ageRange, setAgeRange] = useState([18, 99]);
@@ -42,7 +37,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [message, setMessage] = useState('');
 
     function fetchFilter() {
-
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
             .then(response => {
                 if (response.data.message) {
@@ -63,7 +57,19 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     }
 
     function browseProfile() {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, httpAuthHeader)
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            data: {
+                ageMin: ageRange[0],
+                ageMax: ageRange[1],
+                locationRadius: kmWithin[0],
+                minFameRating: fameRatingRange[0],
+                maxFameRating: fameRatingRange[1],
+                tags: tagsList
+            }
+        })
         .then((response) => {
             console.log('profiles: ', response.data)
             setProfiles(response.data);
@@ -75,6 +81,13 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
             console.error(error);
         });
     }
+
+    useEffect(() => {
+        if (profiles.length > 0) return;
+        console.log('reload!!')
+        setLoadState(LoadState.Loading);
+        browseProfile();
+    }, [profiles])
 
     useEffect(() => {
         if (!httpAuthHeader) return;
@@ -118,9 +131,12 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     }
 
     const handleDecision = (accept: boolean) => {
-        // TODO Protection needed
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
                 console.log(res.data);
+                socket.emit(accept ? 'like' : 'unlike', {
+                    senderId: user?.id,
+                    receiverId: profiles[currentProfileIndex]?.id,
+                })
                 if (accept && res.data.isMatch) {
                     setMatchList((currentMatches) => [profiles[currentProfileIndex], ...currentMatches]);
                     setMatchProfile(profiles[currentProfileIndex]);
@@ -137,10 +153,13 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
 
     return (
         <div className="w-full match-container h-full pt-20 flex flex-col justify-center items-center">
-            <button className="md:hidden absolute top-24 right-4"
+            <button className="chat-button md:hidden absolute top-20 -translate-y-[45%]  right-0 translate-x-[45%] rounded-full w-48 border-1 h-48 shadow-md"
+                style={{backgroundColor: "rgba(255, 255, 255, 0.25)"}}
                 onClick={() => setShowChatResponsive(true)}
             >
-                <img className="w-8 h-8" src="/message_fill.svg" alt="chat" />
+                <div className="w-full h-full relative">
+                    <img className="w-14 h-14 bottom-[20%] left-[20%] absolute" src="/message2.svg" alt="chat" />
+                </div>
             </button>
             {loadState === LoadState.Loading ? (
                 <div className="w-[18%] aspect-square bg-white rounded-full flex items-center justify-center shadow-lg">
@@ -148,7 +167,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                 </div>
             ) : loadState === LoadState.Loaded ? (
                 <div className="h-4/5 relative bg-none" style={{width: "28rem"}}>
-                    <button className="absolute -top-8 right-20 bg-gray-200 hover:bg-rose-400 duration-200 py-1 px-4 rounded-t-2xl" onClick={() => setModalOpen(true)}>
+                    <button className="absolute -top-8 left-20 bg-gray-200 hover:bg-rose-400 duration-200 py-1 px-4 rounded-t-xl" onClick={() => setModalOpen(true)}>
                         <div className="text-white flex gap-2 items-center justify-center">
                             <img className="w-5 h-5" src="parameters.svg" alt="parameters" />
                             <p>Settings</p>
@@ -178,6 +197,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     tagsList={tagsList}
                     setTagsList={setTagsList}
                     setModalOpen={setModalOpen}
+                    setProfiles={setProfiles}
                 />
             </Modal>
 

@@ -35,6 +35,20 @@ const AuthProvider = ({ children }: Props) => {
         token: tok
       }
     });
+
+    newSocket.on('connect', () => {
+      console.log('Connected to server successfully!');
+      setSocket(newSocket);
+    });
+  
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection failed:', error);
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('Socket disconnected.');
+    });
+  
     setSocket(newSocket);
   }
 
@@ -81,6 +95,7 @@ const AuthProvider = ({ children }: Props) => {
       logout();
     }
   }, []);
+  console.log('user', user)
 
   return <AuthContext.Provider value={{ token, login, logout, authStatus, user, socket, httpAuthHeader }}>{children}</AuthContext.Provider>
 } 

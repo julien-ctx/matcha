@@ -17,10 +17,10 @@ export default function Verify() {
         backgroundRepeat: "no-repeat",
       }}
     >
-    <h1 className="text-7xl text-white absolute top-32">Just one more step...</h1>
+    <h1 className="text-7xl text-white absolute top-32 w-full text-center">Just one more step...</h1>
 
       <div
-        className="border-1 rounded-xl p-8 py-24 flex flex-col gap-12 items-center justify-around absolute bottom-24 border-rose-200"
+        className="border-1 rounded-xl p-8 py-8 sm:py-16 flex flex-col gap-12 items-center justify-around absolute bottom-32 sm:bottom-24 border-rose-200"
         style={{
           backgroundColor: "rgba(255, 255, 255, 0.3)",
         }}

@@ -43,3 +43,7 @@
   @keyframes l29 {
     100% {transform: rotate(1turn)}
   }
+
+.chat-button:hover img {
+    @apply transform scale-110 duration-150;
+}

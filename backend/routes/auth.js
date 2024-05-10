@@ -167,7 +167,7 @@ router.get(
     )
     res.cookie(
       "userData",
-      JSON.stringify({ ...user, password: undefined, jwt: token }),
+      JSON.stringify({ user, password: undefined, jwt: token }),
       {
         maxAge: 300000,
         sameSite: "Strict",

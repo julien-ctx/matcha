@@ -49,7 +49,7 @@
 
 
 .menu-items {
-  @apply right-2 shadow-2xl rounded-b-lg;
+  @apply right-2 shadow-2xl rounded-b-lg sm:text-lg text-xl;
   display: none;
   position: absolute;
   width: 125%;

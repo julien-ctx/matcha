@@ -64,8 +64,9 @@ export function setupSocketEvents(io) {
       userSocketMap.delete(socket.user.id)
     })
 
-    socket.on("useHere", () => {
+    socket.on("useHere", (_, callback) => {
       checkAlreadyExistingConnection(userSocketMap, io, socket)
+      callback({ success: true })
     })
 
     socket.on("setOnlineStatus", ({ isOnline }) => {

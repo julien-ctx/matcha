@@ -61,10 +61,9 @@ export default function MySpace() {
     useEffect(() => {
         console.log('user', user)
         if (!user) return;
-        // if (!user.account_verified)
-        //     setSpaceState(SpaceState.VERIFY);
-        //else 
-        if (!user?.date_of_birth)
+        if (!user.account_verified)
+            setSpaceState(SpaceState.VERIFY);
+        else if (!user?.date_of_birth)
             setSpaceState(SpaceState.DETAIL)
         else
             setSpaceState(SpaceState.READY);
@@ -210,9 +209,9 @@ export default function MySpace() {
         <div className="w-full h-full">
             <Details />
         </div>
-    // ) : spaceState === SpaceState.VERIFY ? (
-    //     <div className="w-full h-full flex justify-center">
-    //         <Verify />
-    //     </div>
+    ) : spaceState === SpaceState.VERIFY ? (
+        <div className="w-full h-full flex justify-center">
+            <Verify />
+        </div>
     ) : null
 }

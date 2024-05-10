@@ -3,15 +3,15 @@
 }
 
 .infoBox {
-    @apply relative h-full border-4 p-6 rounded-md flex justify-center items-center text-2xl;
+    @apply relative h-full border-4 p-6 rounded-md flex justify-center items-center sm:text-2xl;
 }
 
 .infoBox-2 {
-    @apply relative h-1/2 border-4 p-6 rounded-md flex justify-center items-center text-lg;
+    @apply relative h-1/2 border-4 p-6 rounded-md flex justify-center items-center text-xs sm:text-lg;
 }
 
 .infoTitle {
-    @apply absolute top-[0.1rem] left-3 text-slate-300 text-[1rem];
+    @apply absolute top-[0.1rem] left-3 text-slate-300 text-[0.8rem] sm:text-[1rem];
 }
 
 .infoTitle-2 {

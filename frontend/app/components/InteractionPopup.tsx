@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useAuth } from "../auth/AuthProvider"
 import Modal from "./Modal";
+import { capitalize } from '../utils';
 
 interface InteractionPopupProps {
     typeStr: string,
@@ -18,7 +19,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
         <div>
             { user ? 
                 <>
-                    <h1 className="flex w-full text-2xl pl-2 border-b-2 border-slate-200">{typeStr}s</h1>
+                    <h1 className="flex w-full text-2xl pl-2 border-b-2 border-slate-200">{capitalize(typeStr)}s</h1>
                     <div className="flex items-center h-20 border-2 bg-slate-50 px-2 gap-1 mt-2 rounded-xl">
                         <div className="bg-gradient-to-r-main rounded-fullhover:brightness-95 px-4 py-1 text-white rounded-2xl flex items-center justify-center ">
                             <p className="text-xl">
@@ -43,7 +44,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                                     }}
                                 />
                             ))}
-                            {profiles.length === 0 && <p className="text-lg py-3 ml-5">No {typeStr.toLowerCase()} yet!</p>}
+                            {profiles.length === 0 && <p className="text-lg py-3 ml-5">No {typeStr} yet!</p>}
                         </div>
                     </div>
                     <button className="mt-2 bg-gradient-to-r-main rounded-full hover:brightness-95 w-16 h-10 text-white right-0 border-2"
@@ -54,8 +55,8 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                 : null
             }
             <Modal isOpen={isPremiumModalOpen} onClose={() => setPremiumModalOpen(false)}>
-                <div className="flex flex-col p-5 min-h-64">
-                    <h1>Join Premium ! TODO</h1> 
+                <div className="flex flex-col p-4 min-h-64 gap-6 items-center">
+                    <h1 className="w-full text-center text-rose-500 text-3xl border-rose-500 rounded-lg p-3">Join Matcha Premium to discover who {typeStr} you!</h1> 
 
                     <div className="flex flex-col gap-1">
                         <button className="bg-gradient-to-r-main text-white px-4 py-2 text-lg rounded-lg" onClick={() => {

@@ -27,7 +27,9 @@ export default function PublicHome() {
 
     useEffect(() => {
         const userData = Cookies.get("userData")
+        console.log('here', userData)
         if (userData) {
+            console.log('userData', userData)
           login(JSON.parse(userData))
           Cookies.remove("userData")
           router.replace("/")
@@ -59,8 +61,8 @@ export default function PublicHome() {
                     ))}
                 </div>
                 {homeState === PublicHomeState.Home ? (
-                    <div className="flex flex-col justify-center items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <h1 className=" text-white text-8xl text-nowrap font-jersey10">&nbsp;Find your love with us&nbsp;</h1>
+                    <div className="flex flex-col justify-center items-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 gap-3">
+                        <h1 className=" text-white text-4xl sm:text-8xl text-nowrap font-jersey10 w-full">Find your love with us</h1>
                         <button className="px-8 py-2 text-3xl shadow-2xl shadow-black border-rose-500 text-rose-500 rounded-lg hover:scale-105 hover:brightness-110 border-2 duration-150" style={{backgroundColor: 'rgba(255, 255, 255, 0.9)'}}
                             onClick={() => setHomeState(PublicHomeState.Register)}
                         >Join us</button>

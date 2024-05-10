@@ -8,7 +8,7 @@ import InteractionPopup from '../components/InteractionPopup';
 import { useSocial } from '../contexts/SocialContext';
 
 export default function PrivateHeader() {
-    const { logout, user } = useAuth();
+    const { logout, user, socket } = useAuth();
     const { toggleLikesList, toggleVisitsList, anotherConnection } = useUI();
     const router = useRouter();
     const {visits, likes} = useSocial();
@@ -45,6 +45,22 @@ export default function PrivateHeader() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('profileLiked', (data) => {
+            console.log(data)
+        })
+
+        socket.on('profileViewed', (data) => {
+            console.log(data)
+        })
+
+        socket.on('profileUnliked', (data) => {
+            console.log(data)
+        })
+    }, [socket])
+
     return (
         <div className="w-full h-full bg-gradient-to-r-main">
             <h1 className="absolute top-1/2 -translate-y-1/2 left-5 text-5xl cursor-pointer" onClick={() => {
@@ -56,13 +72,13 @@ export default function PrivateHeader() {
 
             {
                 user?.date_of_birth && !anotherConnection &&
-                <div className="flex justify-center gap-8 absolute top-0 right-0 h-full items-center">
+                <div className="flex justify-center gap-1 gap-2 sm:gap-8 absolute top-0 right-0 h-full items-center">
                     <div ref={visitListRef} className="popup-container">
                         <button className="popup-button">
                             u
                         </button>
                         <div className="popup-content">
-                            <InteractionPopup typeStr="Visit" profiles={visits} onClick={() => {
+                            <InteractionPopup typeStr="visit" profiles={visits} onClick={() => {
                                 toggleVisitsList(true);
                                 const activeElement = document.activeElement;
                                 if (visitListRef.current && visitListRef.current.contains(activeElement))
@@ -75,7 +91,7 @@ export default function PrivateHeader() {
                             y
                         </button>
                         <div className="popup-content">
-                            <InteractionPopup typeStr="Like" profiles={likes} onClick={() => {
+                            <InteractionPopup typeStr="like" profiles={likes} onClick={() => {
                                 toggleLikesList(true);
                                 const activeElement = document.activeElement;
                                 if (likeListRef.current && likeListRef.current.contains(activeElement))
@@ -85,7 +101,7 @@ export default function PrivateHeader() {
                     </div>
                     <div className="relative h-full flex-wrap flex py-1 ">
                         <input ref={menuToggleRef} className="hidden" id="menu-toggle" type="checkbox" />
-                        <label className='menu-toggle duration-200 flex flex-wrap h-full w-full px-2 mr-4 ml-6 rounded-3xl cursor-pointer' htmlFor="menu-toggle">
+                        <label className='menu-toggle duration-200 flex flex-wrap h-full w-full px-2 mr-3 sm:mr-4 sm:ml-6 rounded-3xl cursor-pointer' htmlFor="menu-toggle">
                             <div className="flex items-center">
                                 <img className="w-14 h-14 object-cover rounded-full select-none" src={`${process.env.NEXT_PUBLIC_API_URL}/${user.pictures[0]}`} alt="profile" />
                             </div>
