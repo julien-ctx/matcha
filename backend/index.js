@@ -84,13 +84,14 @@ passport.use(
             last_name: profile.name.familyName,
           }
           const result = await pool.query(
-            "INSERT INTO T_USER (email, username, first_name, last_name, registration_method) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            "INSERT INTO T_USER (email, username, first_name, last_name, registration_method, account_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
             [
               newUser.email,
               newUser.username,
               newUser.first_name,
               newUser.last_name,
               "Google",
+              true
             ],
           )
           return done(null, result.rows[0])
