@@ -189,7 +189,9 @@ export default function MySpace() {
                 <div className="absolute top-0 right-0 md:w-[72.5%] h-full bg-white z-10 w-full">
                     <ChatRoom room={chatRoomList.filter(room => room.id === currentChatRoom)[0]} 
                         otherTyping={typingMap.get(currentChatRoom)}
-                        setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}/>
+                        setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile}
+                        setChatRoomList={setChatRoomList}    
+                    />
                 </div>
             )}
             {currentProfile !== null && (

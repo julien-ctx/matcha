@@ -185,7 +185,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         return;
                     }
                     
-                    axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
+                    axios.post(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
                         ageMin: modalData.ageRange[0],
                         ageMax: modalData.ageRange[1],
                         locationRadius: modalData.kmWithin[0],
