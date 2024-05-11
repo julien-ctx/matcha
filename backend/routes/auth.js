@@ -203,7 +203,7 @@ router.post("/jwt-status", async (req, res) => {
     const userId = decoded.id
 
     const query = `
-      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country
+      SELECT id, email, username, first_name, last_name, gender, sexual_orientation, bio, array_to_json(tags) AS tags, pictures, fame_rating, last_login, is_online, account_verified, created_at, updated_at, date_of_birth, latitude, longitude, city, country, is_premium
       FROM T_USER
       WHERE id = $1;
     `

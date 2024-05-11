@@ -4,15 +4,19 @@ import React, { useState } from 'react'
 import { useAuth } from "../auth/AuthProvider"
 import Modal from "./Modal";
 import { capitalize } from '../utils';
+import axios from 'axios';
+
+// Memo: The best way to deal with the Premium feature will be of course from the backend,
+// But for the simplicity, I will handle it from the frontend, while receiving the same type of data from the backend.
 
 interface InteractionPopupProps {
     typeStr: string,
     profiles: any[], //TODO
-    onClickButton: (open: boolean) => void
+    onClickOpenListButton: (open: boolean) => void
 }
 
-export default function InteractionPopup({ typeStr, profiles, onClickButton }: InteractionPopupProps) {
-    const { user } = useAuth();
+export default function InteractionPopup({ typeStr, profiles, onClickOpenListButton }: InteractionPopupProps) {
+    const { user, httpAuthHeader } = useAuth();
     const [isPremiumModalOpen, setPremiumModalOpen] = useState(false);
 
     return (
@@ -39,7 +43,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                                     style={{
                                         left: `${index * 20}px`,
                                         zIndex: `${profiles.length - index}`,
-                                        filter: `blur(${Math.min(Math.round(index) * 0.5 + (user.isPremium ? 0 : 5), 5)}px)`,
+                                        filter: `blur(${Math.min(Math.round(index) * 0.5 + (user.is_premium ? 0 : 5), 5)}px)`,
                                         
                                     }}
                                 />
@@ -49,7 +53,7 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
                     </div>
                     <button className="mt-2 bg-gradient-to-r-main rounded-full hover:brightness-95 w-16 h-10 text-white right-0 border-2"
                         onClick={() => {
-                            user.isPremium ? onClickButton(true) : setPremiumModalOpen(true);
+                            user.is_premium ? onClickOpenListButton(true) : setPremiumModalOpen(true);
                         }}>See all</button>
                 </>
                 : null
@@ -57,10 +61,15 @@ export default function InteractionPopup({ typeStr, profiles, onClickButton }: I
             <Modal isOpen={isPremiumModalOpen} onClose={() => setPremiumModalOpen(false)}>
                 <div className="flex flex-col p-4 min-h-64 gap-6 items-center">
                     <h1 className="w-full text-center text-rose-500 text-3xl border-rose-500 rounded-lg p-3">Join Matcha Premium to discover who {typeStr} you!</h1> 
-
                     <div className="flex flex-col gap-1">
                         <button className="bg-gradient-to-r-main text-white px-4 py-2 text-lg rounded-lg" onClick={() => {
-                            // TODO isPremiumOn and refresh the page
+                            axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
+                                isPremium: true
+                            }, httpAuthHeader).then((res) => {
+                                window.location.reload();
+                            }).catch((err) => {
+                                console.error(err);
+                            })
                         }}>Try Premium</button>
                         <button className="border-rose-500 text-rose-500 border-2 px-4 py-2 text-lg rounded-lg" onClick={() => setPremiumModalOpen(false)}>Maybe later</button>
                     </div>
