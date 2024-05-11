@@ -6,7 +6,7 @@ import './Profile.css'
 import Modal from './Modal';
 import { useAuth } from '../auth/AuthProvider';
 import axios from 'axios';
-import { calculAge } from '../utils';
+import { calculAge, getTimeAgo } from '../utils';
 
 interface ProfileProps {
     profile: ProfileType; 
@@ -102,7 +102,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
             </div>
 
             <div className="bg-gradient-to-r-main lg:h-[98%] w-full lg:w-3/5 rounded-xl flex p-4">
-                <div className="bg-slate-50 rounded-xl p-12 w-full min-h-full overflow-y-auto flex flex-wrap gap-1 border-2">
+                <div className="bg-slate-50 p-2 rounded-xl lg:p-2 w-full min-h-full overflow-y-auto flex flex-wrap gap-1 border-2">
                     <div className="flex h-24 gap-1 w-full">
                         <div className="infoBox w-1/2">
                             <h1 className="infoTitle">Name</h1>
@@ -114,7 +114,9 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                         </div>
                         <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Status</h1>
-                            {profile.is_online ? 'Online' : 'Offline'}
+                            <p className={`text-sm text-nowrap ${profile.is_online && "text-green-400"}`}>
+                            {profile.is_online ? 'Online Now' : getTimeAgo(profile.last_login)}
+                            </p>
                         </div>
                     </div>
                     <div className="flex-wrap min-h-44 border-4 rounded-md relative pb-20 py-7 px-4 text-lg w-full">
