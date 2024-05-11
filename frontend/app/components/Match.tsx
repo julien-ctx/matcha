@@ -113,7 +113,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     });
                 },
                 error => {
-                    console.error('Error getting location:', error);
                     axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
                         latitude: 999,
                         longitude: 999

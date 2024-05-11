@@ -117,7 +117,7 @@ router.get("/likes", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude, u.date_of_birth
       FROM T_USER u
       JOIN T_LIKE l ON l.liker_id = u.id
       WHERE l.liked_id = $1
@@ -159,7 +159,7 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude, u.date_of_birth
       FROM T_USER u
       JOIN T_VIEW v ON v.viewer_id = u.id
       WHERE v.viewed_id = $1 AND NOT EXISTS (

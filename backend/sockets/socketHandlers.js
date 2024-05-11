@@ -173,7 +173,7 @@ export function setupSocketEvents(io) {
         let isMatch = reverseLike.rows[0].exists
 
         const senderInfo = await pool.query(
-          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
+          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude, date_of_birth FROM T_USER WHERE id = $1",
           [senderId],
         )
         if (!senderInfo.rowCount) {
@@ -223,7 +223,7 @@ export function setupSocketEvents(io) {
       const senderId = socket.user.id
       try {
         const senderInfo = await pool.query(
-          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
+          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude, date_of_birth FROM T_USER WHERE id = $1",
           [senderId],
         )
         if (!senderInfo.rowCount) {
