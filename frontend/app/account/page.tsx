@@ -188,8 +188,10 @@ const renderGenderOption = (option) => (
           <h1 className="text-5xl">Account Settings</h1>
           {user && (
           <div className="flex flex-col w-full sm:w-[90%] md:w-4/5 items-center">
-            <div className="section">
+            <div className="section relative">
               <h1 className="text-4xl">Profile Photos</h1>
+              <p className=" text-slate-400 text-center w-full bottom-24">Only .jpeg, .jpg, and .png image formats are accepted.</p>
+
               <div className="photo-grid bg-gradient-to-r-main p-2">
                 {Array.from({ length: 6 }).map((_, index) => (
                     <div key={`photobox-${index}`} className={`photo-grid-item ${index === 0 ? 'large' : ''}`}>
