@@ -1,7 +1,6 @@
 import './PrivateHeader.css';
 import { useAuth } from '../auth/AuthProvider';
-import axios from 'axios';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUI } from '../contexts/UIContext';
 import InteractionPopup from '../components/InteractionPopup';
@@ -11,10 +10,8 @@ export default function PrivateHeader() {
     const { logout, user, socket } = useAuth();
     const { toggleLikesList, toggleVisitsList, anotherConnection } = useUI();
     const router = useRouter();
-    const {visits, likes} = useSocial();
+    const {visits, likes, visitNotification, likeNotification, toggleVisitNotification, toggleLikeNotification} = useSocial();
     const pathname = usePathname()
-
-    console.log('pathname', pathname)
 
     const menuToggleRef = useRef(null);
     const accountBtnRef = useRef(null);
@@ -48,16 +45,12 @@ export default function PrivateHeader() {
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('profileLiked', (data) => {
-            console.log(data)
-        })
-
-        socket.on('profileViewed', (data) => {
-            console.log(data)
-        })
-
         socket.on('profileUnliked', (data) => {
-            console.log(data)
+            console.log('profileUnliked', data)
+        })
+
+        return (() => {
+            socket.off('profileUnliked')
         })
     }, [socket])
 
@@ -74,7 +67,10 @@ export default function PrivateHeader() {
                 user?.date_of_birth && !anotherConnection &&
                 <div className="flex justify-center gap-1 gap-2 sm:gap-8 absolute top-0 right-0 h-full items-center">
                     <div ref={visitListRef} className="popup-container">
-                        <button className="popup-button">
+                        {visitNotification && <div className="absolute w-2 h-2 border-1 rounded-full bg-rose-500 right-2 top-2"></div>}
+                        <button className="popup-button" onClick={() => {
+                            visitNotification && toggleVisitNotification();
+                        }}>
                             u
                         </button>
                         <div className="popup-content">
@@ -83,11 +79,15 @@ export default function PrivateHeader() {
                                 const activeElement = document.activeElement;
                                 if (visitListRef.current && visitListRef.current.contains(activeElement))
                                     activeElement.blur();
-                            }} /> 
+                            }} isThisOpen={visitListRef.current?.contains(document.activeElement) || false}/> 
                         </div>
                     </div>
                     <div ref={likeListRef} className="popup-container">
-                        <button className="popup-button">
+                        {likeNotification && <div className="absolute w-2 h-2 border-1 rounded-full bg-rose-500 right-2 top-2"></div>}
+
+                        <button className="popup-button" onClick={() => {
+                            likeNotification && toggleLikeNotification();
+                        }}>
                             y
                         </button>
                         <div className="popup-content">
@@ -96,7 +96,7 @@ export default function PrivateHeader() {
                                 const activeElement = document.activeElement;
                                 if (likeListRef.current && likeListRef.current.contains(activeElement))
                                     activeElement.blur();
-                            }} />
+                            }} isThisOpen={likeListRef.current?.contains(document.activeElement) || false} />
                         </div>
                     </div>
                     <div className="relative h-full flex-wrap flex py-1 ">

@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function ProfileCard({ profile, setCurrentProfile }: Props){
-    const { httpAuthHeader } = useAuth();
+    const { httpAuthHeader, socket } = useAuth();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
 
@@ -36,7 +36,10 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
                     onClick={() => {
                         setCurrentProfile(profile);
                         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/view/${profile.id}`, {}, httpAuthHeader).then(res => {
-                            console.log(res.data);
+                            console.log("it's viewed", res.data);
+                            socket.emit('view', {
+                                recipientId: profile.id
+                            })
                         }).catch(err => {
                             console.error(err);
                         }

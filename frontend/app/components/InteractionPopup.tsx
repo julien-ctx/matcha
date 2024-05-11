@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from "../auth/AuthProvider"
 import Modal from "./Modal";
 import { capitalize } from '../utils';
 import axios from 'axios';
+import { useSocial } from '../contexts/SocialContext';
 
 // Memo: The best way to deal with the Premium feature will be of course from the backend,
 // But for the simplicity, I will handle it from the frontend, while receiving the same type of data from the backend.
@@ -12,12 +13,24 @@ import axios from 'axios';
 interface InteractionPopupProps {
     typeStr: string,
     profiles: any[], //TODO
-    onClickOpenListButton: (open: boolean) => void
+    onClickOpenListButton: (open: boolean) => void,
+    isThisOpen: boolean
 }
 
-export default function InteractionPopup({ typeStr, profiles, onClickOpenListButton }: InteractionPopupProps) {
+export default function InteractionPopup({ typeStr, profiles, onClickOpenListButton, isThisOpen }: InteractionPopupProps) {
     const { user, httpAuthHeader } = useAuth();
     const [isPremiumModalOpen, setPremiumModalOpen] = useState(false);
+    const { likeNotification, visitNotification, toggleLikeNotification, toggleVisitNotification} = useSocial();
+
+    useEffect(() => {
+        if (!isThisOpen) return;
+
+        if (likeNotification && typeStr === 'like')
+            toggleLikeNotification();
+        if (visitNotification && typeStr === 'visit')
+            toggleVisitNotification();
+
+    }, [isThisOpen, likeNotification, visitNotification])
 
     return (
         <div>

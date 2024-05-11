@@ -7,6 +7,10 @@ import { useAuth } from '../auth/AuthProvider';
 interface SocialContextType {
     visits: any[];
     likes: any[];
+    visitNotification: boolean;
+    likeNotification: boolean;
+    toggleVisitNotification: () => void;
+    toggleLikeNotification: () => void;
 }
 
 const SocialContext = createContext<SocialContextType | null>(null);
@@ -14,10 +18,42 @@ const SocialContext = createContext<SocialContextType | null>(null);
 export const useSocial = () => useContext(SocialContext);
 
 export const SocialProvider = ({ children }) => {
-    const { logout, user, httpAuthHeader } = useAuth();
+    const { user, httpAuthHeader, socket } = useAuth();
 
     const [visits, setVisits] = useState([]);
     const [likes, setLikes] = useState([]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('profileLiked', (data) => {
+            console.log('profileLiked', data)
+            setLikes((prevLikes) => [data, ...prevLikes]);
+            setLikeNotification(true); // TODO on the popup, if it is already open, toggle it to false
+        })
+
+        socket.on('profileViewed', (data) => {
+            console.log('profileViewed', data)
+            // setVisits((prevVisits) => [data, ...prevVisits]);
+            // TODO it's to get rid of the console error for now
+            setVisits(prevVisits => {
+                const exists = prevVisits.some(visit => visit.id === data.id);
+                if (!exists) {
+                    return [data, ...prevVisits];
+                }
+                return prevVisits;
+            });
+            setVisitNotification(true);
+            console.log(setVisits)
+            console.log('visits after update', visits)
+        })
+
+        return (() => {
+            socket.off('profileLiked')
+            socket.off('profileViewed')
+        })
+
+    }, [socket, visits, likes])
 
     useEffect(() => {
         if (!user) return;
@@ -25,7 +61,15 @@ export const SocialProvider = ({ children }) => {
         const fetchVisits = async () => {
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/views`, httpAuthHeader)
                 .then(response => {
-                    setVisits(response.data);
+                    // TODO For now, to get rid of the console error
+                    const uniqueVisits = new Map();
+                    response.data.forEach(visit => {
+                        uniqueVisits.set(visit.id, visit);
+                    });
+                    setVisits(Array.from(uniqueVisits.values())); // Convert map values back to an array
+            
+                    //setVisits(response.data);
+            
                     console.log('visit', response.data)
                 })
                 .catch(error => {
@@ -47,8 +91,14 @@ export const SocialProvider = ({ children }) => {
         fetchLikes();
     }, [user]);
 
+    const [visitNotification, setVisitNotification] = useState(false);
+    const [likeNotification, setLikeNotification] = useState(false);
+
+    const toggleVisitNotification = () => setVisitNotification(!visitNotification);
+    const toggleLikeNotification = () => setLikeNotification(!likeNotification);
+
     return (
-        <SocialContext.Provider value={{ visits, likes }}>
+        <SocialContext.Provider value={{ visits, likes, visitNotification, likeNotification, toggleLikeNotification, toggleVisitNotification }}>
             {children}
         </SocialContext.Provider>
     );

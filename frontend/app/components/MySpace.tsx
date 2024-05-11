@@ -170,7 +170,7 @@ export default function MySpace() {
                 <Chat rooms={chatRoomList} typingMap={typingMap} newMessageMap={newMessageMap} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile} setNewMessageMap={setNewMessageMap} setShowChatResponsive={setShowChatResponsive}/>
             </div>
             <div className="absolute w-full md:w-[72.5%] h-full right-0 top-0 z-0">
-                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList} setShowChatResponsive={setShowChatResponsive} profiles={profiles} setProfiles={setProfiles}/>
+                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList} setShowChatResponsive={setShowChatResponsive} profiles={profiles} setProfiles={setProfiles} newMessageMap={newMessageMap}/>
             </div>
 
             {showLikesList && (

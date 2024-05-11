@@ -18,9 +18,10 @@ interface Props {
     setShowChatResponsive: (show: boolean) => void
     profiles: ProfileType[]
     setProfiles: (profiles: any) => void
+    newMessageMap: Map<number, boolean>
 }
 
-export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive, profiles, setProfiles }: Props) {
+export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive, profiles, setProfiles, newMessageMap }: Props) {
     const { httpAuthHeader, socket, user, token } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
@@ -135,8 +136,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
                 console.log(res.data);
                 socket.emit(accept ? 'like' : 'unlike', {
-                    senderId: user?.id,
-                    receiverId: profiles[currentProfileIndex]?.id,
+                    recipientId: profiles[currentProfileIndex]?.id,
                 })
                 if (accept && res.data.isMatch) {
                     setMatchList((currentMatches) => [profiles[currentProfileIndex], ...currentMatches]);
@@ -153,13 +153,16 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     };
 
     return (
-        <div className="w-full match-container h-full pt-20 flex flex-col justify-center items-center">
-            <button className="chat-button md:hidden absolute top-20 -translate-y-[45%]  right-0 translate-x-[45%] rounded-full w-48 border-1 h-48 shadow-md"
+        <div className="w-full match-container h-full pt-20 flex flex-col justify-center items-center ">
+            <button className="chat-button md:hidden absolute top-20 -translate-y-[45%] right-0 translate-x-[45%] rounded-full w-48 border-1 h-48 shadow-md"
                 style={{backgroundColor: "rgba(255, 255, 255, 0.25)"}}
                 onClick={() => setShowChatResponsive(true)}
             >
                 <div className="w-full h-full relative">
                     <img className="w-14 h-14 bottom-[20%] left-[20%] absolute" src="/message2.svg" alt="chat" />
+                    {Array.from(newMessageMap.values()).includes(true) && (
+                        <div className="absolute bg-rose-500 w-3 h-3 rounded-full bottom-1/4 translate-x-7 left-1/4 border-1"></div>
+                    )}
                 </div>
             </button>
             {loadState === LoadState.Loading ? (

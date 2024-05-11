@@ -29,14 +29,6 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     console.log('profile', profile)
     console.log('fame rating', profile.fame_rating)
 
-    useEffect(() => {
-        socket.emit('view', {
-            senderId: user?.id,
-            recipientId: profile.id
-        })
-    }, [])
-
-
     function prevImage() {
         if (currentImageIndex === 0) return;
 

@@ -95,7 +95,6 @@ export function setupSocketEvents(io) {
     socket.on("sendMessage", async ({ content, recipientId }, callback) => {
       const senderId = socket.user.id
 
-      console.log("sendMessage", { content, recipientId, senderId })
       try {
         await pool.query("BEGIN")
         let chatroom = await pool.query(
@@ -183,7 +182,15 @@ export function setupSocketEvents(io) {
                 created_at: chatroom.rows[0].created_at,
                 id: chatroomId,
                 messages: [message],
-                other_user: recipientId,
+                other_user: {
+                  id: recipientUser.id,
+                  first_name: recipientUser.first_name,
+                  last_name: recipientUser.last_name,
+                  profile_picture: recipientUser.pictures.length
+                    ? recipientUser.pictures[0]
+                    : null,
+                  is_online: recipientUser.is_online,
+                },
                 updated_at: chatroom.rows[0].updated_at,
               }
             : null,
