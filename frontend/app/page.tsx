@@ -17,8 +17,9 @@ export default function Home() {
   useEffect(() => {
     const userData = Cookies.get("userData")
     if (!userData) return
-    else if (userData.success === true) {
-      login(JSON.parse(userData))
+    const userDataObject = JSON.parse(userData)
+    if (userDataObject.success === true) {
+      login(userDataObject)
       Cookies.remove("userData")
       router.replace("/")
     } else  {
