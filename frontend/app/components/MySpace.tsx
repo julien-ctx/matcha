@@ -181,7 +181,7 @@ export default function MySpace() {
             </div>
 
             {showLikesList && (
-                <div className="h-full absolute right-0 top-0 pt-24 w-[72.5%] flex justify-center" style={{zIndex: 999}}>
+                <div className="h-full absolute right-0 top-0 pt-24 w-full md:w-[72.5%] flex justify-center" style={{zIndex: 999}}>
                     <InteractionList isLike={true} toggleShow={toggleLikesList} setCurrentProfile={setCurrentProfile} />
                 </div>
             )}
