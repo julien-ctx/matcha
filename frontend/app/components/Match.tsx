@@ -222,8 +222,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                                     if (message.trim() === '') return;
                                     socket?.emit('sendMessage', {
                                         content: message,
-                                        senderId: user?.id,
-                                        receiverId: matchProfile.id
+                                        recipientId: matchProfile.id
                                     }, (res) => {
                                         if (res.success) {
                                             console.log('success: ', res);

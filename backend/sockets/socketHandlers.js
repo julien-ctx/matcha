@@ -92,8 +92,10 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("sendMessage", async ({ content, recipientId }) => {
+    socket.on("sendMessage", async ({ content, recipientId }, callback) => {
       const senderId = socket.user.id
+
+      console.log("sendMessage", { content, recipientId, senderId })
       try {
         await pool.query("BEGIN")
         let chatroom = await pool.query(
@@ -150,6 +152,23 @@ export function setupSocketEvents(io) {
               }
             : null,
         })
+
+        socket.emit("newMessage", {
+          message,
+          chatroomId,
+          isNewRoom,
+          chatroomInfo: isNewRoom
+            ? {
+                created_at: chatroom.rows[0].created_at,
+                id: chatroomId,
+                messages: [message],
+                other_user: recipientId,
+                updated_at: chatroom.rows[0].updated_at,
+              }
+            : null,
+        })
+
+        callback({ success: true })
       } catch (error) {
         await pool.query("ROLLBACK")
         console.error("Database error:", error)
