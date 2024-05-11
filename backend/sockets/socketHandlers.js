@@ -136,6 +136,19 @@ export function setupSocketEvents(io) {
         )
         const message = result.rows[0]
 
+        const recipientResult = await pool.query(
+          "SELECT id, first_name, last_name, pictures, is_online FROM T_USER WHERE id = $1",
+          [recipientId],
+        )
+        if (!recipientResult.rowCount) {
+          socket.emit("error", {
+            errorCode: "INVALID_RECIPIENT_ID",
+            message: "Message could not be sent.",
+          })
+          return
+        }
+        const recipientUser = recipientResult.rows[0]
+
         await pool.query("COMMIT")
 
         sendEventToUser(userSocketMap, io, recipientId, "newMessage", {
@@ -147,7 +160,15 @@ export function setupSocketEvents(io) {
                 created_at: chatroom.rows[0].created_at,
                 id: chatroomId,
                 messages: [message],
-                other_user: recipientId,
+                other_user: {
+                  id: recipientUser.id,
+                  first_name: recipientUser.first_name,
+                  last_name: recipientUser.last_name,
+                  profile_picture: recipientUser.pictures.length
+                    ? recipientUser.pictures[0]
+                    : null,
+                  is_online: recipientUser.is_online,
+                },
                 updated_at: chatroom.rows[0].updated_at,
               }
             : null,
@@ -200,6 +221,7 @@ export function setupSocketEvents(io) {
             errorCode: "INVALID_SENDER_ID",
             message: "Like could not be sent.",
           })
+          return
         }
         const recipientInfo = await pool.query(
           "SELECT longitude, latitude FROM T_USER WHERE id = $1",
@@ -210,6 +232,7 @@ export function setupSocketEvents(io) {
             errorCode: "INVALID_RECIPIENT_ID",
             message: "Like could not be sent.",
           })
+          return
         }
         const distance = getDistance(
           senderInfo.rows[0].latitude,
@@ -250,6 +273,7 @@ export function setupSocketEvents(io) {
             errorCode: "INVALID_SENDER_ID",
             message: "View could not be sent.",
           })
+          return
         }
         const recipientInfo = await pool.query(
           "SELECT longitude, latitude FROM T_USER WHERE id = $1",
@@ -260,6 +284,7 @@ export function setupSocketEvents(io) {
             errorCode: "INVALID_RECIPIENT_ID",
             message: "View could not be sent.",
           })
+          return
         }
         const distance = getDistance(
           senderInfo.rows[0].latitude,
