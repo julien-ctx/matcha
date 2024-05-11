@@ -28,6 +28,7 @@ export default function MySpace() {
     const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
     const [typingMap, setTypingMap] = useState(new Map());
     const [newMessageMap, setNewMessageMap] = useState(new Map());
+    const [profiles, setProfiles] = useState([]);
 
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
@@ -169,7 +170,7 @@ export default function MySpace() {
                 <Chat rooms={chatRoomList} typingMap={typingMap} newMessageMap={newMessageMap} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile} setNewMessageMap={setNewMessageMap} setShowChatResponsive={setShowChatResponsive}/>
             </div>
             <div className="absolute w-full md:w-[72.5%] h-full right-0 top-0 z-0">
-                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList} setShowChatResponsive={setShowChatResponsive}/>
+                <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList} setShowChatResponsive={setShowChatResponsive} profiles={profiles} setProfiles={setProfiles}/>
             </div>
 
             {showLikesList && (
@@ -193,7 +194,9 @@ export default function MySpace() {
             )}
             {currentProfile !== null && (
                 <div className="absolute top-0 right-0 w-full md:w-[72.5%] h-full bg-white z-10 flex justify-center z-30">
-                    <Profile profile={currentProfile} matchList={matchList} setMatchList={setMatchList} setCurrentProfile={setCurrentProfile}/>
+                    <Profile profile={currentProfile} matchList={matchList} setMatchList={setMatchList} setCurrentProfile={setCurrentProfile}
+                        setCurrentChatRoom={setCurrentChatRoom} setChatRoomList={setChatRoomList} setProfiles={setProfiles}
+                    />
                 </div>
             )}
         </div>

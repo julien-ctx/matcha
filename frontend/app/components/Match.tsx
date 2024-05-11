@@ -16,9 +16,11 @@ interface Props {
     setCurrentProfile: (profile: ProfileType) => void
     setMatchList: any //TODO
     setShowChatResponsive: (show: boolean) => void
+    profiles: ProfileType[]
+    setProfiles: (profiles: any) => void
 }
 
-export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive }: Props) {
+export default function Match({ setCurrentProfile, setMatchList, setShowChatResponsive, profiles, setProfiles }: Props) {
     const { httpAuthHeader, socket, user, token } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
@@ -27,7 +29,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [fameRatingRange, setFameRatingRange] = useState([1, 5]);
     const [tagsList, setTagsList] = useState([]);
 
-    const [profiles, setProfiles] = useState([]);
     const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
 
     const [loadState, setLoadState] = useState(LoadState.Loading);
@@ -83,6 +84,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     }
 
     useEffect(() => {
+        if (!profiles) return;
         if (profiles.length > 0) return;
         console.log('reload!!')
         setLoadState(LoadState.Loading);
