@@ -25,12 +25,6 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
     , setProfiles
 }: SearchParamProps) {
     const { user, httpAuthHeader } = useAuth();
-    const [initialValues, setInitialValues] = useState({
-        ageRange: [...ageRange],
-        kmWithin: [...kmWithin],
-        fameRatingRange: [...fameRatingRange],
-        tagsList: [...tagsList]
-    });
     const [hasModified, setHasModified] = useState(false);
     const [modalData, setModalData] = useState({
         ageRange: [...ageRange],
@@ -80,24 +74,24 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         max={99}
                         values={modalData.ageRange}
                         onChange={(e) => handleAgeRangeChange(e)}
-                        renderTrack={({ props, children }) => (
-                            <div
-                                {...props}
-                                className="range-slider"
-                            >
-                                {children}
-                            </div>
-                        )}
-                        renderThumb={({ props, index }) => (
-                            <div
-                                {...props}
-                                className="range-thumb"
-                            >
-                                <div className="range-value">
-                                    {modalData.ageRange[index]}
+                        renderTrack={({ props, children }) => {
+                            const { key, ...restProps } = props;
+                            return (
+                                <div {...restProps} key={key} className="range-slider">
+                                    {children}
                                 </div>
-                            </div>
-                        )}
+                            );
+                        }}
+                        renderThumb={({ props, index }) => {
+                            const { key, ...restProps } = props;
+                            return (
+                                <div {...restProps} key={key} className="range-thumb">
+                                    <div className="range-value">
+                                        {modalData.ageRange[index]}
+                                    </div>
+                                </div>
+                            );
+                        }}
                     />
                 </div>
             </div>
@@ -105,30 +99,30 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                 <h1 className="text-xl text-nowrap text-gradient-main">By distance (km)</h1>
                 <div className='w-full h-full flex items-center'>
                     <Range
-                        step={1}
-                        min={1}
-                        max={100}
+                        step={5}
+                        min={5}
+                        max={500}
                         values={modalData.kmWithin}
                         onChange={(e) => handleKmWithinChange(e)}
-                        renderTrack={({ props, children }) => (
-                            <div
-                                {...props}
-                                className="range-slider"
-                            >
-                                {children}
-                            </div>
-                        )}
-                        renderThumb={({ props }) => (
-                            <div
-                                {...props}
-                                className='range-thumb'
-                            >
-                                <div className='range-value text-nowrap'>
-                                    {modalData.kmWithin[0] < 100 ? modalData.kmWithin[0] : '100 ~'} km
+                        renderTrack={({ props, children }) => {
+                            const { key, ...restProps } = props;
+                            return (
+                                <div {...restProps} key={key} className="range-slider">
+                                    {children}
                                 </div>
-                            </div>
-                        )}
-                    />
+                            );
+                        }}
+                        renderThumb={({ props, index }) => {
+                            const { key, ...restProps } = props;
+                            return (
+                                <div {...restProps} key={key} className='range-thumb'>
+                                    <div className='range-value text-nowrap'>
+                                        {modalData.kmWithin[0] < 500 ? `${modalData.kmWithin[0]} km` : '500+ km'}
+                                    </div>
+                                </div>
+                            );
+                        }}
+                        />
 
                 </div>
 
@@ -142,25 +136,25 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         max={5}
                         values={[modalData.fameRatingRange[0], modalData.fameRatingRange[1]]}
                         onChange={(e) => handleFameRatingRangeChange(e)}
-                        renderTrack={({ props, children }) => (
-                            <div
-                                {...props}
-                                className="range-slider"
-                            >
-                                {children}
-                            </div>
-                        )}
-                        renderThumb={({ props, index }) => (
-                            <div
-                                {...props}
-                                className='range-thumb'
-                            >
-                                <div className="range-value">
-                                    {modalData.fameRatingRange[index]}
+                        renderTrack={({ props, children }) => {
+                            const { key, ...restProps } = props;
+                            return (
+                                <div {...restProps} key={key} className="range-slider">
+                                    {children}
                                 </div>
-                            </div>
-                        )}
-                    />
+                            );
+                        }}
+                        renderThumb={({ props, index }) => {
+                            const { key, ...restProps } = props;
+                            return (
+                                <div {...restProps} key={key} className='range-thumb'>
+                                    <div className="range-value">
+                                        {modalData.fameRatingRange[index]}
+                                    </div>
+                                </div>
+                            );
+                        }}
+                                    />
                 </div>
             </div>
             <div className="parameter-section">
@@ -191,7 +185,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         return;
                     }
                     
-                    axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
+                    axios.post(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
                         ageMin: modalData.ageRange[0],
                         ageMax: modalData.ageRange[1],
                         locationRadius: modalData.kmWithin[0],

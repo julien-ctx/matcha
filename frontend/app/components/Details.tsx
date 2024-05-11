@@ -1,7 +1,6 @@
 "use client"
 
-import React, { ReactNode, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
 import axios from "axios"
 import './Details.css';
 import { useAuth } from '../auth/AuthProvider';
@@ -41,7 +40,6 @@ const tagsList = [
 
 export default function Details() {
     const { token } = useAuth();
-    const router = useRouter();
 
     const [currentDetail, setCurrentDetail] = useState<CurrentDetail>(CurrentDetail.Birthday)
 
@@ -80,12 +78,6 @@ export default function Details() {
         }).catch(e => {
             console.log('error:', e);
         })
-    }
-
-    function handleOrientationChange(gender: Gender) : void{
-        setOrientation((prev) => 
-            prev.includes(gender) ? prev.filter(item => item !== gender) : [...prev, gender]
-        );
     }
 
     function handlePhotoChange(event) {
@@ -184,9 +176,9 @@ export default function Details() {
     return (
         <div className="relative w-full h-full bg-white flex items-center justify-center flex-col fadeInAnimation"
         >
-            <div className="relative w-3/5 max-h-full h-2/3 flex justify-center items-center">
+            <div className="relative w-full md:w-4/5 max-h-full h-full py-24 md:py-0 md:h-2/3 flex justify-center items-center">
                 {currentDetail === CurrentDetail.Birthday && <div className="flex flex-col items-center">
-                        <h1 className="detail-title mb-8">When were you born?</h1>
+                        <h1 className="detail-title mb-8 text-center ">When were you born?</h1>
                         <input
                             type="date"
                             className="text-2xl"
@@ -205,13 +197,14 @@ export default function Details() {
                     </div>
                 </div>}
                 {currentDetail === CurrentDetail.Orientation && <div>
-                    <h2 className="detail-title mb-8">I'm looking for...</h2>
+                    <h2 className="detail-title mb-8 text-center">I'm looking for...</h2>
                     <div className="flex flex-col gap-1 items-center">
                     {orientationOptions.map(option => renderOrientationOption(option))}
                     </div>
                 </div>}
                 {currentDetail === CurrentDetail.Photos && <div className="flex flex-col items-center justify-center h-full">
-                    <h2 className="detail-title mb-6">Let them see your beautiful smile :)</h2>
+                    <h2 className="detail-title mb-6 text-center md:mt-0 mt-24">Let them see your beautiful smile :)</h2>
+                    <p className=" text-slate-400 text-center w-full bottom-24">Only .jpeg, .jpg, and .png image formats are accepted.</p>
                     <div className="photo-grid bg-gradient-to-r-main p-2">
                         {Array.from({ length: 6 }).map((_, index) => (
                             <div key={index} className={`photo-grid-item ${index === 0 ? 'large' : ''}`}>

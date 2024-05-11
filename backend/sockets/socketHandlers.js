@@ -92,8 +92,10 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("sendMessage", async ({ content, recipientId }) => {
+    socket.on("sendMessage", async ({ content, recipientId }, callback) => {
       const senderId = socket.user.id
+
+      console.log("sendMessage", { content, recipientId, senderId })
       try {
         await pool.query("BEGIN")
         let chatroom = await pool.query(
@@ -150,6 +152,23 @@ export function setupSocketEvents(io) {
               }
             : null,
         })
+
+        socket.emit("newMessage", {
+          message,
+          chatroomId,
+          isNewRoom,
+          chatroomInfo: isNewRoom
+            ? {
+                created_at: chatroom.rows[0].created_at,
+                id: chatroomId,
+                messages: [message],
+                other_user: recipientId,
+                updated_at: chatroom.rows[0].updated_at,
+              }
+            : null,
+        })
+
+        callback({ success: true })
       } catch (error) {
         await pool.query("ROLLBACK")
         console.error("Database error:", error)
@@ -173,7 +192,7 @@ export function setupSocketEvents(io) {
         let isMatch = reverseLike.rows[0].exists
 
         const senderInfo = await pool.query(
-          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
+          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude, date_of_birth FROM T_USER WHERE id = $1",
           [senderId],
         )
         if (!senderInfo.rowCount) {
@@ -223,7 +242,7 @@ export function setupSocketEvents(io) {
       const senderId = socket.user.id
       try {
         const senderInfo = await pool.query(
-          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude FROM T_USER WHERE id = $1",
+          "SELECT id, username, first_name, last_name, bio, pictures, latitude, longitude, date_of_birth FROM T_USER WHERE id = $1",
           [senderId],
         )
         if (!senderInfo.rowCount) {

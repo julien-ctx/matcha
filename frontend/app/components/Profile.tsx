@@ -6,7 +6,7 @@ import './Profile.css'
 import Modal from './Modal';
 import { useAuth } from '../auth/AuthProvider';
 import axios from 'axios';
-import { calculAge } from '../utils';
+import { calculAge, getTimeAgo } from '../utils';
 
 interface ProfileProps {
     profile: ProfileType; 
@@ -14,17 +14,20 @@ interface ProfileProps {
     setMatchList: (matchList: any[]) => void;
     setCurrentProfile: (profile: ProfileType | null) => void; 
     setCurrentChatRoom: (chatRoomId: number | null) => void;
-    setChatRoomList: (chatRoomList: any[]) => void;
+    setChatRoomList: (chatRoomList: any) => void;
+    setProfiles: (profiles: any) => void;
 }
 
-export default function Profile({ profile, matchList, setMatchList, setCurrentProfile }: ProfileProps) {
+export default function Profile({ profile, matchList, setMatchList, setCurrentProfile, setCurrentChatRoom, setChatRoomList, setProfiles }: ProfileProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
     const [firstMessageModalOpen, setFirstMessageModalOpen] = useState<boolean>(false);
     const [deleteConfirmModalOpen, setDeleteConfirmModalOpen] = useState<boolean>(false);
+    const [blockConfirmModalOpen, setBlockConfirmModalOpen] = useState<boolean>(false);
     const { socket, user, httpAuthHeader, token } = useAuth();
     const [message, setMessage] = useState<string>('');
 
     console.log('profile', profile)
+    console.log('fame rating', profile.fame_rating)
 
     useEffect(() => {
         socket.emit('view', {
@@ -53,6 +56,13 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                     &lt;
                 </button>
             </div>
+            <button 
+                onClick={() => {
+                    setBlockConfirmModalOpen(true);
+                }}
+                className="border-2 flex justify-center items-center absolute top-24 right-2 lg:top-[92%] lg:left-1 bg-slate-50 duration-150 hover:brightness-105 rounded-full w-12 h-12">
+                <img className="w-8 h-8" src="/block.svg" alt="block" />
+            </button>
 
             <div className="flex w-full h-[28rem] lg:w-[35%] lg:h-[80%] justify-center rounded-xl bg-slate-900 ">
 
@@ -101,7 +111,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
             </div>
 
             <div className="bg-gradient-to-r-main lg:h-[98%] w-full lg:w-3/5 rounded-xl flex p-4">
-                <div className="bg-slate-50 rounded-xl p-12 w-full min-h-full overflow-y-auto flex flex-wrap gap-1 border-2">
+                <div className="bg-slate-50 p-2 rounded-xl lg:p-2 w-full min-h-full overflow-y-auto flex flex-wrap gap-1 border-2">
                     <div className="flex h-24 gap-1 w-full">
                         <div className="infoBox w-1/2">
                             <h1 className="infoTitle">Name</h1>
@@ -113,7 +123,9 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                         </div>
                         <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Status</h1>
-                            {profile.is_online ? 'Online' : 'Offline'}
+                            <p className={`text-sm text-nowrap ${profile.is_online && "text-green-400"}`}>
+                            {profile.is_online ? 'Online Now' : getTimeAgo(profile.last_login)}
+                            </p>
                         </div>
                     </div>
                     <div className="flex-wrap min-h-44 border-4 rounded-md relative pb-20 py-7 px-4 text-lg w-full">
@@ -128,7 +140,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                             <h1 className="infoTitle">Fame Rating</h1>
                             <div className="flex w-full">
                             {[...Array(5)].map((_, i) => {
-                                const imagePath = i <= profile.fame_rating % 20 + 1 ? "/star_color.svg" : "/star_gray.svg";
+                                const imagePath = i < Math.floor(profile.fame_rating / 20) + 1 ? "/star_color.svg" : "/star_gray.svg";
                                 return <img className="w-1/5" key={i} src={imagePath} alt={i < profile.fame_rating ? "Color Star" : "Gray Star"} />;
                             })}
                             </div>
@@ -194,10 +206,10 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                 isOpen={deleteConfirmModalOpen}
                 onClose={() => setDeleteConfirmModalOpen(false)}
             >
-                <div className="w-full flex flex-col">
-                    <h1 className="text-3xl">Are you sure you want to delete this profile from match?</h1>
+                <div className="w-full flex flex-col items-center">
+                    <h1 className="text-2xl w-full text-center">Are you sure you want to delete this profile from match?</h1>
                     <div className="flex gap-1">
-                        <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
+                        <button className="bg-white text-rose-500 border-rose-500 rounded-md px-3 hover:brightness-95 duration-100 border-1"
                             onClick={() => {
                                 axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/match/`, {
                                     data: {
@@ -211,23 +223,54 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                                 .then(response => {
                                     console.log(response.data)
                                     setCurrentProfile(null);
+                                    setMatchList(matchList.filter(match => match.id !== profile.id));
+                                    setCurrentChatRoom(null);
+                                    setChatRoomList((prevChatRoomList) => prevChatRoomList.filter(chatRoom => chatRoom.other_user.id !== profile.id))
+                                    setDeleteConfirmModalOpen(false);
                                 }).catch(error => {
                                     console.error(error)
                                 }
                                 )
                                 
-                                // TODO en cas de reussite apres request
-                                setMatchList(matchList.filter(match => match.id !== profile.id));
-                                setDeleteConfirmModalOpen(false);
-                                setCurrentProfile(null);
                             }}
                         >Yes</button>
-                        <button className="bg-gradient-to-r-main text-white rounded-md px-3 border-1"
+                        <button className="bg-white text-rose-500 border-rose-500 rounded-md px-3 hover:brightness-95 duration-100 border-1"
                             onClick={() => setDeleteConfirmModalOpen(false)}
                         >No</button>
                     </div>
                 </div>
             </Modal>
+
+            <Modal
+                isOpen={blockConfirmModalOpen}
+                onClose={() => setBlockConfirmModalOpen(false)}
+            >
+                <div className="w-full flex flex-col items-center">
+                    <h1 className="text-2xl w-full text-center">Are you sure you want to block this profile?</h1>
+                    <div className="flex gap-1 mt-3">
+                        <button className="bg-white text-rose-500 border-rose-500 rounded-md px-3 hover:brightness-95 duration-100 border-1"
+                            onClick={() => {
+                                axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/block/${profile.id}`, {}, httpAuthHeader)
+                                .then(response => {
+                                    console.log(response.data)
+                                    setCurrentProfile(null);
+                                    setMatchList(matchList.filter(match => match.id !== profile.id));
+                                    setCurrentChatRoom(null);
+                                    setChatRoomList((prevChatRoomList) => prevChatRoomList.filter(chatRoom => chatRoom.other_user.id !== profile.id))
+                                    setProfiles((prevProfiles) => prevProfiles.filter(p => p.id !== profile.id))
+                                    setBlockConfirmModalOpen(false);
+                                }).catch(error => {
+                                    console.error(error)
+                                })                                            
+                            }}
+                        >Yes</button>
+                        <button className="bg-white text-rose-500 border-rose-500 rounded-md hover:brightness-95 duration-100 px-3 border-1"
+                            onClick={() => setBlockConfirmModalOpen(false)}
+                        >No</button>
+                    </div>
+                </div>
+            </Modal>
+
         </div>
     )
 }

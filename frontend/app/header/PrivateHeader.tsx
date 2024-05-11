@@ -78,7 +78,7 @@ export default function PrivateHeader() {
                             u
                         </button>
                         <div className="popup-content">
-                            <InteractionPopup typeStr="visit" profiles={visits} onClick={() => {
+                            <InteractionPopup typeStr="visit" profiles={visits} onClickOpenListButton={() => {
                                 toggleVisitsList(true);
                                 const activeElement = document.activeElement;
                                 if (visitListRef.current && visitListRef.current.contains(activeElement))
@@ -91,7 +91,7 @@ export default function PrivateHeader() {
                             y
                         </button>
                         <div className="popup-content">
-                            <InteractionPopup typeStr="like" profiles={likes} onClick={() => {
+                            <InteractionPopup typeStr="like" profiles={likes} onClickOpenListButton={() => {
                                 toggleLikesList(true);
                                 const activeElement = document.activeElement;
                                 if (likeListRef.current && likeListRef.current.contains(activeElement))

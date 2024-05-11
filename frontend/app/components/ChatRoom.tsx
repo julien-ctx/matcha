@@ -12,6 +12,7 @@ interface ChatRoomProp {
     otherTyping: boolean,
     setCurrentRoom: (roomId: number | null) => void,
     setCurrentProfile: (profile: any) => void
+    setChatRoomList: (rooms: any) => void
 }
 
 enum ModalState {
@@ -28,10 +29,10 @@ const reportReasons = [
     'Fake Profile',
     'Other'
 ];
-export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrentProfile }: ChatRoomProp) {
+export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrentProfile, setChatRoomList }: ChatRoomProp) {
     const [isModalOpen, setModalOpen] = useState(false);
     const [otherProfile, setOtherProfile] = useState(null);
-    const { user, httpAuthHeader, socket } = useAuth();
+    const { user, httpAuthHeader, socket, token } = useAuth();
     const [modalState, setModalState] = useState(ModalState.ReportOrLeave);
     const [reportRes, setReportRes] = useState('');
     const [meTyping, setMeTyping] = useState(false);
@@ -205,7 +206,22 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
                             <div className="flex gap-1">
                                 <button 
                                     onClick={() => {
-                                        
+                                        axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/match`, {
+                                            data: {
+                                                firstUserId: user?.id,
+                                                secondUserId: room.other_user.id
+                                            },
+                                            headers: {
+                                                Authorization: `Bearer ${token}`
+                                            }
+                                        })
+                                        .then((res) => {
+                                            setCurrentRoom(null);
+                                            setChatRoomList(prevRooms => prevRooms.filter(r => r.id !== room.id))
+                                            setModalOpen(false);
+                                        }).catch((e) => {
+                                            console.error(e)
+                                        })
                                     }}
                                 className="px-4 rounded-md bg-white duration-100 hover:brightness-95 border-2 border-rose-500 text-rose-500">Yes</button>
                                 <button 

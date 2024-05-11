@@ -17,6 +17,7 @@ const tagsList = [
 ]
 
 export default function Account() {
+  const [userVerified, setUserVerified] = useState<boolean>(false)
   const { authStatus, user, token, httpAuthHeader, logout } = useAuth()
   const router = useRouter()
   const [profilePhotos, setProfilePhotos] = useState([])
@@ -34,6 +35,15 @@ export default function Account() {
     newPasswordFirst: "",
     newPasswordSecond: "",
   });
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.date_of_birth === null) {
+      router.push('/')
+      return;
+    }
+    setUserVerified(true);
+  }, [user])
 
   useEffect(() => {
     if (authStatus === AuthStatus.NotValidated)
@@ -90,7 +100,6 @@ export default function Account() {
       .then((res) => {
         console.log(res);
         logout()
-        // router.replace("/")
       })
       .catch((error) => {
         console.error("Error:", error)
@@ -172,15 +181,17 @@ const renderGenderOption = (option) => (
     </>
 );
 
-  return (
-    <div className="w-full pt-20 flex justify-center h-full min-h-full grow" style={{backgroundImage: "linear-gradient(180deg,#79d1f7,#A5FECB)"}}>
+  return (userVerified === true &&
+    (<div className="w-full pt-20 flex justify-center h-full min-h-full grow" style={{backgroundImage: "linear-gradient(180deg,#79d1f7,#A5FECB)"}}>
       {authStatus === AuthStatus.Validated && (
         <div className="w-[97%] sm:w-[93%] md:w-3/4 h-full bg-white p-2 md:p-12 flex-col flex items-center overflow-y-scroll">
           <h1 className="text-5xl">Account Settings</h1>
           {user && (
           <div className="flex flex-col w-full sm:w-[90%] md:w-4/5 items-center">
-            <div className="section">
+            <div className="section relative">
               <h1 className="text-4xl">Profile Photos</h1>
+              <p className=" text-slate-400 text-center w-full bottom-24">Only .jpeg, .jpg, and .png image formats are accepted.</p>
+
               <div className="photo-grid bg-gradient-to-r-main p-2">
                 {Array.from({ length: 6 }).map((_, index) => (
                     <div key={`photobox-${index}`} className={`photo-grid-item ${index === 0 ? 'large' : ''}`}>
@@ -410,6 +421,6 @@ const renderGenderOption = (option) => (
           </div>
         </div>
       </Modal>
-    </div>
+    </div>)
   )
 }
