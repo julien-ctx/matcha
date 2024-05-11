@@ -4,6 +4,7 @@ interface MatchListProp {
 }
 
 export default function MatchList({ matches, setCurrentProfile }: MatchListProp) {
+    console.log('matches', matches)
     return (
         <div className="overflow-y-auto">
             <h1 className="text-3xl flex flex-col py-3 px-4 bg-gradient-to-r-main text-transparent bg-clip-text">Your matches</h1>
@@ -17,8 +18,8 @@ export default function MatchList({ matches, setCurrentProfile }: MatchListProp)
                                     onClick={() => {
                                         setCurrentProfile(match);
                                     }}>
-                                    <img src={match.img} alt={match.name} className="w-16 h-16 object-cover rounded-full border-2 border-red-100" />
-                                    <h2 className="text-md text-neutral-600 w-full text-center">{match.name}</h2>
+                                    <img src={`${process.env.NEXT_PUBLIC_API_URL}/${match.pictures[0]}`} alt={match.name} className="w-16 h-16 object-cover rounded-full border-2 border-red-100" />
+                                    <h2 className="text-md text-gradient-main w-full text-center">{match.first_name}</h2>
                                 </div>
                             );
                         }

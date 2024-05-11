@@ -17,6 +17,7 @@ const tagsList = [
 ]
 
 export default function Account() {
+  const [userVerified, setUserVerified] = useState<boolean>(false)
   const { authStatus, user, token, httpAuthHeader, logout } = useAuth()
   const router = useRouter()
   const [profilePhotos, setProfilePhotos] = useState([])
@@ -34,6 +35,15 @@ export default function Account() {
     newPasswordFirst: "",
     newPasswordSecond: "",
   });
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.date_of_birth === null) {
+      router.push('/')
+      return;
+    }
+    setUserVerified(true);
+  }, [user])
 
   useEffect(() => {
     if (authStatus === AuthStatus.NotValidated)
@@ -90,7 +100,6 @@ export default function Account() {
       .then((res) => {
         console.log(res);
         logout()
-        // router.replace("/")
       })
       .catch((error) => {
         console.error("Error:", error)
@@ -172,8 +181,8 @@ const renderGenderOption = (option) => (
     </>
 );
 
-  return (
-    <div className="w-full pt-20 flex justify-center h-full min-h-full grow" style={{backgroundImage: "linear-gradient(180deg,#79d1f7,#A5FECB)"}}>
+  return (userVerified === true &&
+    (<div className="w-full pt-20 flex justify-center h-full min-h-full grow" style={{backgroundImage: "linear-gradient(180deg,#79d1f7,#A5FECB)"}}>
       {authStatus === AuthStatus.Validated && (
         <div className="w-[97%] sm:w-[93%] md:w-3/4 h-full bg-white p-2 md:p-12 flex-col flex items-center overflow-y-scroll">
           <h1 className="text-5xl">Account Settings</h1>
@@ -410,6 +419,6 @@ const renderGenderOption = (option) => (
           </div>
         </div>
       </Modal>
-    </div>
+    </div>)
   )
 }
