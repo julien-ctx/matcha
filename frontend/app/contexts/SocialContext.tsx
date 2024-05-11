@@ -27,13 +27,11 @@ export const SocialProvider = ({ children }) => {
         if (!socket) return;
 
         socket.on('profileLiked', (data) => {
-            console.log('profileLiked', data)
             setLikes((prevLikes) => [data, ...prevLikes]);
             setLikeNotification(true); // TODO on the popup, if it is already open, toggle it to false
         })
 
         socket.on('profileViewed', (data) => {
-            console.log('profileViewed', data)
             // setVisits((prevVisits) => [data, ...prevVisits]);
             // TODO it's to get rid of the console error for now
             setVisits(prevVisits => {
@@ -44,8 +42,6 @@ export const SocialProvider = ({ children }) => {
                 return prevVisits;
             });
             setVisitNotification(true);
-            console.log(setVisits)
-            console.log('visits after update', visits)
         })
 
         return (() => {
@@ -66,11 +62,10 @@ export const SocialProvider = ({ children }) => {
                     response.data.forEach(visit => {
                         uniqueVisits.set(visit.id, visit);
                     });
-                    setVisits(Array.from(uniqueVisits.values())); // Convert map values back to an array
+                    setVisits(Array.from(uniqueVisits.values()));
             
-                    //setVisits(response.data);
+                    //setVisits(response.data); //TODO reset
             
-                    console.log('visit', response.data)
                 })
                 .catch(error => {
                     console.error(error);
@@ -80,7 +75,6 @@ export const SocialProvider = ({ children }) => {
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/likes`, httpAuthHeader)
             .then(response => {
                 setLikes(response.data);
-                console.log('like', response.data)
             })
             .catch(error => {
                 console.error(error);

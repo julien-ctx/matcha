@@ -36,7 +36,6 @@ export default function ProfileCard({ profile, setCurrentProfile }: Props){
                     onClick={() => {
                         setCurrentProfile(profile);
                         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/view/${profile.id}`, {}, httpAuthHeader).then(res => {
-                            console.log("it's viewed", res.data);
                             socket.emit('view', {
                                 recipientId: profile.id
                             })

@@ -47,7 +47,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     setFameRatingRange([1, 5]);
                     setTagsList([]);
                 } else {
-                    console.log("Filter fetched successfully", response);
                     setAgeRange([response.data.ageMin, response.data.ageMax]);
                     setKmWithin([response.data.locationRadius]);
                     setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
@@ -73,7 +72,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
             }
         })
         .then((response) => {
-            console.log('profiles: ', response.data)
             setProfiles(response.data);
             setTimeout(() => {
                 setLoadState(LoadState.Loaded);
@@ -87,7 +85,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     useEffect(() => {
         if (!profiles) return;
         if (profiles.length > 0) return;
-        console.log('reload!!')
         setLoadState(LoadState.Loading);
         browseProfile();
     }, [profiles])
@@ -110,7 +107,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                         latitude,
                         longitude
                     }, httpAuthHeader).then(response => {
-                        console.log("Location updated successfully", response.data);
+                        // console.log("Location updated successfully", response.data);
                     }).catch(error => {
                         console.error("Error updating location", error);
                     });
@@ -120,7 +117,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                         latitude: 999,
                         longitude: 999
                     }, httpAuthHeader).then(response => {
-                        console.log("Null location updated successfully", response.data);
+                        // console.log("Null location updated successfully", response.data);
                     }).catch(error => {
                         console.error("Error updating null location", error);
                     });
@@ -134,7 +131,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
 
     const handleDecision = (accept: boolean) => {
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
-                console.log(res.data);
                 socket.emit(accept ? 'like' : 'unlike', {
                     recipientId: profiles[currentProfileIndex]?.id,
                 })
@@ -228,7 +224,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                                         recipientId: matchProfile.id
                                     }, (res) => {
                                         if (res.success) {
-                                            console.log('success: ', res);
+                                            setMatchList(prev => prev.filter(match => match.id !== matchProfile.id))
                                             setMatchModalOpen(false);
                                         }
                                     })

@@ -26,9 +26,6 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     const { socket, user, httpAuthHeader, token } = useAuth();
     const [message, setMessage] = useState<string>('');
 
-    console.log('profile', profile)
-    console.log('fame rating', profile.fame_rating)
-
     function prevImage() {
         if (currentImageIndex === 0) return;
 
@@ -177,14 +174,12 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                             onClick={(e) => {
                                 e.preventDefault();
                                 if (message.trim() === '') return;
-                                console.log(socket)
                                 socket?.emit('sendMessage', {
                                     content: message,
                                     senderId: user?.id,
                                     recipientId: profile.id
                                 }, (res) => {
                                     if (res.success) {
-                                        console.log('success: ', res);
                                         setCurrentProfile(null);
                                     }
                                 })
@@ -213,7 +208,6 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                                     }
                                 })
                                 .then(response => {
-                                    console.log(response.data)
                                     setCurrentProfile(null);
                                     setMatchList(matchList.filter(match => match.id !== profile.id));
                                     setCurrentChatRoom(null);
@@ -244,7 +238,6 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                             onClick={() => {
                                 axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/block/${profile.id}`, {}, httpAuthHeader)
                                 .then(response => {
-                                    console.log(response.data)
                                     setCurrentProfile(null);
                                     setMatchList(matchList.filter(match => match.id !== profile.id));
                                     setCurrentChatRoom(null);

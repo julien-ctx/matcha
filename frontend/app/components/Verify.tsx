@@ -32,7 +32,6 @@ export default function Verify() {
           onClick={() => {
             axios.get(`${process.env.NEXT_PUBLIC_API_URL}/auth/send-verification-email`, httpAuthHeader)
               .then(response => {
-                console.log(response.data)
                 setMailSent(true)
               }).catch(error => {
                 console.error(error)

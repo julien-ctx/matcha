@@ -56,11 +56,6 @@ export default function MySpace() {
     }
 
     useEffect(() => {
-        console.log('current chat room', currentChatRoom)
-    }, [currentChatRoom])
-
-    useEffect(() => {
-        console.log('user', user)
         if (!user) return;
         if (!user.account_verified)
             setSpaceState(SpaceState.VERIFY);
@@ -72,7 +67,6 @@ export default function MySpace() {
 
     function fetchMatches() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/matches`, httpAuthHeader).then(response => {
-            console.log('matches', response.data)
             setMatchList(response.data)
         }).catch(error => {
             console.error(error)
@@ -81,7 +75,6 @@ export default function MySpace() {
 
     function fetchChatRooms() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/chatrooms`, httpAuthHeader).then(response => {
-            console.log('chats', response.data)
             setChatRoomList(response.data)
             initTypingMap();
             initNewMessageMap();
@@ -101,7 +94,6 @@ export default function MySpace() {
         if (!socket) return;
 
         socket.on('userIsTyping', (data) => {
-            console.log('user is typing', data)
             if (data.userId === user.id) return;
             setTypingMap(prev => {
                 const newMap = new Map(prev);
@@ -112,7 +104,6 @@ export default function MySpace() {
         })
 
         socket.on('userStoppedTyping', (data) => {
-            console.log('user stopped typing', data)
             if (data.userId === user.id) return;
             setTypingMap(prev => {
                 const newMap = new Map(prev);
@@ -127,7 +118,6 @@ export default function MySpace() {
         })
 
         socket.on('newMessage', (data) => {
-            console.log('new message here', data)
             setChatRoomList(prev => {
                 if (data.isNewRoom) {
                     return [...prev, data.chatroomInfo]
@@ -144,7 +134,6 @@ export default function MySpace() {
                 }
             });
 
-            console.log('current chat room', currentChatRoom, 'data chat room', data.chatroomId)
             if (data.chatroomId !== currentChatRoom)
                 setNewMessageMap(prev => {
                     const newMap = new Map(prev);

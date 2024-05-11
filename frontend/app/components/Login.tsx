@@ -38,7 +38,6 @@ export default function Login({ goBackHome, goRegister, goRecover }: LoginProps)
       .then((response) => {
         if (response?.data?.user) {
           login(response.data)
-          console.log("login", response.data.user)
         } else {
           console.error("Backend didn't send JWT token")
           setErrorMsg("Unknown error. Please try again.")

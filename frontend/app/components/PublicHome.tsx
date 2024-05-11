@@ -27,12 +27,10 @@ export default function PublicHome() {
 
     useEffect(() => {
         const userData = Cookies.get("userData")
-        console.log('here', userData)
         if (userData) {
-            console.log('userData', userData)
-          login(JSON.parse(userData))
-          Cookies.remove("userData")
-          router.replace("/")
+            login(JSON.parse(userData))
+            Cookies.remove("userData")
+            router.replace("/")
         }
       }, [])
     

@@ -98,7 +98,6 @@ export default function Account() {
         newPassword: passwordFormData.newPasswordFirst,
       }, httpAuthHeader)
       .then((res) => {
-        console.log(res);
         logout()
       })
       .catch((error) => {
@@ -220,7 +219,6 @@ const renderGenderOption = (option) => (
                   const formData = new FormData();
     
                   profilePhotos.forEach((photo, index) => {
-                    console.log('fileinfo', photo.file)
                     if (photo.file) {
                         formData.append('new_photos', photo.file); // Append each photo file
                     }
@@ -230,7 +228,6 @@ const renderGenderOption = (option) => (
                     url: photo.file ? null : photo.url.slice(process.env.NEXT_PUBLIC_API_URL.length + 1),
                     filename: photo.file ? photo.file.name : null,
                   }));
-                  console.log(pictures)
                   formData.append('pictures', JSON.stringify(pictures));
                   formData.append('removedPictures', JSON.stringify(removedPhotos));
 
@@ -241,7 +238,6 @@ const renderGenderOption = (option) => (
                           'Content-Type': 'multipart/form-data'
                       }
                   }).then(response => {
-                      console.log(response.data);
                       window.location.reload();
                   }).catch(error => {
                       console.error(error);
@@ -309,7 +305,6 @@ const renderGenderOption = (option) => (
 
                   axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, formData, httpAuthHeader)
                     .then(res => {
-                      console.log('details return', res.data);
                       window.location.reload();
                     }).catch(e => {
                       console.log('error:', e);
@@ -331,7 +326,6 @@ const renderGenderOption = (option) => (
                 onClick={() => {
                   axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, { email }, httpAuthHeader)
                     .then(res => {
-                      console.log('email return', res.data);
                       window.location.href = '/';
                     }).catch(e => {
                       console.log('error:', e);

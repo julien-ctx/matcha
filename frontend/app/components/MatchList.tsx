@@ -4,7 +4,6 @@ interface MatchListProp {
 }
 
 export default function MatchList({ matches, setCurrentProfile }: MatchListProp) {
-    console.log('matches', matches)
     return (
         <div className="overflow-y-auto">
             <h1 className="text-3xl flex flex-col py-3 px-4 bg-gradient-to-r-main text-transparent bg-clip-text">Your matches</h1>

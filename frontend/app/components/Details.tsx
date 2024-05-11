@@ -72,7 +72,6 @@ export default function Details() {
                 'Content-Type': 'multipart/form-data'
             }
         }).then(res => {
-            console.log('details return', res.data);
             // TODO loading then reedirect (timeOut 1500 for example)
             window.location.reload();
         }).catch(e => {

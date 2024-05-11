@@ -193,7 +193,6 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         maxFameRating: modalData.fameRatingRange[1],
                         tags: modalData.tagsList
                     }, httpAuthHeader).then(response => {
-                        console.log("Filter applied successfully", response.data);
                         setLoadState(LoadState.Loading)
                         setAgeRange(modalData.ageRange);
                         setKmWithin(modalData.kmWithin);

@@ -40,7 +40,6 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
     function fetchProfile(userId: number) {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/details/${userId}`, httpAuthHeader)
             .then(response => {
-                console.log("Profile fetched successfully", response.data);
                 setOtherProfile(response.data);
             }).catch(error => {
                 console.error(error)
@@ -55,7 +54,6 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
     const endOfMessagesRef = useRef(null);
 
     useEffect(() => {
-        console.log(meTyping, newMessage)
         if (meTyping === false && newMessage.trim().length > 0) {
             socket.emit('typing', {
                 chatroomId: room.id,
@@ -76,13 +74,11 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
     const sendMessage = () => {
         if (!socket) return;
         if (newMessage.trim()) {
-            console.log("Sending message:", newMessage);
             socket.emit('sendMessage', {
                 senderId: user.id,
                 recipientId: room.other_user.id,
                 content: newMessage
             }, (res) => {
-                console.log('message sent', res);
             })
             setNewMessage('');
         }
@@ -101,7 +97,6 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
             reason: reportType
         }, httpAuthHeader)
             .then((res) => {
-                console.log('report res', res.data);
                 setReportRes(res.data.message);
                 setModalState(ModalState.Confirmation);
             }).catch((err) => {

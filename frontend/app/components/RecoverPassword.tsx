@@ -31,7 +31,6 @@ export default function RecoverPassword({ goBackHome }: RecoverPasswordProps) {
           email: formData.email,
         })
         .then((response) => {
-          console.log(response)
           setEmailSent(true)
         })
         .catch((error) => {

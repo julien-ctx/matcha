@@ -38,7 +38,6 @@ export default function AnotherConnection() {
                 onClick={() => {
                     setLoading(true);
                     socket.emit("useHere", {}, (response: any) => {
-                        console.log(response)
                         if (response.success) {
                             toggleAnotherConnection(false);
                         }
