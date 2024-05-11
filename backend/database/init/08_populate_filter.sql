@@ -27,7 +27,7 @@ DECLARE
     ];
 BEGIN
     WHILE i < 30 LOOP
-        user_id := (RANDOM() * 500)::INT;
+        user_id := (RANDOM() * 500 + 1)::INT;
         IF NOT (user_id = ANY(used_user_ids)) THEN
             age_min := (RANDOM() * (99 - 18) + 18)::INT;
             age_max := (RANDOM() * (99 - age_min) + age_min)::INT;
