@@ -25,6 +25,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     const [message, setMessage] = useState<string>('');
 
     console.log('profile', profile)
+    console.log('fame rating', profile.fame_rating)
 
     useEffect(() => {
         socket.emit('view', {
@@ -128,7 +129,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                             <h1 className="infoTitle">Fame Rating</h1>
                             <div className="flex w-full">
                             {[...Array(5)].map((_, i) => {
-                                const imagePath = i <= profile.fame_rating % 20 + 1 ? "/star_color.svg" : "/star_gray.svg";
+                                const imagePath = i < Math.floor(profile.fame_rating / 20) + 1 ? "/star_color.svg" : "/star_gray.svg";
                                 return <img className="w-1/5" key={i} src={imagePath} alt={i < profile.fame_rating ? "Color Star" : "Gray Star"} />;
                             })}
                             </div>
