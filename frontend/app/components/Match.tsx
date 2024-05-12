@@ -176,12 +176,14 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                             <p>Settings</p>
                         </div>
                     </button>
-                    <button className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleDecision(false)}>X</button>
-                    <button style={{backgroundColor: 'rgb(250, 254, 250)'}} className="likeOrNotButton text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleDecision(true)}>O</button>
+                    <button disabled={profiles.length === 0} className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleDecision(false)}>X</button>
+                    <button disabled={profiles.length === 0} className="likeOrNotButton bg-[#fafefa] text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleDecision(true)}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (
-                        <p>No more profiles</p>
+                        <div className="w-80 left-1/2 -translate-x-1/2 absolute h-4/5 sm:h-full bg-slate-50 shadow-md flex justify-center items-center rounded-lg p-2 overflow-y-auto border-8">
+                            <p className="text-center text-slate-400 text-2xl">We have no profile to show :-/ please try again later</p>
+                        </div>
                     )}
                 </div>
             ) : loadState === LoadState.Error ? (
