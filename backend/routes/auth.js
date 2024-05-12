@@ -167,7 +167,7 @@ router.get(
     )
     res.cookie(
       "userData",
-      JSON.stringify({ user, password: undefined, jwt: token, success: true}),
+      JSON.stringify({ user, password: undefined, jwt: token, success: true }),
       {
         maxAge: 300000,
         sameSite: "Strict",
@@ -177,14 +177,10 @@ router.get(
   },
   (err, req, res, next) => {
     console.log(err)
-    res.cookie(
-      "userData",
-      JSON.stringify({ success: false }),
-      {
-        maxAge: 30000,
-        sameSite: "Strict",
-      },
-    )
+    res.cookie("userData", JSON.stringify({ success: false }), {
+      maxAge: 30000,
+      sameSite: "Strict",
+    })
     res.redirect(`${process.env.FRONT_URL}`) // TODO: set error
   },
 )
@@ -437,6 +433,11 @@ router.delete("/delete-account", httpAuthenticateJWT, async (req, res) => {
         chatroom.id,
       ])
     }
+
+    await pool.query(
+      "DELETE FROM T_UNREAD_NOTIFICATION WHERE sender_id = $1 OR recipient_id = $1",
+      [userId],
+    )
 
     await pool.query(
       "DELETE FROM T_CHATROOM WHERE user1_id = $1 OR user2_id = $1;",

@@ -16,11 +16,11 @@ const router = express.Router()
 router.get("/browse", httpAuthenticateJWT, async (req, res) => {
   const userId = req.user.id
   const {
-    ageMin,
-    ageMax,
-    locationRadius,
-    minFameRating,
-    maxFameRating,
+    ageMin = 18,
+    ageMax = 99,
+    locationRadius = 30,
+    minFameRating = 0,
+    maxFameRating = 100,
     tags = [],
     page = 1,
     limit = 25,
@@ -77,7 +77,7 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
     let params = [userId]
     let paramCount = 2
 
-    if (locationRadius && latitude && longitude) {
+    if (latitude && longitude) {
       conditions += ` AND earth_distance(ll_to_earth(latitude, longitude), ll_to_earth($${paramCount}, $${paramCount + 1})) <= $${paramCount + 2} * 1000`
       params.push(latitude, longitude, locationRadius)
       paramCount += 3

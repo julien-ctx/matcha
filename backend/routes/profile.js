@@ -35,7 +35,10 @@ router.get("/details/:userId?", httpAuthenticateJWT, async (req, res) => {
         currentUserId,
       ])
       if (blockCheckResult.rowCount > 0) {
-        return res.status(403).send({ message: "Access denied." })
+        return res.json({
+          errorCode: "ACCESS_DENIED",
+          message: "Access denied.",
+        })
       }
     }
 
