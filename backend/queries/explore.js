@@ -21,7 +21,7 @@ export const getSexualPreferences = (sexualOrientation, gender) => {
       Other: "sexual_orientation = 'Other'",
     }[gender] || "1=1"
 
-  return `${genderQuery} AND ${orientationQuery}`
+  return `(${genderQuery}) AND (${orientationQuery})`
 }
 
 /**
