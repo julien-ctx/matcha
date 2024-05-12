@@ -99,6 +99,22 @@ export function setupSocketEvents(io) {
 
       try {
         await pool.query("BEGIN")
+
+        const matchCheckQuery = `
+            SELECT EXISTS (
+                SELECT 1 FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2
+            ) AND EXISTS (
+                SELECT 1 FROM T_LIKE WHERE liker_id = $2 AND liked_id = $1
+            ) AS is_match;
+        `;
+        const matchCheckResult = await pool.query(matchCheckQuery, [senderId, recipientId]);
+        if (!matchCheckResult.rows[0]?.is_match) {
+          socket.emit("error", {
+            errorCode: "NO_MATCH_FOUND",
+            message: "Message could not be sent.",
+          })
+        }
+
         let chatroom = await pool.query(
           `SELECT id FROM T_CHATROOM WHERE (user1_id = LEAST($1::int, $2::int) AND user2_id = GREATEST($1::int, $2::int));`,
           [senderId, recipientId],
