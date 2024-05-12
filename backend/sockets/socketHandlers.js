@@ -116,11 +116,11 @@ export function setupSocketEvents(io) {
 
         const notification = `
           INSERT INTO T_UNREAD_NOTIFICATION (notification_type, sender_id, recipient_id, content, sent_at)
-          VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+          VALUES ($1, $2, $3, $4, NOW())
           ON CONFLICT (sender_id, recipient_id) 
           DO UPDATE SET 
             content = EXCLUDED.content, 
-            sent_at = CURRENT_TIMESTAMP
+            sent_at = NOW()
         `
         await pool.query(notification, [
           "Message",
