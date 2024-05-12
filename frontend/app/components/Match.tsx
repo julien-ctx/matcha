@@ -41,6 +41,8 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [filterLoaded, setFilterLoaded] = useState(false);
     const [browseFetched, setBrowseFetched] = useState(false);
 
+    const [premiumModalOpen, setPremiumModalOpen] = useState(false);
+
     function fetchFilter() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
             .then(response => {
@@ -144,6 +146,9 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
 
     const handleDecision = (accept: boolean) => {
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
+                setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
+                setCurrentProfileIndex(prev => Math.max(0, prev - 1));
+    
                 socket.emit(accept ? 'like' : 'unlike', {
                     recipientId: profiles[currentProfileIndex]?.id,
                 })
@@ -153,12 +158,14 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     setMatchModalOpen(true);
                 }
             }).catch(err => {
-                console.error(err);
+                if (err.response?.data.errorCode === 'LIKE_LIMIT_REACHED') {
+                    setPremiumModalOpen(true);
+                } else {
+                    console.error(err);
+                }
             }
         )
 
-        setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
-        setCurrentProfileIndex(prev => Math.max(0, prev - 1));
     };
 
     return (
@@ -250,6 +257,25 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                                 }}
                             >Send</button>
                         </form>
+                    </div>
+                </div>
+
+            </Modal>
+
+            <Modal isOpen={premiumModalOpen} onClose={() => setPremiumModalOpen(false)}>
+                <div className="flex flex-col p-4 min-h-64 gap-6 items-center">
+                    <h1 className="w-full text-center text-rose-500 text-3xl border-rose-500 rounded-lg p-3">You reached the maximum number of likes for the day!</h1> 
+                    <div className="flex flex-col gap-1">
+                        <button className="bg-gradient-to-r-main text-white px-4 py-2 text-lg rounded-lg" onClick={() => {
+                            axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
+                                isPremium: true
+                            }, httpAuthHeader).then((res) => {
+                                window.location.reload();
+                            }).catch((err) => {
+                                console.error(err);
+                            })
+                        }}>Try Premium</button>
+                        <button className="border-rose-500 text-rose-500 border-2 px-4 py-2 text-lg rounded-lg" onClick={() => setPremiumModalOpen(false)}>Maybe later</button>
                     </div>
                 </div>
 
