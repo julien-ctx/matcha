@@ -26,10 +26,18 @@ router.post("/view/:userId", httpAuthenticateJWT, async (req, res) => {
     if (blockCheckResult.rowCount > 0) {
       return res.status(403).send({ message: "Access denied." })
     }
+
     const query =
-      "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW());"
-    await pool.query(query, [viewerId, viewedId])
-    res.status(200).send({ message: "Profile view recorded" })
+      "INSERT INTO T_VIEW (viewer_id, viewed_id, viewed_at) VALUES ($1, $2, NOW()) RETURNING id, viewed_at;"
+    const viewInfo = await pool.query(query, [viewerId, viewedId])
+
+    res
+      .status(200)
+      .send({
+        message: "Profile view recorded",
+        id: viewInfo.rows[0].id,
+        viewed_at: viewInfo.rows[0].viewed_at,
+      })
   } catch (error) {
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to record profile view" })
@@ -159,7 +167,7 @@ router.get("/views", httpAuthenticateJWT, async (req, res) => {
 
   try {
     const query = `
-      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude, u.date_of_birth
+      SELECT u.id, u.username, u.first_name, u.last_name, u.bio, u.pictures, u.latitude, u.longitude, u.date_of_birth, v.viewed_at
       FROM T_USER u
       JOIN T_VIEW v ON v.viewer_id = u.id
       WHERE v.viewed_id = $1 AND NOT EXISTS (

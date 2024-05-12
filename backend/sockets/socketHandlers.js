@@ -116,11 +116,11 @@ export function setupSocketEvents(io) {
 
         const notification = `
           INSERT INTO T_UNREAD_NOTIFICATION (notification_type, sender_id, recipient_id, content, sent_at)
-          VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+          VALUES ($1, $2, $3, $4, NOW())
           ON CONFLICT (sender_id, recipient_id) 
           DO UPDATE SET 
             content = EXCLUDED.content, 
-            sent_at = CURRENT_TIMESTAMP
+            sent_at = NOW()
         `
         await pool.query(notification, [
           "Message",
@@ -268,7 +268,7 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("view", async ({ recipientId }) => {
+    socket.on("view", async ({ recipientId, viewId, timestamp }) => {
       const senderId = socket.user.id
       try {
         const senderInfo = await pool.query(
@@ -300,6 +300,8 @@ export function setupSocketEvents(io) {
           recipientInfo.rows[0].longitude,
         )
         sendEventToUser(userSocketMap, io, recipientId, "profileViewed", {
+          viewId,
+          timestamp,
           ...senderInfo.rows[0],
           distance,
         })
