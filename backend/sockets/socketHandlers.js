@@ -268,7 +268,7 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("view", async ({ recipientId }) => {
+    socket.on("view", async ({ recipientId, viewId, timestamp }) => {
       const senderId = socket.user.id
       try {
         const senderInfo = await pool.query(
@@ -300,6 +300,8 @@ export function setupSocketEvents(io) {
           recipientInfo.rows[0].longitude,
         )
         sendEventToUser(userSocketMap, io, recipientId, "profileViewed", {
+          viewId,
+          timestamp,
           ...senderInfo.rows[0],
           distance,
         })
