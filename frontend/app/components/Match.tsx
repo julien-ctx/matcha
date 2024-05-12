@@ -39,6 +39,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [message, setMessage] = useState('');
 
     const [filterLoaded, setFilterLoaded] = useState(false);
+    const [browseFetched, setBrowseFetched] = useState(false);
 
     function fetchFilter() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
@@ -78,26 +79,35 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         .catch((error) => {
             console.error(error);
         });
+
+        setBrowseFetched(true);        
     }
 
-    // useEffect(() => {
-    //     if (loadState === LoadState.Loading) return;
-    //     if (!profiles) return;
-    //     if (profiles.length > 0) return;
-    //     setLoadState(LoadState.Loading);
-    //     browseProfiles();
-    // }, [profiles])
+    useEffect(() => {
+        if (browseFetched && profiles.length > 0) {
+            setBrowseFetched(false);
+        }
+    }, [profiles, browseFetched]);
+
+    useEffect(() => {
+        if (profiles.length === 0 && !browseFetched && filterLoaded) {
+            setLoadState(LoadState.Loading);
+            browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
+        }
+    }, [profiles, filterLoaded]);
+    
+    useEffect(() => {
+        if (!profiles || browseFetched || loadState === LoadState.Loading) return;
+        if (profiles.length > 0) return;
+        setLoadState(LoadState.Loading);
+        browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
+    }, [profiles, browseFetched, loadState])
 
     useEffect(() => {
         if (!httpAuthHeader) return;
         fetchFilter();
         sendLocation();
     }, [httpAuthHeader])
-
-    useEffect(() => {
-        if (!filterLoaded) return;
-        browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
-    }, [filterLoaded])
 
     function sendLocation() {
         if (navigator.geolocation) {
@@ -182,7 +192,10 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (
                         <div className="w-80 left-1/2 -translate-x-1/2 absolute h-4/5 sm:h-full bg-slate-50 shadow-md flex justify-center items-center rounded-lg p-2 overflow-y-auto border-8">
-                            <p className="text-center text-slate-400 text-2xl">We have no profile to show :-/ please try again later</p>
+                            <p className="text-center text-slate-400 text-2xl">We have no more profile to show :-/ please try again later</p>
+                            <button>
+                                <img src="" alt="" />
+                            </button>
                         </div>
                     )}
                 </div>
