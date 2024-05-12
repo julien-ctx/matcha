@@ -25,10 +25,10 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const { httpAuthHeader, socket, user, token } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
-    const [ageRange, setAgeRange] = useState([18, 99]);
-    const [kmWithin, setKmWithin] = useState([20]);
-    const [fameRatingRange, setFameRatingRange] = useState([1, 5]);
-    const [tagsList, setTagsList] = useState([]);
+    const [ageRange, setAgeRange] = useState([null, null]);
+    const [kmWithin, setKmWithin] = useState([null]);
+    const [fameRatingRange, setFameRatingRange] = useState([null, null]);
+    const [tagsList, setTagsList] = useState(null);
 
     const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
 
@@ -38,31 +38,29 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [matchProfile, setMatchProfile] = useState(null);
     const [message, setMessage] = useState('');
 
+    const [filterLoaded, setFilterLoaded] = useState(false);
+
     function fetchFilter() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
             .then(response => {
-                if (response.data.message) {
-                    setAgeRange([18, 99]);
-                    setKmWithin([30]);
-                    setFameRatingRange([1, 5]);
-                    setTagsList([]);
-                } else {
-                    setAgeRange([response.data.ageMin, response.data.ageMax]);
-                    setKmWithin([response.data.locationRadius]);
-                    setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
+                if (response.data.message === undefined) {
+                    setAgeRange([response.data.age_min, response.data.age_max]);
+                    setKmWithin([response.data.location_radius]);
+                    setFameRatingRange([response.data.min_fame_rating, response.data.max_fame_rating]);
                     setTagsList(response.data.tags);
                 }
+                setFilterLoaded(true);
         }).catch(error => {
             console.log('filter err', error)
         })
     }
 
-    function browseProfile() {
+    function browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList) {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
             headers: {
                 Authorization: `Bearer ${token}`
             },
-            data: {
+            params: {
                 ageMin: ageRange[0],
                 ageMax: ageRange[1],
                 locationRadius: kmWithin[0],
@@ -82,19 +80,24 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         });
     }
 
-    useEffect(() => {
-        if (!profiles) return;
-        if (profiles.length > 0) return;
-        setLoadState(LoadState.Loading);
-        browseProfile();
-    }, [profiles])
+    // useEffect(() => {
+    //     if (loadState === LoadState.Loading) return;
+    //     if (!profiles) return;
+    //     if (profiles.length > 0) return;
+    //     setLoadState(LoadState.Loading);
+    //     browseProfiles();
+    // }, [profiles])
 
     useEffect(() => {
         if (!httpAuthHeader) return;
-        sendLocation();
-        browseProfile();
         fetchFilter();
+        sendLocation();
     }, [httpAuthHeader])
+
+    useEffect(() => {
+        if (!filterLoaded) return;
+        browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
+    }, [filterLoaded])
 
     function sendLocation() {
         if (navigator.geolocation) {
@@ -198,6 +201,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     setTagsList={setTagsList}
                     setModalOpen={setModalOpen}
                     setProfiles={setProfiles}
+                    browseProfiles={browseProfiles}
                 />
             </Modal>
 
