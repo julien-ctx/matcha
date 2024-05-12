@@ -25,10 +25,10 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const { httpAuthHeader, socket, user, token } = useAuth();
     
     const [isModalOpen, setModalOpen] = useState(false);
-    const [ageRange, setAgeRange] = useState([18, 99]);
-    const [kmWithin, setKmWithin] = useState([20]);
-    const [fameRatingRange, setFameRatingRange] = useState([1, 5]);
-    const [tagsList, setTagsList] = useState([]);
+    const [ageRange, setAgeRange] = useState([null, null]);
+    const [kmWithin, setKmWithin] = useState([null]);
+    const [fameRatingRange, setFameRatingRange] = useState([null, null]);
+    const [tagsList, setTagsList] = useState(null);
 
     const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
 
@@ -38,31 +38,30 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [matchProfile, setMatchProfile] = useState(null);
     const [message, setMessage] = useState('');
 
+    const [filterLoaded, setFilterLoaded] = useState(false);
+    const [browseFetched, setBrowseFetched] = useState(false);
+
     function fetchFilter() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
             .then(response => {
-                if (response.data.message) {
-                    setAgeRange([18, 99]);
-                    setKmWithin([30]);
-                    setFameRatingRange([1, 5]);
-                    setTagsList([]);
-                } else {
-                    setAgeRange([response.data.ageMin, response.data.ageMax]);
-                    setKmWithin([response.data.locationRadius]);
-                    setFameRatingRange([response.data.minFameRating, response.data.maxFameRating]);
+                if (response.data.message === undefined) {
+                    setAgeRange([response.data.age_min, response.data.age_max]);
+                    setKmWithin([response.data.location_radius]);
+                    setFameRatingRange([response.data.min_fame_rating, response.data.max_fame_rating]);
                     setTagsList(response.data.tags);
                 }
+                setFilterLoaded(true);
         }).catch(error => {
             console.log('filter err', error)
         })
     }
 
-    function browseProfile() {
+    function browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList) {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
             headers: {
                 Authorization: `Bearer ${token}`
             },
-            data: {
+            params: {
                 ageMin: ageRange[0],
                 ageMax: ageRange[1],
                 locationRadius: kmWithin[0],
@@ -80,20 +79,34 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         .catch((error) => {
             console.error(error);
         });
+
+        setBrowseFetched(true);        
     }
 
     useEffect(() => {
-        if (!profiles) return;
+        if (browseFetched && profiles.length > 0) {
+            setBrowseFetched(false);
+        }
+    }, [profiles, browseFetched]);
+
+    useEffect(() => {
+        if (profiles.length === 0 && !browseFetched && filterLoaded) {
+            setLoadState(LoadState.Loading);
+            browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
+        }
+    }, [profiles, filterLoaded]);
+    
+    useEffect(() => {
+        if (!profiles || browseFetched || loadState === LoadState.Loading) return;
         if (profiles.length > 0) return;
         setLoadState(LoadState.Loading);
-        browseProfile();
-    }, [profiles])
+        browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
+    }, [profiles, browseFetched, loadState])
 
     useEffect(() => {
         if (!httpAuthHeader) return;
-        sendLocation();
-        browseProfile();
         fetchFilter();
+        sendLocation();
     }, [httpAuthHeader])
 
     function sendLocation() {
@@ -173,12 +186,17 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                             <p>Settings</p>
                         </div>
                     </button>
-                    <button className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleDecision(false)}>X</button>
-                    <button style={{backgroundColor: 'rgb(250, 254, 250)'}} className="likeOrNotButton text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleDecision(true)}>O</button>
+                    <button disabled={profiles.length === 0} className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleDecision(false)}>X</button>
+                    <button disabled={profiles.length === 0} className="likeOrNotButton bg-[#fafefa] text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleDecision(true)}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (
-                        <p>No more profiles</p>
+                        <div className="w-80 left-1/2 -translate-x-1/2 absolute h-4/5 sm:h-full bg-slate-50 shadow-md flex justify-center items-center rounded-lg p-2 overflow-y-auto border-8">
+                            <p className="text-center text-slate-400 text-2xl">We have no more profile to show :-/ please try again later</p>
+                            <button>
+                                <img src="" alt="" />
+                            </button>
+                        </div>
                     )}
                 </div>
             ) : loadState === LoadState.Error ? (
@@ -198,6 +216,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     setTagsList={setTagsList}
                     setModalOpen={setModalOpen}
                     setProfiles={setProfiles}
+                    browseProfiles={browseProfiles}
                 />
             </Modal>
 

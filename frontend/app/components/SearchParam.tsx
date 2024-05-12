@@ -19,18 +19,19 @@ interface SearchParamProps {
     setTagsList: (tags: string[]) => void
 
     setProfiles: (profiles: any[]) => void,
+    browseProfiles: Function
 }
 
 export default function SearchParam({ setLoadState, setModalOpen, ageRange, setAgeRange, kmWithin, setKmWithin, fameRatingRange, setFameRatingRange, tagsList, setTagsList
-    , setProfiles
+    , setProfiles, browseProfiles
 }: SearchParamProps) {
     const { user, httpAuthHeader } = useAuth();
     const [hasModified, setHasModified] = useState(false);
     const [modalData, setModalData] = useState({
-        ageRange: [...ageRange],
-        kmWithin: [...kmWithin],
-        fameRatingRange: [...fameRatingRange],
-        tagsList: [...tagsList]
+        ageRange: ageRange[0] ? [...ageRange] : [18, 99],
+        kmWithin: kmWithin[0] ? [...kmWithin] : [30],
+        fameRatingRange: fameRatingRange[0] ? [...fameRatingRange] : [1, 5],
+        tagsList: tagsList ? [...tagsList] : []
     });
 
     useEffect(() => {
@@ -185,24 +186,38 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         return;
                     }
                     
-                    axios.post(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, {
+                    const data = {
                         ageMin: modalData.ageRange[0],
                         ageMax: modalData.ageRange[1],
                         locationRadius: modalData.kmWithin[0],
                         minFameRating: modalData.fameRatingRange[0],
                         maxFameRating: modalData.fameRatingRange[1],
                         tags: modalData.tagsList
-                    }, httpAuthHeader).then(response => {
+                    }
+
+                    function updateFilterAndBrowse() {
                         setLoadState(LoadState.Loading)
+                        browseProfiles(modalData.ageRange, modalData.kmWithin, modalData.fameRatingRange, modalData.tagsList);
                         setAgeRange(modalData.ageRange);
                         setKmWithin(modalData.kmWithin);
                         setFameRatingRange(modalData.fameRatingRange);
                         setTagsList(modalData.tagsList);
-                        setProfiles([]);
                         setModalOpen(false);
-                    }).catch(error => {
-                        console.error("Error applying filter", error);
-                    });
+                    }
+
+                    if (ageRange[0]) {
+                        axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, data, httpAuthHeader)
+                            .then(() => updateFilterAndBrowse())
+                            .catch(error => {
+                                console.error("Error applying filter", error);
+                            });
+                    } else {
+                        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, data, httpAuthHeader)
+                            .then(() => updateFilterAndBrowse())
+                            .catch(error => {
+                                console.error("Error applying filter", error);
+                            });
+                    }
                 }}>Save</button>
                 <button className="bg-white text-slate-600 border-2 border-slate-600 rounded-lg px-4 py-2 hover:brightness-95" onClick={() => {
                     setModalOpen(false);
