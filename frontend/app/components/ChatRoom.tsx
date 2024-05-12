@@ -154,8 +154,8 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
                         placeholder="Type your message..."
                         className="h-full w-11/12 p-2 resize-none rounded-md"
                     />
-                    <div className="h-full w-1/12 p-2 flex justify-center items-center">
-                        <button onClick={sendMessage} className="bg-gradient-to-r-main px-5 py-2 rounded-lg text-lg hover:brightness-95 border-2 text-white">
+                    <div className="h-full w-1/12 p-1 flex justify-center items-center">
+                        <button onClick={sendMessage} className="bg-gradient-to-r-main w-full flex items-center justify-center px-5 py-1 rounded-lg hover:brightness-95 border-2 text-white">
                             Send
                         </button>
                     </div>

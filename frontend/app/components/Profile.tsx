@@ -181,6 +181,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                                 }, (res) => {
                                     if (res.success) {
                                         setCurrentProfile(null);
+                                        setMatchList(list => list.filter(match => match.id !== profile.id));
                                     }
                                 })
                             }}
