@@ -126,6 +126,7 @@ export default function MySpace() {
         socket.on('newMessage', (data) => {
             setChatRoomList(prev => {
                 if (data.isNewRoom) {
+                    setMatchList(prev => prev.filter(match => match.id !== data.chatroomInfo.other_user.id))
                     return [...prev, data.chatroomInfo]
                 } else {
                     const targetRoom = prev.find(room => room.id === data.chatroomId);

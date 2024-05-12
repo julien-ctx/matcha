@@ -29,8 +29,8 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
     const [hasModified, setHasModified] = useState(false);
     const [modalData, setModalData] = useState({
         ageRange: ageRange[0] ? [...ageRange] : [18, 99],
-        kmWithin: kmWithin[0] ? [...kmWithin] : [30],
-        fameRatingRange: fameRatingRange[0] ? [...fameRatingRange] : [1, 5],
+        kmWithin: kmWithin[0] ? [...kmWithin] : [500],
+        fameRatingRange: fameRatingRange[0] ? [...fameRatingRange] : [0, 100],
         tagsList: tagsList ? [...tagsList] : []
     });
 
@@ -132,10 +132,10 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                 <h1 className="text-xl text-gradient-main">By Rating</h1>
                 <div className='w-full h-full flex items-center'>
                     <Range
-                        step={1}
-                        min={1}
-                        max={5}
-                        values={[modalData.fameRatingRange[0], modalData.fameRatingRange[1]]}
+                        step={20}
+                        min={0}
+                        max={100}
+                        values={[modalData.fameRatingRange[0] , modalData.fameRatingRange[1]]}
                         onChange={(e) => handleFameRatingRangeChange(e)}
                         renderTrack={({ props, children }) => {
                             const { key, ...restProps } = props;
@@ -150,6 +150,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                             return (
                                 <div {...restProps} key={key} className='range-thumb'>
                                     <div className="range-value">
+                                        {/* TODO TODO TODO */}
                                         {modalData.fameRatingRange[index]}
                                     </div>
                                 </div>
