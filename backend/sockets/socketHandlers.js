@@ -67,7 +67,9 @@ export function setupSocketEvents(io) {
 
     socket.on("useHere", (_, callback) => {
       checkAlreadyExistingConnection(userSocketMap, io, socket)
-      callback({ success: true })
+      if (callback) {
+        callback({ success: true })
+      }
     })
 
     socket.on("setOnlineStatus", ({ isOnline }) => {
@@ -195,8 +197,9 @@ export function setupSocketEvents(io) {
               }
             : null,
         })
-
-        callback({ success: true })
+        if (callback) {
+          callback({ success: true })
+        }
       } catch (error) {
         await pool.query("ROLLBACK")
         console.error("Database error:", error)
