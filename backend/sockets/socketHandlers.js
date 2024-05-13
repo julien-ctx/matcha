@@ -155,14 +155,14 @@ export function setupSocketEvents(io) {
           [chatroomId, senderId, content],
         )
         const message = messageResult.rows[0]
-        
-        await pool.query("UPDATE T_CHATROOM SET updated_at = $1 WHERE id = $2", [
-          message.sent_at,
-          chatroomId,
-        ])
+
+        await pool.query(
+          "UPDATE T_CHATROOM SET updated_at = $1 WHERE id = $2",
+          [message.sent_at, chatroomId],
+        )
 
         const recipientResult = await pool.query(
-          "SELECT id, first_name, last_name, pictures, is_online FROM T_USER WHERE id = $1",
+          "SELECT first_name, last_name, pictures, is_online FROM T_USER WHERE id = $1",
           [recipientId],
         )
         if (!recipientResult.rowCount) {
@@ -173,6 +173,19 @@ export function setupSocketEvents(io) {
           return
         }
         const recipientUser = recipientResult.rows[0]
+
+        const senderResult = await pool.query(
+          "SELECT first_name, last_name, pictures, is_online FROM T_USER WHERE id = $1",
+          [senderId],
+        )
+        if (!senderResult.rowCount) {
+          socket.emit("error", {
+            errorCode: "INVALID_SENDER_ID",
+            message: "Message could not be sent.",
+          })
+          return
+        }
+        const senderUser = senderResult.rows[0]
 
         await pool.query("COMMIT")
 
@@ -186,13 +199,13 @@ export function setupSocketEvents(io) {
                 id: chatroomId,
                 messages: [message],
                 other_user: {
-                  id: recipientUser.id,
-                  first_name: recipientUser.first_name,
-                  last_name: recipientUser.last_name,
-                  profile_picture: recipientUser.pictures.length
-                    ? recipientUser.pictures[0]
+                  id: senderId,
+                  first_name: senderUser.first_name,
+                  last_name: senderUser.last_name,
+                  profile_picture: senderUser.pictures.length
+                    ? senderUser.pictures[0]
                     : null,
-                  is_online: recipientUser.is_online,
+                  is_online: senderUser.is_online,
                 },
                 updated_at: chatroom.rows[0].updated_at,
               }
@@ -209,7 +222,7 @@ export function setupSocketEvents(io) {
                 id: chatroomId,
                 messages: [message],
                 other_user: {
-                  id: recipientUser.id,
+                  id: recipientId,
                   first_name: recipientUser.first_name,
                   last_name: recipientUser.last_name,
                   profile_picture: recipientUser.pictures.length
