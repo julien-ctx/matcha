@@ -48,7 +48,7 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
 
     useEffect(() => {
         fetchProfile(room.other_user.id)
-    }, [])
+    }, [room])
 
     const [newMessage, setNewMessage] = useState('');
     const endOfMessagesRef = useRef(null);

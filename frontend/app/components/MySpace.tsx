@@ -118,6 +118,7 @@ export default function MySpace() {
 
         socket.on('anotherConnectionFound', () => {
             console.log('allo, another connection found, dude')
+            socket.disconnect();
             toggleAnotherConnection(true);
         })
 
