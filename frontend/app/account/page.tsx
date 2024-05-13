@@ -30,7 +30,7 @@ export default function Account() {
   const [tags, setTags] = useState([]);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
-  const [infoErrorMsg, setInfoErrorMsg] = useState('dididididididididididi');
+  const [infoErrorMsg, setInfoErrorMsg] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const { setNewMessageArrived} = useChat();
