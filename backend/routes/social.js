@@ -510,7 +510,8 @@ router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
              u.id AS other_user_id, u.first_name, u.last_name, u.pictures, u.is_online
       FROM T_CHATROOM cr
       JOIN T_USER u ON u.id = CASE WHEN cr.user1_id = $1 THEN cr.user2_id ELSE cr.user1_id END
-      WHERE cr.user1_id = $1 OR cr.user2_id = $1;
+      WHERE cr.user1_id = $1 OR cr.user2_id = $1
+      ORDER BY cr.updated_at DESC;
     `,
       [userId],
     )

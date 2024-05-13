@@ -106,8 +106,11 @@ export function setupSocketEvents(io) {
             ) AND EXISTS (
                 SELECT 1 FROM T_LIKE WHERE liker_id = $2 AND liked_id = $1
             ) AS is_match;
-        `;
-        const matchCheckResult = await pool.query(matchCheckQuery, [senderId, recipientId]);
+        `
+        const matchCheckResult = await pool.query(matchCheckQuery, [
+          senderId,
+          recipientId,
+        ])
         if (!matchCheckResult.rows[0]?.is_match) {
           socket.emit("error", {
             errorCode: "NO_MATCH_FOUND",
@@ -147,11 +150,16 @@ export function setupSocketEvents(io) {
           content,
         ])
 
-        const result = await pool.query(
+        const messageResult = await pool.query(
           `INSERT INTO T_MESSAGE (chatroom_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id, sender_id, content, sent_at, delivered_at, read_at;`,
           [chatroomId, senderId, content],
         )
-        const message = result.rows[0]
+        const message = messageResult.rows[0]
+        
+        await pool.query("UPDATE T_CHATROOM SET updated_at = $1 WHERE id = $2", [
+          message.sent_at,
+          chatroomId,
+        ])
 
         const recipientResult = await pool.query(
           "SELECT id, first_name, last_name, pictures, is_online FROM T_USER WHERE id = $1",
