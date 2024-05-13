@@ -108,14 +108,28 @@ router.delete("/unlike/:userId", httpAuthenticateJWT, async (req, res) => {
   const likedId = req.params.userId
 
   try {
-    const query = "DELETE FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2"
-    const result = await pool.query(query, [likerId, likedId])
+    await pool.query("BEGIN")
+
+    const blockEachOtherQuery = `
+      INSERT INTO T_BLOCK (blocker_id, blocked_id)
+      VALUES ($1, $2), ($2, $1)
+      ON CONFLICT DO NOTHING;
+    `
+    await pool.query(blockEachOtherQuery, [likerId, likedId])
+
+    const unlikeQuery =
+      "DELETE FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2"
+    const result = await pool.query(unlikeQuery, [likerId, likedId])
+
     if (result.rowCount === 0) {
+      await pool.query("ROLLBACK")
       res.status(200).send({ message: "Like not found or already removed" })
     } else {
+      await pool.query("COMMIT")
       res.status(200).send({ message: "Profile unlike successful" })
     }
   } catch (error) {
+    await pool.query("ROLLBACK")
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to remove like" })
   }
@@ -314,7 +328,7 @@ router.post("/block/:userId", httpAuthenticateJWT, async (req, res) => {
 })
 
 /* The currently authenticated user unblocks another user */
-router.delete("/unblock/:userId", httpAuthenticateJWT, async (req, res) => {
+router.post("/unblock/:userId", httpAuthenticateJWT, async (req, res) => {
   const blockerId = req.user.id
   const blockedId = req.params.userId
 
