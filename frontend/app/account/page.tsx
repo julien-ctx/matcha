@@ -29,6 +29,9 @@ export default function Account() {
   const [tags, setTags] = useState([]);
   const [deleteAccountModal, setDeleteAccountModal] = useState(false);
   const [passwordErrorMsg, setPasswordErrorMsg] = useState('');
+  const [infoErrorMsg, setInfoErrorMsg] = useState('dididididididididididi');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
   const [passwordFormData, setPasswordFormData] = useState({
     currentPassword: "",
@@ -58,6 +61,8 @@ export default function Account() {
     setEmail(user.email);
     setBio(user.bio);
     setTags(user.tags);
+    setFirstName(user.first_name);
+    setLastName(user.last_name);
   }, [user])
 
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -247,11 +252,31 @@ const renderGenderOption = (option) => (
               >Save</button>
       
             </div>
-            <div className="section">
+            <div className="section relative">
               <h1 className="text-4xl">About You</h1>
+              <p className="absolute bottom-2 text-red-500">{infoErrorMsg}</p>
               <div className="flex flex-col gap-2 items-center w-full">
                 <label className="text-2xl">Your Name</label>
-                <p>{capitalize(user.first_name)} {capitalize(user.last_name)}</p>
+                <div className="flex gap-1 justify-center items-center">
+                  <div className="flex flex-col items-center w-[40%]">
+                    <label htmlFor="">First Name</label>
+                    <input type="text" 
+                      className="h-8 w-full bg-slate-100 px-2"
+                      value={firstName}
+                      onChange={(event) => setFirstName(event.target.value)}
+                      placeholder="First Name"
+                    />
+                  </div>
+                  <div className="flex flex-col items-center w-[40%]">
+                    <label htmlFor="">Last Name</label>
+                    <input type="text" 
+                      className="h-8 w-full bg-slate-100 px-2"
+                      value={lastName}
+                      onChange={(event) => setLastName(event.target.value)}
+                      placeholder="Last Name"
+                    />
+                  </div>
+                </div>
 
                 <label className="text-2xl">Your Position</label>
                 <p>{user.city}, {user.country}</p>
@@ -297,7 +322,21 @@ const renderGenderOption = (option) => (
                 </div>
 
                 <button className="save-btn" onClick={() => {
+                  setInfoErrorMsg('');
+
+                  if (firstName.trim() === '' || lastName.trim() === '') {
+                    setInfoErrorMsg('First and last name cannot be empty.');
+                    return;
+                  }
+
+                  if (bio.trim() === '') {
+                    setInfoErrorMsg('Please write anything on your bio');
+                    return;
+                  }
+
                   const formData = new FormData();
+                  formData.append('firstName', firstName);
+                  formData.append('lastName', lastName);
                   formData.append('gender', gender);
                   formData.append('sexualOrientation', orientation);
                   formData.append('bio', bio);

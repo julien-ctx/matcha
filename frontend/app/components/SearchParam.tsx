@@ -30,7 +30,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
     const [modalData, setModalData] = useState({
         ageRange: ageRange[0] ? [...ageRange] : [18, 99],
         kmWithin: kmWithin[0] ? [...kmWithin] : [500],
-        fameRatingRange: fameRatingRange[0] ? [...fameRatingRange] : [0, 100],
+        fameRatingRange: fameRatingRange[0] ? [...fameRatingRange] : [1, 5],
         tagsList: tagsList ? [...tagsList] : []
     });
 
@@ -132,9 +132,9 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                 <h1 className="text-xl text-gradient-main">By Rating</h1>
                 <div className='w-full h-full flex items-center'>
                     <Range
-                        step={20}
-                        min={0}
-                        max={100}
+                        step={1}
+                        min={1}
+                        max={5}
                         values={[modalData.fameRatingRange[0] , modalData.fameRatingRange[1]]}
                         onChange={(e) => handleFameRatingRangeChange(e)}
                         renderTrack={({ props, children }) => {
@@ -150,7 +150,6 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                             return (
                                 <div {...restProps} key={key} className='range-thumb'>
                                     <div className="range-value">
-                                        {/* TODO TODO TODO */}
                                         {modalData.fameRatingRange[index]}
                                     </div>
                                 </div>
@@ -191,8 +190,8 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         ageMin: modalData.ageRange[0],
                         ageMax: modalData.ageRange[1],
                         locationRadius: modalData.kmWithin[0],
-                        minFameRating: modalData.fameRatingRange[0],
-                        maxFameRating: modalData.fameRatingRange[1],
+                        minFameRating: (modalData.fameRatingRange[0] - 1) * 20,
+                        maxFameRating: modalData.fameRatingRange[1] * 20,
                         tags: modalData.tagsList
                     }
 

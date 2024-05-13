@@ -49,7 +49,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                 if (response.data.message === undefined) {
                     setAgeRange([response.data.age_min, response.data.age_max]);
                     setKmWithin([response.data.location_radius]);
-                    setFameRatingRange([response.data.min_fame_rating, response.data.max_fame_rating]);
+                    setFameRatingRange([response.data.min_fame_rating / 20 + 1, response.data.max_fame_rating / 20]);
                     setTagsList(response.data.tags);
                 }
                 setFilterLoaded(true);
@@ -63,14 +63,14 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
             headers: {
                 Authorization: `Bearer ${token}`
             },
-            params: {
+            params: ageRange[0] ? {
                 ageMin: ageRange[0],
                 ageMax: ageRange[1],
                 locationRadius: kmWithin[0],
-                minFameRating: fameRatingRange[0],
-                maxFameRating: fameRatingRange[1],
+                minFameRating: (fameRatingRange[0] - 1) * 20,
+                maxFameRating: fameRatingRange[1] * 20,
                 tags: tagsList
-            }
+            } : {}
         })
         .then((response) => {
             setProfiles(response.data);
