@@ -39,7 +39,7 @@ const tagsList = [
 ]
 
 export default function Details() {
-    const { token } = useAuth();
+    const { token, httpAuthHeader } = useAuth();
 
     const [currentDetail, setCurrentDetail] = useState<CurrentDetail>(CurrentDetail.Birthday)
 
@@ -61,6 +61,8 @@ export default function Details() {
         formData.append('sexualOrientation', OrientationList[orientation]);
         formData.append('bio', bio);
         formData.append('tags', tags.join(','));
+        formData.append('latitude', 999);
+        formData.append('longitude', 999);
         
         photos.forEach((photo, index) => {
             formData.append(`pictures`, photo, `photo${index}.jpg`);
@@ -72,8 +74,15 @@ export default function Details() {
                 'Content-Type': 'multipart/form-data'
             }
         }).then(res => {
-            // TODO loading then reedirect (timeOut 1500 for example)
-            window.location.reload();
+            // It's not pretty but it works
+            axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
+                latitude: 999,
+                longitude: 999
+            }, httpAuthHeader).then(response => {
+                window.location.reload();
+            }).catch(e => {
+                console.log('error:', e);
+            })
         }).catch(e => {
             console.log('error:', e);
         })

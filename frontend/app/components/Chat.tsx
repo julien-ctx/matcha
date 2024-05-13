@@ -31,7 +31,7 @@ export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCu
                     <h1 className="bg-gradient-to-r-main text-transparent bg-clip-text px-4 py-3 text-3xl">Your messages</h1>
                     {
                         rooms.length > 0 ?
-                            <ul className="flex flex-col ">
+                            <ul className="flex flex-col overflow-y-scroll">
                                 {rooms.map(room => {
                                     const lastMessage = room.messages[room.messages.length - 1];
 
