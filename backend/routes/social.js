@@ -51,6 +51,8 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
   const likedId = req.params.userId
 
   try {
+    await pool.query("BEGIN")
+
     const blockCheckQuery = `
       SELECT 1
       FROM T_BLOCK
@@ -89,49 +91,52 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
     const likeQuery =
       "INSERT INTO T_LIKE (liker_id, liked_id, liked_at) VALUES ($1, $2, NOW()) ON CONFLICT (liker_id, liked_id) DO NOTHING"
     await pool.query(likeQuery, [likerId, likedId])
+
+    const fameRatingQuery =
+      "UPDATE T_USER SET fame_rating = fame_rating + 1 WHERE id = $1"
+    await pool.query(fameRatingQuery, [likedId])
+
     const matchQuery = `SELECT * FROM T_LIKE WHERE liked_id = $1 AND liker_id = $2`
     const match = await pool.query(matchQuery, [likerId, likedId])
+
+    await pool.query("COMMIT")
     if (!match.rows.length) {
       res.status(200).send({ message: "Profile like recorded", isMatch: false })
     } else {
       res.status(200).send({ message: "Match recorded", isMatch: true })
     }
   } catch (error) {
+    await pool.query("ROLLBACK")
     console.error("Database error:", error)
     res.status(500).send({ message: "Failed to record profile like" })
   }
 })
 
-/* Remove a like from the authenticated user to another user */
-router.delete("/unlike/:userId", httpAuthenticateJWT, async (req, res) => {
-  const likerId = req.user.id
-  const likedId = req.params.userId
+/* Save who the currently authenticated user has disliked (swipe) */
+router.post("/dislike/:userId", httpAuthenticateJWT, async (req, res) => {
+  const dislikerId = req.user.id
+  const dislikedId = req.params.userId
 
   try {
     await pool.query("BEGIN")
 
-    const blockEachOtherQuery = `
+    const insertBlockQuery = `
       INSERT INTO T_BLOCK (blocker_id, blocked_id)
       VALUES ($1, $2), ($2, $1)
       ON CONFLICT DO NOTHING;
     `
-    await pool.query(blockEachOtherQuery, [likerId, likedId])
+    await pool.query(insertBlockQuery, [dislikerId, dislikedId])
 
-    const unlikeQuery =
-      "DELETE FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2"
-    const result = await pool.query(unlikeQuery, [likerId, likedId])
+    const fameRatingQuery =
+      "UPDATE T_USER SET fame_rating = fame_rating - 1 WHERE id = $1"
+    await pool.query(fameRatingQuery, [dislikedId])
 
-    if (result.rowCount === 0) {
-      await pool.query("ROLLBACK")
-      res.status(200).send({ message: "Like not found or already removed" })
-    } else {
-      await pool.query("COMMIT")
-      res.status(200).send({ message: "Profile unlike successful" })
-    }
+    await pool.query("COMMIT")
+    res.status(200).send({ message: "Profile dislike recorded" })
   } catch (error) {
     await pool.query("ROLLBACK")
     console.error("Database error:", error)
-    res.status(500).send({ message: "Failed to remove like" })
+    res.status(500).send({ message: "Failed to record profile dislike" })
   }
 })
 
