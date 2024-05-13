@@ -37,7 +37,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
                 setNewMessageArrived(true);
                 if (data.isNewRoom) {
                     setMatchList(prev => prev.filter(match => match.id !== data.chatroomInfo.other_user.id))
-                    return [...prev, data.chatroomInfo]
+                    return [data.chatroomInfo, ...prev]
                 } else {
                     const targetRoom = prev.find(room => room.id === data.chatroomId);
                     const otherRooms = prev.filter(room => room.id !== data.chatroomId);
