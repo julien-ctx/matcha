@@ -14,6 +14,7 @@ import InteractionList from './InteractionList'
 import axios from 'axios'
 import Verify from './Verify'
 import AnotherConnection from './AnotherConnection'
+import { useChat } from '../contexts/ChatContext'
 
 enum SpaceState {
     LOADING,
@@ -23,17 +24,14 @@ enum SpaceState {
 }
 
 export default function MySpace() {
+    const { chatRoomList, matchList, newMessageMap, setChatRoomList, setMatchList, setNewMessageMap, currentChatRoom, setCurrentChatRoom } = useChat();
     const { httpAuthHeader, user, socket } = useAuth();
     const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList, anotherConnection, toggleAnotherConnection } = useUI();
     const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
     const [typingMap, setTypingMap] = useState(new Map());
-    const [newMessageMap, setNewMessageMap] = useState(new Map());
     const [profiles, setProfiles] = useState([]);
-
-    const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
+    
     const [currentProfile, setCurrentProfile] = useState<any | null>(null); // set type later
-    const [matchList, setMatchList] = useState<any[]>([]);
-    const [chatRoomList, setChatRoomList] = useState<any[]>([]);
 
     const [showChatResponsive, setShowChatResponsive] = useState(false);
 
@@ -120,37 +118,12 @@ export default function MySpace() {
 
         socket.on('anotherConnectionFound', () => {
             console.log('allo, another connection found, dude')
+            socket.disconnect();
             toggleAnotherConnection(true);
-        })
-
-        socket.on('newMessage', (data) => {
-            setChatRoomList(prev => {
-                if (data.isNewRoom) {
-                    return [...prev, data.chatroomInfo]
-                } else {
-                    const targetRoom = prev.find(room => room.id === data.chatroomId);
-                    const otherRooms = prev.filter(room => room.id !== data.chatroomId);
-        
-                    if (!targetRoom) return prev;
-                    
-                    const updatedMessages = [...targetRoom.messages, data.message];
-                    const updatedTargetRoom = { ...targetRoom, messages: updatedMessages };
-    
-                    return [updatedTargetRoom, ...otherRooms];
-                }
-            });
-
-            if (data.chatroomId !== currentChatRoom)
-                setNewMessageMap(prev => {
-                    const newMap = new Map(prev);
-                    newMap.set(data.chatroomId, true);
-                    return newMap;
-                })
         })
 
         return (() => {
             socket.off('anotherConnectionFound')
-            socket.off('newMessage')
             socket.off('userIsTyping')
             socket.off('userStoppedTyping')
         })
@@ -162,7 +135,7 @@ export default function MySpace() {
         : spaceState === SpaceState.READY ? (
         <div className="w-full h-full flex relative overflow-hidden">
             <div className={`md:w-[27.5%] absolute left-0 top-0 md:block z-10 h-full w-full ${showChatResponsive ? 'block' : 'hidden'}`}>
-                <Chat rooms={chatRoomList} typingMap={typingMap} newMessageMap={newMessageMap} matchList={matchList} setCurrentRoom={setCurrentChatRoom} setCurrentProfile={setCurrentProfile} setNewMessageMap={setNewMessageMap} setShowChatResponsive={setShowChatResponsive}/>
+                <Chat rooms={chatRoomList} typingMap={typingMap} newMessageMap={newMessageMap} matchList={matchList} setCurrentProfile={setCurrentProfile} setNewMessageMap={setNewMessageMap} setShowChatResponsive={setShowChatResponsive}/>
             </div>
             <div className="absolute w-full md:w-[72.5%] h-full right-0 top-0 z-0">
                 <Match setCurrentProfile={setCurrentProfile} setMatchList={setMatchList} setShowChatResponsive={setShowChatResponsive} profiles={profiles} setProfiles={setProfiles} newMessageMap={newMessageMap}/>

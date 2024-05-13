@@ -4,6 +4,7 @@ import AuthProvider from "./auth/AuthProvider"
 import Header from "./header/Header"
 import { UIProvider } from "./contexts/UIContext"
 import { SocialProvider } from "./contexts/SocialContext"
+import { ChatProvider } from "./contexts/ChatContext"
 
 export const metadata: Metadata = {
   title: "Matcha",
@@ -20,14 +21,16 @@ export default function RootLayout({
     <UIProvider>
       <AuthProvider>
         <SocialProvider>
-          <html lang="en">
-            <body>
-              <Header />
-              <main>
-                {children}
-              </main>
-            </body>
-          </html>
+          <ChatProvider>
+            <html lang="en">
+              <body>
+                <Header />
+                <main>
+                  {children}
+                </main>
+              </body>
+            </html>
+          </ChatProvider>
         </SocialProvider>
       </AuthProvider>
     </UIProvider>

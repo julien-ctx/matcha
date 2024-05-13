@@ -29,7 +29,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
     const [hasModified, setHasModified] = useState(false);
     const [modalData, setModalData] = useState({
         ageRange: ageRange[0] ? [...ageRange] : [18, 99],
-        kmWithin: kmWithin[0] ? [...kmWithin] : [30],
+        kmWithin: kmWithin[0] ? [...kmWithin] : [500],
         fameRatingRange: fameRatingRange[0] ? [...fameRatingRange] : [1, 5],
         tagsList: tagsList ? [...tagsList] : []
     });
@@ -135,7 +135,7 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         step={1}
                         min={1}
                         max={5}
-                        values={[modalData.fameRatingRange[0], modalData.fameRatingRange[1]]}
+                        values={[modalData.fameRatingRange[0] , modalData.fameRatingRange[1]]}
                         onChange={(e) => handleFameRatingRangeChange(e)}
                         renderTrack={({ props, children }) => {
                             const { key, ...restProps } = props;
@@ -190,8 +190,8 @@ export default function SearchParam({ setLoadState, setModalOpen, ageRange, setA
                         ageMin: modalData.ageRange[0],
                         ageMax: modalData.ageRange[1],
                         locationRadius: modalData.kmWithin[0],
-                        minFameRating: modalData.fameRatingRange[0],
-                        maxFameRating: modalData.fameRatingRange[1],
+                        minFameRating: (modalData.fameRatingRange[0] - 1) * 20,
+                        maxFameRating: modalData.fameRatingRange[1] * 20,
                         tags: modalData.tagsList
                     }
 

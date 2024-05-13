@@ -18,7 +18,7 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
   const {
     ageMin = 18,
     ageMax = 99,
-    locationRadius = 30,
+    locationRadius = 500,
     minFameRating = 0,
     maxFameRating = 100,
     tags = [],
