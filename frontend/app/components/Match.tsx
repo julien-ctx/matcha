@@ -144,29 +144,41 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         }
     }
 
-    const handleDecision = (accept: boolean) => {
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/${accept ? 'like' : 'unlike'}/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader).then(res => {
+    function handleUnlike() {
+        axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/unlike/${profiles[currentProfileIndex]?.id}`, httpAuthHeader)
+            .then(res => {
+                console.log('unlike', res.data);
+                socket.emit('unlike', { recipientId: profiles[currentProfileIndex]?.id });
+
                 setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
                 setCurrentProfileIndex(prev => Math.max(0, prev - 1));
-    
-                socket.emit(accept ? 'like' : 'unlike', {
-                    recipientId: profiles[currentProfileIndex]?.id,
-                })
-                if (accept && res.data.isMatch) {
+            }).catch(err => {
+                console.log(err);
+            })
+    }
+
+    function handleLike() {
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/like/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader)
+            .then(res => {
+                socket.emit('like', { recipientId: profiles[currentProfileIndex]?.id });
+
+                if (res.data.isMatch) {
                     setMatchList((currentMatches) => [profiles[currentProfileIndex], ...currentMatches]);
                     setMatchProfile(profiles[currentProfileIndex]);
                     setMatchModalOpen(true);
                 }
+
+                setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
+                setCurrentProfileIndex(prev => Math.max(0, prev - 1));
+            
             }).catch(err => {
                 if (err.response?.data.errorCode === 'LIKE_LIMIT_REACHED') {
                     setPremiumModalOpen(true);
                 } else {
                     console.error(err);
                 }
-            }
-        )
-
-    };
+            })
+    }
 
     return (
         <div className="w-full match-container h-full pt-20 flex flex-col justify-center items-center ">
@@ -193,8 +205,8 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                             <p>Settings</p>
                         </div>
                     </button>
-                    <button disabled={profiles.length === 0} className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleDecision(false)}>X</button>
-                    <button disabled={profiles.length === 0} className="likeOrNotButton bg-[#fafefa] text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleDecision(true)}>O</button>
+                    <button disabled={profiles.length === 0} className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleUnlike()}>X</button>
+                    <button disabled={profiles.length === 0} className="likeOrNotButton bg-[#fafefa] text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleLike()}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
                     ) : (

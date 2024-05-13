@@ -2,20 +2,22 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../auth/AuthProvider';
 import './Chat.css';
 import MatchList from './MatchList';
+import { useChat } from '../contexts/ChatContext';
 
 interface ChatRoomProp {
     rooms: any[],
     typingMap: any,
     newMessageMap: any,
     matchList: any[],
-    setCurrentRoom: (roomId: number) => void
     setCurrentProfile: (profile: any) => void
     setNewMessageMap: (newMessageMap: any) => void
     setShowChatResponsive: (show: boolean) => void
 }
 
-export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCurrentRoom, setCurrentProfile, setNewMessageMap, setShowChatResponsive }: ChatRoomProp) {
+export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCurrentProfile, setNewMessageMap, setShowChatResponsive }: ChatRoomProp) {
     const { user } = useAuth();
+
+    const { setCurrentChatRoom } = useChat();
 
     return (
         <div className="chat-container" style={{backgroundColor: "rgba(255, 255, 255, 0.8)"}}>
@@ -37,7 +39,7 @@ export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCu
                                         <li key={room.id} className="chat-list relative"
                                             onClick={() => {
                                                 setCurrentProfile(null);
-                                                setCurrentRoom(room.id);
+                                                setCurrentChatRoom(room.id);
                                                 if (newMessageMap.get(room.id) === true) {
                                                     setNewMessageMap(prev => {
                                                         const newMap = new Map(prev);

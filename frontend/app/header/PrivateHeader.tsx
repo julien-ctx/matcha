@@ -7,6 +7,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useUI } from '../contexts/UIContext';
 import InteractionPopup from '../components/InteractionPopup';
 import { useSocial } from '../contexts/SocialContext';
+import { useChat } from '../contexts/ChatContext';
 
 export default function PrivateHeader() {
     const { logout, user, socket } = useAuth();
@@ -22,6 +23,7 @@ export default function PrivateHeader() {
     const visitListRef = useRef(null);
 
     const [unlikeAnimations, setUnlikeAnimations] = useState([]);
+    const { newMessageArrived, setNewMessageArrived } = useChat();
 
     useEffect(() => {
         const accountBtn = accountBtnRef.current;
@@ -81,6 +83,14 @@ export default function PrivateHeader() {
             {
                 user?.date_of_birth && !anotherConnection && (
                     <div className="flex justify-center gap-1 gap-2 sm:gap-8 absolute top-0 right-0 h-full items-center">
+                        { pathname !== '/' && (
+                            <button className="relative" onClick={() => {
+                                window.location.href = '/'
+                            }}>
+                                <img className="w-12 h-12 mr-4 sm:mr-0" src="/message2.svg" alt="message" />
+                                {newMessageArrived && <div className="w-2 h-2 bg-rose-500 rounded-full absolute top-2 left-9"></div>}
+                            </button>
+                        )}
                         { pathname === '/' && (
                             <>
                                 <div ref={visitListRef} className="popup-container">

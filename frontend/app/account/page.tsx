@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import './account.css'
 import { calculAge, capitalize, validatePassword } from "../utils"
 import Modal from "../components/Modal"
+import { useChat } from "../contexts/ChatContext"
 
 const tagsList = [
   'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
@@ -32,6 +33,7 @@ export default function Account() {
   const [infoErrorMsg, setInfoErrorMsg] = useState('dididididididididididi');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const { setNewMessageArrived} = useChat();
 
   const [passwordFormData, setPasswordFormData] = useState({
     currentPassword: "",
@@ -52,6 +54,11 @@ export default function Account() {
     if (authStatus === AuthStatus.NotValidated)
       router.push('/');
   }, [authStatus])
+
+  // very dirty code
+  useEffect(() => {
+    setNewMessageArrived(false);
+  }, [])
 
   useEffect(() => {
     if (!user) return;

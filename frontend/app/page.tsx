@@ -10,9 +10,14 @@ import { useRouter } from "next/navigation"
 import Modal from "./components/Modal"
 
 export default function Home() {
-  const { authStatus, login } = useAuth()
+  const { authStatus, login, socket } = useAuth()
   const router = useRouter()
   const [googleAuthErrorModalOpen, setGoogleAuthErrorModalOpen] = useState<boolean>(false)
+
+  const [chatRoomList, setChatRoomList] = useState<any[]>([]);
+  const [matchList, setMatchList] = useState<any[]>([]);
+  const [newMessageMap, setNewMessageMap] = useState(new Map());
+  const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null);
 
   useEffect(() => {
     const userData = Cookies.get("userData")
@@ -27,6 +32,14 @@ export default function Home() {
       setGoogleAuthErrorModalOpen(true)
     }
   }, [])
+
+  useEffect(() => {
+    if (!socket) return;
+
+    // I know... It's not the best way...
+    socket.on('newMessage', (data) => {
+  })
+  }, [socket])
 
   return (
     <div className="w-full h-full">

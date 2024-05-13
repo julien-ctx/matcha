@@ -86,7 +86,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                         <div className="flex gap-2 absolute bottom-4 left-1/2 -translate-x-1/2">
                             <button 
                                 onClick={() => setFirstMessageModalOpen(true)}
-                                className="bg-rose-400 rounded-full flex p-3 border-2 hover:brightness-90">
+                                className="bg-rose-400 rounded-full w-16 flex justify-center items-center aspect-square border-2 hover:brightness-90">
                                 <img className="w-9 h-9" src="/message.svg" alt="message" />
                             </button>
                             <button 
