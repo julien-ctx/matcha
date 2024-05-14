@@ -1,5 +1,5 @@
 .chat-container {
-    @apply h-full w-full pt-20 shadow-md shadow-white border-r-2;
+    @apply h-full w-full pt-20 shadow-md shadow-white border-r-2 overflow-hidden;
     background-image: linear-gradient(180deg, #f3f5f9, #f2f7fd);
 }
 

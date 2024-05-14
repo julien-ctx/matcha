@@ -27,11 +27,11 @@ export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCu
             {user && (
                 <>
                 <MatchList matches={matchList} setCurrentProfile={setCurrentProfile}/>
-                <div className="w-full flex flex-col">
+                <div className="w-full flex flex-col h-full">
                     <h1 className="bg-gradient-to-r-main text-transparent bg-clip-text px-4 py-3 text-3xl">Your messages</h1>
                     {
                         rooms.length > 0 ?
-                            <ul className="flex flex-col overflow-y-scroll">
+                            <ul className="flex flex-col overflow-y-scroll h-full">
                                 {rooms.map(room => {
                                     const lastMessage = room.messages[room.messages.length - 1];
 
