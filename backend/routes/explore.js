@@ -42,13 +42,13 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
     })
   }
 
-  if (ageMax < ageMin) {
+  if (parseInt(ageMax) < parseInt(ageMin)) {
     return res
       .status(400)
       .send({ message: "ageMax cannot be less than ageMin" })
   }
 
-  if (maxFameRating < minFameRating) {
+  if (parseInt(maxFameRating) < parseInt(minFameRating)) {
     return res
       .status(400)
       .send({ message: "maxFameRating cannot be less than minFameRating" })

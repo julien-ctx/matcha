@@ -109,7 +109,7 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
 
     useEffect(() => {
         endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [room.messages.length]); // This ensures the view scrolls down every time a new message is added
+    }, [room?.messages?.length]);
 
     return (
         <div className="flex flex-col h-full w-full pt-20">

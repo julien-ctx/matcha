@@ -160,23 +160,23 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     function handleLike() {
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/like/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader)
             .then(res => {
-                socket.emit('like', { recipientId: profiles[currentProfileIndex]?.id });
-
-                if (res.data.isMatch) {
-                    setMatchList((currentMatches) => [profiles[currentProfileIndex], ...currentMatches]);
-                    setMatchProfile(profiles[currentProfileIndex]);
-                    setMatchModalOpen(true);
-                }
-
-                setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
-                setCurrentProfileIndex(prev => Math.max(0, prev - 1));
-            
-            }).catch(err => {
-                if (err.response?.data.errorCode === 'LIKE_LIMIT_REACHED') {
+                if (res.data.errorCode === 'LIKE_LIMIT_REACHED') {
                     setPremiumModalOpen(true);
                 } else {
-                    console.error(err);
+                    socket.emit('like', { recipientId: profiles[currentProfileIndex]?.id });
+    
+                    if (res.data.isMatch) {
+                        setMatchList((currentMatches) => [profiles[currentProfileIndex], ...currentMatches]);
+                        setMatchProfile(profiles[currentProfileIndex]);
+                        setMatchModalOpen(true);
+                    }
+    
+                    setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
+                    setCurrentProfileIndex(prev => Math.max(0, prev - 1));
                 }
+            
+            }).catch(err => {
+                console.error(err);
             })
     }
 
