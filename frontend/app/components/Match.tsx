@@ -144,8 +144,8 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         }
     }
 
-    function handleUnlike() {
-        axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/social/unlike/${profiles[currentProfileIndex]?.id}`, httpAuthHeader)
+    function handleDislike() {
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/dislike/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader)
             .then(res => {
                 console.log('unlike', res.data);
                 socket.emit('unlike', { recipientId: profiles[currentProfileIndex]?.id });
@@ -205,7 +205,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                             <p>Settings</p>
                         </div>
                     </button>
-                    <button disabled={profiles.length === 0} className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleUnlike()}>X</button>
+                    <button disabled={profiles.length === 0} className="likeOrNotButton text-red-400 bg-red-50 hover:brightness-105 left-20 sm:-left-16" onClick={() => handleDislike()}>X</button>
                     <button disabled={profiles.length === 0} className="likeOrNotButton bg-[#fafefa] text-green-300 hover:brightness-105 right-20 sm:-right-16" onClick={() => handleLike()}>O</button>
                     {profiles.length > 0 ? (
                         <ProfileCard profile={profiles[currentProfileIndex]} setCurrentProfile={setCurrentProfile} />
