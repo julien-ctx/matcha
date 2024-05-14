@@ -80,14 +80,57 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("typing", ({ chatroomId, recipientId }) => {
+    socket.on("typing", async ({ chatroomId, recipientId }) => {
+      const senderId = socket.user.id
+
+      const matchCheckQuery = `
+        SELECT EXISTS (
+            SELECT 1 FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2
+        ) AND EXISTS (
+            SELECT 1 FROM T_LIKE WHERE liker_id = $2 AND liked_id = $1
+        ) AS is_match;
+      `
+      const matchCheckResult = await pool.query(matchCheckQuery, [
+        senderId,
+        recipientId,
+      ])
+      if (!matchCheckResult.rows[0]?.is_match) {
+        socket.emit("error", {
+          errorCode: "NO_MATCH_FOUND",
+          message: "Message could not be sent.",
+        })
+        console.log("test")
+        return
+      }
+
       sendEventToUser(userSocketMap, io, recipientId, "userIsTyping", {
         userId: socket.user.id,
         chatroomId,
       })
     })
 
-    socket.on("stopTyping", ({ chatroomId, recipientId }) => {
+    socket.on("stopTyping", async ({ chatroomId, recipientId }) => {
+      const senderId = socket.user.id
+
+      const matchCheckQuery = `
+        SELECT EXISTS (
+            SELECT 1 FROM T_LIKE WHERE liker_id = $1 AND liked_id = $2
+        ) AND EXISTS (
+            SELECT 1 FROM T_LIKE WHERE liker_id = $2 AND liked_id = $1
+        ) AS is_match;
+      `
+      const matchCheckResult = await pool.query(matchCheckQuery, [
+        senderId,
+        recipientId,
+      ])
+      if (!matchCheckResult.rows[0]?.is_match) {
+        socket.emit("error", {
+          errorCode: "NO_MATCH_FOUND",
+          message: "Message could not be sent.",
+        })
+        return
+      }
+
       sendEventToUser(userSocketMap, io, recipientId, "userStoppedTyping", {
         userId: socket.user.id,
         chatroomId,
