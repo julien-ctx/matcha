@@ -116,6 +116,7 @@ export function setupSocketEvents(io) {
             errorCode: "NO_MATCH_FOUND",
             message: "Message could not be sent.",
           })
+          return
         }
 
         let chatroom = await pool.query(
