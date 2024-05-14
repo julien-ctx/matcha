@@ -93,7 +93,7 @@ router.post("/like/:userId", httpAuthenticateJWT, async (req, res) => {
     await pool.query(likeQuery, [likerId, likedId])
 
     const fameRatingQuery =
-      "UPDATE T_USER SET fame_rating = fame_rating + 1 WHERE id = $1"
+      "UPDATE T_USER SET fame_rating = LEAST(fame_rating + 1, 100) WHERE id = $1;"
     await pool.query(fameRatingQuery, [likedId])
 
     const matchQuery = `SELECT * FROM T_LIKE WHERE liked_id = $1 AND liker_id = $2`
@@ -128,7 +128,7 @@ router.post("/dislike/:userId", httpAuthenticateJWT, async (req, res) => {
     await pool.query(insertBlockQuery, [dislikerId, dislikedId])
 
     const fameRatingQuery =
-      "UPDATE T_USER SET fame_rating = fame_rating - 1 WHERE id = $1"
+      "UPDATE T_USER SET fame_rating = GREATEST(fame_rating - 1, 0) WHERE id = $1;"
     await pool.query(fameRatingQuery, [dislikedId])
 
     await pool.query("COMMIT")
