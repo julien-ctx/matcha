@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 import './Chat.css';
 import MatchList from './MatchList';
 import { useChat } from '../contexts/ChatContext';

@@ -2,7 +2,7 @@
 
 import { Range } from 'react-range';
 import axios from 'axios'
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 import { LoadState } from './types';
 import { useEffect, useState } from 'react';
 

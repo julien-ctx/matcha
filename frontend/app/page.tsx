@@ -1,7 +1,7 @@
 "use client"
 
-import { useAuth } from "./auth/AuthProvider"
-import { AuthStatus } from "./auth/authTypes"
+import { useAuth } from "./contexts/AuthContext"
+import { AuthStatus } from "./types/authTypes"
 import PublicHome from "./components/PublicHome"
 import MySpace from "./components/MySpace"
 import Cookies from "js-cookie"

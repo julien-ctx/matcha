@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, createContext, useContext } from 'react'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from './AuthContext'
 
 interface ChatContextType {
     chatRoomList: any,

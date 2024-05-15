@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './ChatRoom.css';
 import Modal from './Modal';
 import axios from 'axios';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 import { capitalize } from '../utils';
 
 interface ChatRoomProp {

@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useAuth } from "../auth/AuthProvider";
-import { AuthStatus } from "../auth/authTypes";
+import { useAuth } from "../contexts/AuthContext";
+import { AuthStatus } from "../types/authTypes";
 
 export default function GoodBye() {
     const { authStatus, user } = useAuth();

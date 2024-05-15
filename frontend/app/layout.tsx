@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
 import './globals.css'
-import AuthProvider from "./auth/AuthProvider"
+import AuthProvider from "./contexts/AuthContext"
 import Header from "./header/Header"
 import { UIProvider } from "./contexts/UIContext"
 import { SocialProvider } from "./contexts/SocialContext"
 import { ChatProvider } from "./contexts/ChatContext"
+import { TabProvider } from "./contexts/TabContext"
 
 export const metadata: Metadata = {
   title: "Matcha",
@@ -20,18 +21,20 @@ export default function RootLayout({
   return (
     <UIProvider>
       <AuthProvider>
-        <SocialProvider>
-          <ChatProvider>
-            <html lang="en">
-              <body>
-                <Header />
-                <main>
-                  {children}
-                </main>
-              </body>
-            </html>
-          </ChatProvider>
-        </SocialProvider>
+        <TabProvider>
+          <SocialProvider>
+            <ChatProvider>
+              <html lang="en">
+                <body>
+                  <Header />
+                  <main>
+                    {children}
+                  </main>
+                </body>
+              </html>
+            </ChatProvider>
+          </SocialProvider>
+        </TabProvider>
       </AuthProvider>
     </UIProvider>
   )

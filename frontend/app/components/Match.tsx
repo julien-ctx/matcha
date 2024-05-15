@@ -8,7 +8,7 @@ import axios from 'axios'
 
 import './Match.css'
 import SearchParam from './SearchParam';
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from '../contexts/AuthContext'
 import { capitalize } from '../utils'
 import { LoadState } from './types'
 

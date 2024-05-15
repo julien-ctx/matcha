@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Cookies from "js-cookie"
 import { useRouter } from 'next/navigation';
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import './PublicHome.css'
 import Register from './Register';
 import Login from './Login';

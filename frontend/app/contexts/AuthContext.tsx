@@ -1,14 +1,22 @@
 "use client"
 
-import React, { useContext, useEffect, useState } from "react"
-import AuthContext from "./AuthContext"
+import React, { useContext, useEffect, useState, createContext } from "react"
 import axios from "axios"
-import { AuthStatus, User } from "./authTypes"
+import { AuthStatus, User } from "../types/authTypes"
 import { io } from "socket.io-client"
+import { generateTabId, setActiveTab } from "../tabManager"
 
 interface Props {
-  children: React.ReactNode
+  token: string | null | undefined
+  login: (newToken: string) => void
+  logout: () => void
+  authStatus: AuthStatus
+  user: User | undefined
+  socket: any | null // TODO type set
+  httpAuthHeader: any
 }
+
+export const AuthContext = createContext<Props | null>(null)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -18,9 +26,7 @@ export const useAuth = () => {
   return context
 }
 
-
-
-const AuthProvider = ({ children }: Props) => {
+const AuthProvider = ({ children }) => {
   const [token, setAuthToken] = useState<string | null | undefined>(undefined);
   const [socket, setSocket] = useState<any | null>(null); // TODO type set
 

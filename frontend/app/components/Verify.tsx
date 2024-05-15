@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import axios from "axios"
 
 export default function Verify() {

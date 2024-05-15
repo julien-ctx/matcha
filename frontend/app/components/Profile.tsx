@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { ProfileType } from './profileTypes'
 import './Profile.css'
 import Modal from './Modal';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { calculAge, getTimeAgo } from '../utils';
 

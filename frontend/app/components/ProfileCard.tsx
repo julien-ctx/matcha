@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { ProfileType } from './profileTypes';
 import axios from 'axios';
 import './ProfileCard.css';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 import { calculAge } from '../utils';
 
 interface Props {
