@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Chat.css';
 import MatchList from './MatchList';
 import { useChat } from '../contexts/ChatContext';
+import Modal from './Modal';
 
 interface ChatRoomProp {
     rooms: any[],
@@ -74,6 +75,10 @@ export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCu
                 </div>
                 </>
             )}
+
+            <Modal>
+                
+            </Modal>
         </div>
     )
 }

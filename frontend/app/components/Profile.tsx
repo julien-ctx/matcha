@@ -7,6 +7,7 @@ import Modal from './Modal';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { calculAge, getTimeAgo } from '../utils';
+import { useChat } from '../contexts/ChatContext';
 
 interface ProfileProps {
     profile: ProfileType; 
@@ -25,6 +26,8 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
     const [blockConfirmModalOpen, setBlockConfirmModalOpen] = useState<boolean>(false);
     const { socket, user, httpAuthHeader, token } = useAuth();
     const [message, setMessage] = useState<string>('');
+
+    const { setChatRoomErrorModalOpen } = useChat();
 
     function prevImage() {
         if (currentImageIndex === 0) return;
@@ -183,6 +186,10 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
                                         setCurrentProfile(null);
                                         setMatchList(list => list.filter(match => match.id !== profile.id));
                                     }
+                                    else if (!res.success && res.errorCode === 'NO_MATCH_FOUND') {
+                                        setChatRoomErrorModalOpen(true);
+                                    }
+
                                 })
                             }}
                         >Send</button>

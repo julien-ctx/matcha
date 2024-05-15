@@ -11,6 +11,7 @@ import SearchParam from './SearchParam';
 import { useAuth } from '../contexts/AuthContext'
 import { capitalize } from '../utils'
 import { LoadState } from './types'
+import { useChat } from '../contexts/ChatContext'
 
 interface Props {
     setCurrentProfile: (profile: ProfileType) => void
@@ -42,6 +43,8 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [browseFetched, setBrowseFetched] = useState(false);
 
     const [premiumModalOpen, setPremiumModalOpen] = useState(false);
+
+    const { setChatRoomErrorModalOpen } = useChat();
 
     function fetchFilter() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
@@ -264,6 +267,9 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                                         if (res.success) {
                                             setMatchList(prev => prev.filter(match => match.id !== matchProfile.id))
                                             setMatchModalOpen(false);
+                                        }
+                                        else if (!res.success && res.errorCode === 'NO_MATCH_FOUND') {
+                                            setChatRoomErrorModalOpen(true);
                                         }
                                     })
                                 }}

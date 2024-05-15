@@ -80,7 +80,7 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("typing", async ({ chatroomId, recipientId }) => {
+    socket.on("typing", async ({ chatroomId, recipientId }, callback) => {
       const senderId = socket.user.id
 
       const matchCheckQuery = `
@@ -95,9 +95,9 @@ export function setupSocketEvents(io) {
         recipientId,
       ])
       if (!matchCheckResult.rows[0]?.is_match) {
-        socket.emit("error", {
-          errorCode: "NO_MATCH_FOUND",
-          message: "Message could not be sent.",
+        callback & callback({
+          success: false,
+          errorCode: "NO_MATCH_FOUND"
         })
         return
       }
@@ -108,7 +108,7 @@ export function setupSocketEvents(io) {
       })
     })
 
-    socket.on("stopTyping", async ({ chatroomId, recipientId }) => {
+    socket.on("stopTyping", async ({ chatroomId, recipientId }, callback) => {
       const senderId = socket.user.id
 
       const matchCheckQuery = `
@@ -123,9 +123,9 @@ export function setupSocketEvents(io) {
         recipientId,
       ])
       if (!matchCheckResult.rows[0]?.is_match) {
-        socket.emit("error", {
+        callback & callback({
+          success: false,
           errorCode: "NO_MATCH_FOUND",
-          message: "Message could not be sent.",
         })
         return
       }
@@ -154,9 +154,9 @@ export function setupSocketEvents(io) {
           recipientId,
         ])
         if (!matchCheckResult.rows[0]?.is_match) {
-          socket.emit("error", {
-            errorCode: "NO_MATCH_FOUND",
-            message: "Message could not be sent.",
+          callback & callback({
+            success: false,
+            errorCode: "NO_MATCH_FOUND"
           })
           return
         }

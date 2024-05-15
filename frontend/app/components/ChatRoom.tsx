@@ -6,6 +6,7 @@ import Modal from './Modal';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { capitalize } from '../utils';
+import { useChat } from '../contexts/ChatContext';
 
 interface ChatRoomProp {
     room: any[],
@@ -36,6 +37,7 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
     const [modalState, setModalState] = useState(ModalState.ReportOrLeave);
     const [reportRes, setReportRes] = useState('');
     const [meTyping, setMeTyping] = useState(false);
+    const { chatRoomErrorModalOpen, setChatRoomErrorModalOpen } = useChat();
 
     function fetchProfile(userId: number) {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/details/${userId}`, httpAuthHeader)
@@ -59,6 +61,10 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
             socket.emit('typing', {
                 chatroomId: room.id,
                 recipientId: room.other_user.id
+            }, (res) => {
+                if (!res.success && res.errorCode === "NO_MATCH_FOUND") {
+                    setChatRoomErrorModalOpen(true);
+                }
             })
             setMeTyping(true);
         }
@@ -66,6 +72,10 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
             socket.emit('stopTyping', {
                 chatroomId: room.id,
                 recipientId: room.other_user.id
+            }, (res) => {
+                if (!res.success && res.errorCode === "NO_MATCH_FOUND") {
+                    setChatRoomErrorModalOpen(true);
+                }
             })
             setMeTyping(false);
         }
@@ -80,6 +90,9 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
                 recipientId: room.other_user.id,
                 content: newMessage
             }, (res) => {
+                if (!res.success && res.errorCode === "NO_MATCH_FOUND") {
+                    setChatRoomErrorModalOpen(true);
+                }
             })
             setNewMessage('');
         }
@@ -106,6 +119,12 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
                     setModalState(ModalState.Confirmation);
                 }
             })
+    }
+
+    function onErrorModalClose() {
+        setChatRoomErrorModalOpen(false)
+        setCurrentRoom(null);
+        setChatRoomList(prevRooms => prevRooms.filter(r => r.id !== room.id))
     }
 
     useEffect(() => {
@@ -230,6 +249,18 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
                         </div>
                     ) : null}
                     </div>
+            </Modal>
+
+            <Modal isOpen={chatRoomErrorModalOpen}
+                onClose={onErrorModalClose}
+            >
+                <div className="flex flex-col justify-center items-center gap-3">
+                    <p className="text-center text-lg">The room cannot be found.</p>
+                    <button 
+                        onClick={onErrorModalClose}
+                        className="px-4 rounded-md bg-white duration-100 hover:brightness-95 border-2 border-rose-500 text-rose-500"
+                    >Close</button>
+                </div>
             </Modal>
         </div>
     )

@@ -14,6 +14,8 @@ interface ChatContextType {
     setCurrentChatRoom: any,
     newMessageArrived: boolean,
     setNewMessageArrived: any,
+    chatRoomErrorModalOpen: boolean,
+    setChatRoomErrorModalOpen: any,
 }
 
 const ChatContext = createContext<ChatContextType | null>(null)
@@ -28,6 +30,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     const [newMessageMap, setNewMessageMap] = useState<any>(new Map())
     const [currentChatRoom, setCurrentChatRoom] = useState<number | null>(null)
     const [newMessageArrived, setNewMessageArrived] = useState(false)
+    const [chatRoomErrorModalOpen, setChatRoomErrorModalOpen] = useState(false)
 
     useEffect(() => {
         if (!socket) return
@@ -83,7 +86,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
             setCurrentChatRoom,
             newMessageArrived,
             setNewMessageArrived,
-
+            chatRoomErrorModalOpen,
+            setChatRoomErrorModalOpen
         }}>
             {children}
         </ChatContext.Provider>
