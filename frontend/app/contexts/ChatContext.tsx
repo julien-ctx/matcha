@@ -58,6 +58,12 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
                     return newMap;
                 })
             }
+
+            if (currentChatRoom === data.chatroomId) {
+                socket.emit('readNotification', {
+                    recipientId: data.message.sender_id
+                })
+            }
         })
 
         return (() => {

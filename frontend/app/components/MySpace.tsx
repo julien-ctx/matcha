@@ -44,12 +44,11 @@ export default function MySpace() {
         setTypingMap(initialTypingMap);
     }
 
-    function initNewMessageMap() {
+    function initNewMessageMap(chatrooms) {
         const initialNewMessageMap = new Map();
-        chatRoomList.forEach(room => {
-            initialNewMessageMap.set(room.id, false);
+        chatrooms.forEach(room => {
+            initialNewMessageMap.set(room.id, room.unread_messages.length && room.unread_messages.some(msg => msg.recipient_id === user.id));
         });
-    
         setNewMessageMap(initialNewMessageMap);
     }
 
@@ -80,7 +79,7 @@ export default function MySpace() {
             });
             setChatRoomList(chatRoomSorted)
             initTypingMap();
-            initNewMessageMap();
+            initNewMessageMap(response.data);
         }).catch(error => {
             console.error(error)
         })

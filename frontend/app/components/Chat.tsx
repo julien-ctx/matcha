@@ -15,7 +15,7 @@ interface ChatRoomProp {
 }
 
 export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCurrentProfile, setNewMessageMap, setShowChatResponsive }: ChatRoomProp) {
-    const { user } = useAuth();
+    const { user, socket } = useAuth();
 
     const { setCurrentChatRoom } = useChat();
 
@@ -46,6 +46,10 @@ export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCu
                                                         newMap.set(room.id, false);
                                                         return newMap;
                                                     });
+
+                                                    socket.emit('readNotification', {
+                                                        recipientId: room.other_user.id
+                                                    })
                                                 }
                                             }}>
                                             <img src={`${process.env.NEXT_PUBLIC_API_URL}/${room.other_user.profile_picture}`} alt={room.other_user.name} className="w-16 h-16 object-cover rounded-full mr-2"/>
@@ -55,9 +59,10 @@ export default function Chat({ rooms, typingMap, newMessageMap, matchList, setCu
                                                     : <p className="text-md text-ellipsis text-nowrap max-w-full overflow-hidden">{lastMessage?.content}</p>
                                                 }
                                             </div>
-                                            {newMessageMap.get(room.id) &&
+                                            {newMessageMap.get(room.id) ?
                                                 <div className="w-3 h-3 absolute top-3 right-3 rounded-full bg-rose-500 border-1 border-red-200"></div>
-                                            }    
+                                                : null
+                                            }
                                         </li>
                                     );
                                 })}
