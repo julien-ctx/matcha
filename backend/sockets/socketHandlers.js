@@ -99,7 +99,6 @@ export function setupSocketEvents(io) {
           errorCode: "NO_MATCH_FOUND",
           message: "Message could not be sent.",
         })
-        console.log("test")
         return
       }
 
