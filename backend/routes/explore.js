@@ -61,7 +61,9 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
       userId,
     ])
     if (!currentUser.rows.length) {
-      return res.status(404).json({ message: "Authenticated user not found in database." })
+      return res
+        .status(404)
+        .json({ message: "Authenticated user not found in database." })
     }
 
     const { latitude, longitude, sexual_orientation, gender } =
@@ -71,9 +73,16 @@ router.get("/browse", httpAuthenticateJWT, async (req, res) => {
     let conditions = `
       id != $1 AND (${sexualPreferences}) AND
       id NOT IN (SELECT liked_id FROM T_LIKE WHERE liker_id = $1)
-      AND id NOT IN (SELECT reported_id FROM T_REPORT WHERE reporter_id = $1)
-      AND id NOT IN (SELECT blocked_id FROM T_BLOCK WHERE blocker_id = $1)
+      AND (
+        id NOT IN (SELECT reported_id FROM T_REPORT WHERE reporter_id = $1)
+        AND id NOT IN (SELECT reporter_id FROM T_REPORT WHERE reported_id = $1)
+      )
+      AND (
+        id NOT IN (SELECT blocked_id FROM T_BLOCK WHERE blocker_id = $1)
+        AND id NOT IN (SELECT blocker_id FROM T_BLOCK WHERE blocked_id = $1)
+      )
     `
+
     let params = [userId]
     let paramCount = 2
 
