@@ -10,9 +10,11 @@ import { useRouter } from "next/navigation"
 import Modal from "./components/Modal"
 
 export default function Home() {
-  const { authStatus, login } = useAuth()
+  const { authStatus, login, socket } = useAuth()
   const router = useRouter()
   const [googleAuthErrorModalOpen, setGoogleAuthErrorModalOpen] = useState<boolean>(false)
+  const [generalErrorModalOpen, setGeneralErrorModalOpen] = useState(false);
+  const [generalErrorMessage, setGeneralErrorMessage] = useState("");
 
   useEffect(() => {
     const userData = Cookies.get("userData")
@@ -28,6 +30,15 @@ export default function Home() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on('error', (data) => {
+      setGeneralErrorMessage(data.message);
+      setGeneralErrorModalOpen(true);
+    })
+  }, [socket])
+
   return (
     <div className="w-full h-full">
       {authStatus === AuthStatus.NotValidated ? (
@@ -40,6 +51,15 @@ export default function Home() {
           <h1 className="w-full text-center text-rose-500 text-2xl">Google authentication failed. Please try again.</h1>
           <button className="border-rose-500 border-2 rounded-lg bg-white duration-100 hover:brightness-95 text-rose-500 px-3 text-lg py-1"
             onClick={() => setGoogleAuthErrorModalOpen(false)}
+          >Close</button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={generalErrorModalOpen} onClose={() => setGeneralErrorModalOpen(false)}>
+        <div className="flex flex-col justify-center items-center gap-3">
+          <p className="text-center text-lg">An error occurred. Please try again.</p>
+          <button className="border-rose-500 border-2 rounded-lg bg-white duration-100 hover:brightness-95 text-rose-500 px-3 text-lg py-1"
+            onClick={() => setGeneralErrorModalOpen(false)}
           >Close</button>
         </div>
       </Modal>
