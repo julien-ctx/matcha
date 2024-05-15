@@ -6,7 +6,7 @@ import Chat from "./Chat"
 import Match from "./Match"
 import ChatRoom from './ChatRoom'
 import Profile from './Profile'
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import Details from './Details'
 import "./MySpace.css"
 import { useUI } from '../contexts/UIContext'
@@ -15,6 +15,7 @@ import axios from 'axios'
 import Verify from './Verify'
 import AnotherConnection from './AnotherConnection'
 import { useChat } from '../contexts/ChatContext'
+import { useTab } from '../contexts/TabContext'
 
 enum SpaceState {
     LOADING,
@@ -26,7 +27,8 @@ enum SpaceState {
 export default function MySpace() {
     const { chatRoomList, matchList, newMessageMap, setChatRoomList, setMatchList, setNewMessageMap, currentChatRoom, setCurrentChatRoom } = useChat();
     const { httpAuthHeader, user, socket } = useAuth();
-    const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList, anotherConnection, toggleAnotherConnection } = useUI();
+    const { showLikesList, showVisitsList, toggleLikesList, toggleVisitsList } = useUI();
+    const { tabActivated } = useTab();
     const [spaceState, setSpaceState] = useState(SpaceState.LOADING);
     const [typingMap, setTypingMap] = useState(new Map());
     const [profiles, setProfiles] = useState([]);
@@ -44,12 +46,11 @@ export default function MySpace() {
         setTypingMap(initialTypingMap);
     }
 
-    function initNewMessageMap() {
+    function initNewMessageMap(chatrooms) {
         const initialNewMessageMap = new Map();
-        chatRoomList.forEach(room => {
-            initialNewMessageMap.set(room.id, false);
+        chatrooms.forEach(room => {
+            initialNewMessageMap.set(room.id, room.unread_messages.length && room.unread_messages.some(msg => msg.recipient_id === user.id));
         });
-    
         setNewMessageMap(initialNewMessageMap);
     }
 
@@ -80,7 +81,7 @@ export default function MySpace() {
             });
             setChatRoomList(chatRoomSorted)
             initTypingMap();
-            initNewMessageMap();
+            initNewMessageMap(response.data);
         }).catch(error => {
             console.error(error)
         })
@@ -116,20 +117,13 @@ export default function MySpace() {
 
         })
 
-        socket.on('anotherConnectionFound', () => {
-            console.log('allo, another connection found, dude')
-            socket.disconnect();
-            toggleAnotherConnection(true);
-        })
-
         return (() => {
-            socket.off('anotherConnectionFound')
             socket.off('userIsTyping')
             socket.off('userStoppedTyping')
         })
     }, [socket, currentChatRoom])
 
-    return anotherConnection ? (
+    return !tabActivated ? (
            <AnotherConnection /> 
         )
         : spaceState === SpaceState.READY ? (

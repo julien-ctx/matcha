@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import axios from "axios"
 import './Details.css';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 
 const enum CurrentDetail {
     Birthday,

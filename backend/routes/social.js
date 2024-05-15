@@ -537,7 +537,7 @@ router.get("/chatrooms", httpAuthenticateJWT, async (req, res) => {
           `
             SELECT sender_id, recipient_id
             FROM T_UNREAD_NOTIFICATION
-            WHERE (sender_id = $1 AND recipient_id = $2) OR (sender_id = $2 OR recipient_id = $1)
+            WHERE (sender_id = $1 AND recipient_id = $2) OR (sender_id = $2 AND recipient_id = $1)
           `,
           [userId, room.other_user_id],
         )

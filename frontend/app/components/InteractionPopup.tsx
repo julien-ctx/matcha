@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import Modal from "./Modal";
 import { capitalize } from '../utils';
 import axios from 'axios';

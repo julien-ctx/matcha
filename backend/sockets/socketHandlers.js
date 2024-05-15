@@ -53,9 +53,9 @@ export function setupSocketEvents(io) {
   io.use(socketAuthenticateJWT)
 
   io.on("connection", (socket) => {
-    if (userSocketMap.has(socket.user.id)) {
-      checkAlreadyExistingConnection(userSocketMap, io, socket)
-    }
+    // if (userSocketMap.has(socket.user.id)) {
+    //   checkAlreadyExistingConnection(userSocketMap, io, socket)
+    // }
 
     setOnlineStatus(socket.user.id, true)
     userSocketMap.set(socket.user.id, socket.id)

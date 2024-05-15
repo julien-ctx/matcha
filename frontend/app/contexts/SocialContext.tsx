@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from './AuthContext';
 
 interface SocialContextType {
     visits: any[];

@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useAuth } from "../auth/AuthProvider"
-import { AuthStatus } from "../auth/authTypes"
+import { useAuth } from "../contexts/AuthContext"
+import { AuthStatus } from "../types/authTypes"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import './account.css'

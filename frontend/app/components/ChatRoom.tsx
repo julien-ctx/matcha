@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import './ChatRoom.css';
 import Modal from './Modal';
 import axios from 'axios';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 import { capitalize } from '../utils';
 
 interface ChatRoomProp {
@@ -47,6 +47,7 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
     }
 
     useEffect(() => {
+        if (!room) return;
         fetchProfile(room.other_user.id)
     }, [room])
 
@@ -93,7 +94,7 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
     };
 
     function handleReport(reportType: string) {
-        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/report/${room.other_user.id}`, {
+        axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/report/${room?.other_user.id}`, {
             reason: reportType
         }, httpAuthHeader)
             .then((res) => {
@@ -111,7 +112,7 @@ export default function ChatRoom({ room, otherTyping, setCurrentRoom, setCurrent
         endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [room?.messages?.length]);
 
-    return (
+    return room && (
         <div className="flex flex-col h-full w-full pt-20">
             <div className="relative w-full h-14 bg-blue-50 flex items-center z-30 shadow-lg p-1">
                 <div className="bg-blue-50 hover:brightness-95 rounded-full w-10 h-10">

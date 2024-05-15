@@ -3,7 +3,7 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
 import React from "react"
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import { useRouter } from "next/navigation"
 import "./Register.css"
 import { validatePassword } from "../utils"

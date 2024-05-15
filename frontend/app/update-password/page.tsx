@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { ReadonlyURLSearchParams, useRouter, useSearchParams } from "next/navigation"
 import axios from "axios"
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import { validatePassword } from "../utils"
 
 export default function UpdatePassword() {

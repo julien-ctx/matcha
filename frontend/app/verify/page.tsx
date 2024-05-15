@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import { ReadonlyURLSearchParams, useSearchParams, useRouter } from "next/navigation"
 import axios from "axios"
-import { AuthStatus } from "../auth/authTypes"
+import { AuthStatus } from "../types/authTypes"
 
 export default function Verify() {
   const { token, authStatus } = useAuth()

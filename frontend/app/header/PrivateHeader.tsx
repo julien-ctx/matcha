@@ -1,7 +1,7 @@
 "use client"
 
 import './PrivateHeader.css';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useUI } from '../contexts/UIContext';

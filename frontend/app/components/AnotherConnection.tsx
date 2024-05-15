@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react";
-import { useAuth } from "../auth/AuthProvider"
+import { useAuth } from "../contexts/AuthContext"
 import { useUI } from "../contexts/UIContext";
 import './AnotherConnection.css'
+import { useTab } from "../contexts/TabContext";
 
 export default function AnotherConnection() {
     const { socket } = useAuth();
-    const { toggleAnotherConnection } = useUI();
+    const { tabActivated } = useTab();
     const [loading, setLoading] = useState(false);
 
     return (
@@ -37,11 +38,7 @@ export default function AnotherConnection() {
                 className="px-4 py-2 text-xl border-rose-500 bg-white text-rose-500 rounded-md border-2 hover:brightness-95 duration-100"
                 onClick={() => {
                     setLoading(true);
-                    socket.emit("useHere", {}, (response: any) => {
-                        if (response.success) {
-                            toggleAnotherConnection(false);
-                        }
-                    })
+                    window.location.reload();
                 }}
                 >Use Here</button>
                 }

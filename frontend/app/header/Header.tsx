@@ -1,10 +1,10 @@
 "use client"
 
 import React, { useState } from 'react';
-import { AuthStatus } from "../auth/authTypes"
+import { AuthStatus } from "../types/authTypes"
 import PublicHeader from './PublicHeader';
 import PrivateHeader from './PrivateHeader';
-import { useAuth } from '../auth/AuthProvider';
+import { useAuth } from '../contexts/AuthContext';
 
 const Header : React.FC = () => {
     const { authStatus } = useAuth();

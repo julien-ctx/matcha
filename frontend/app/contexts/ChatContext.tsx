@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, createContext, useContext } from 'react'
-import { useAuth } from '../auth/AuthProvider'
+import { useAuth } from './AuthContext'
 
 interface ChatContextType {
     chatRoomList: any,
@@ -56,6 +56,12 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
                     const newMap = new Map(prev);
                     newMap.set(data.chatroomId, true);
                     return newMap;
+                })
+            }
+
+            if (currentChatRoom === data.chatroomId) {
+                socket.emit('readNotification', {
+                    recipientId: data.message.sender_id
                 })
             }
         })
