@@ -30,6 +30,8 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     const [kmWithin, setKmWithin] = useState([null]);
     const [fameRatingRange, setFameRatingRange] = useState([null, null]);
     const [tagsList, setTagsList] = useState(null);
+    const [sortBy, setSortBy] = useState(null);
+    const [orderBy, setOrderBy] = useState(null);
 
     const [currentProfileIndex, setCurrentProfileIndex] = useState(0);
 
@@ -48,12 +50,15 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
 
     function fetchFilter() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
-            .then(response => {
+        .then(response => {
+                console.log('fetchFilter', response)
                 if (response.data.message === undefined) {
                     setAgeRange([response.data.age_min, response.data.age_max]);
                     setKmWithin([response.data.location_radius]);
                     setFameRatingRange([response.data.min_fame_rating / 20 + 1, response.data.max_fame_rating / 20]);
                     setTagsList(response.data.tags);
+                    setSortBy(response.data.sort_by);
+                    setOrderBy(response.data.order_by);
                 }
                 setFilterLoaded(true);
         }).catch(error => {
@@ -61,7 +66,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         })
     }
 
-    function browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList) {
+    function browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList, sortBy, orderBy) {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/explore/browse`, {
             headers: {
                 Authorization: `Bearer ${token}`
@@ -72,7 +77,9 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                 locationRadius: kmWithin[0],
                 minFameRating: (fameRatingRange[0] - 1) * 20,
                 maxFameRating: fameRatingRange[1] * 20,
-                tags: tagsList
+                tags: tagsList,
+                sortBy,
+                orderBy
             } : {}
         })
         .then((response) => {
@@ -97,7 +104,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     useEffect(() => {
         if (profiles.length === 0 && !browseFetched && filterLoaded) {
             setLoadState(LoadState.Loading);
-            browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
+            browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList, sortBy, orderBy);
         }
     }, [profiles, filterLoaded]);
     
@@ -105,7 +112,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
         if (!profiles || browseFetched || loadState === LoadState.Loading) return;
         if (profiles.length > 0) return;
         setLoadState(LoadState.Loading);
-        browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList);
+        browseProfiles(ageRange, kmWithin, fameRatingRange, tagsList, sortBy, orderBy);
     }, [profiles, browseFetched, loadState])
 
     useEffect(() => {
@@ -236,9 +243,12 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                     setFameRatingRange={setFameRatingRange}
                     tagsList={tagsList}
                     setTagsList={setTagsList}
-                    setModalOpen={setModalOpen}
-                    setProfiles={setProfiles}
+                    sortBy={sortBy}
+                    setSortBy={setSortBy}
+                    orderBy={orderBy}
+                    setOrderBy={setOrderBy}
                     browseProfiles={browseProfiles}
+                    setModalOpen={setModalOpen}
                 />
             </Modal>
 

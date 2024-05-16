@@ -14,6 +14,12 @@
     grid-template-columns: 35% 65%;
 }
 
+.parameter-section2 {
+    @apply w-[95%] gap-3 grid my-2;
+    grid-template-columns: 25% 75%;
+
+}
+
 .range-slider {
     @apply h-2 w-full rounded-lg bg-gradient-to-r-main border-1;
 }

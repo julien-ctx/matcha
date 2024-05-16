@@ -29,6 +29,7 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
 
     const { setChatRoomErrorModalOpen } = useChat();
 
+    console.log('profile', profile)
     function prevImage() {
         if (currentImageIndex === 0) return;
 
@@ -105,9 +106,13 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
             <div className="bg-gradient-to-r-main lg:h-[98%] w-full lg:w-3/5 rounded-xl flex p-4">
                 <div className="bg-slate-50 p-2 rounded-xl lg:p-2 w-full min-h-full overflow-y-auto flex flex-wrap gap-1 border-2">
                     <div className="flex h-24 gap-1 w-full">
-                        <div className="infoBox w-1/2">
+                        <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Name</h1>
                             {profile.first_name}
+                        </div>
+                        <div className="infoBox w-1/4">
+                            <h1 className="infoTitle">Gender</h1>
+                            {profile.gender}
                         </div>
                         <div className="infoBox w-1/4">
                             <h1 className="infoTitle">Age</h1>

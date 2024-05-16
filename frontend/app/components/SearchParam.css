@@ -1,0 +1,11 @@
+.radio-input {
+    display: none;
+}
+
+.radio-label2 {
+    @apply w-32 border-2 border-slate-600 text-slate-600 py-2 cursor-pointer text-center duration-150 px-3 rounded-md;
+}
+
+.radio-input:checked + .radio-label2 {
+    @apply text-white bg-gradient-to-r-main border-0;
+}
