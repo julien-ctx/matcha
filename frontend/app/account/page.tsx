@@ -64,10 +64,6 @@ export default function Account() {
 
   const [position, setPosition] = useState([51.505, -0.09]);
 
-  useEffect(() => {
-    console.log('position changed:', position)
-  }, [position])
-
   const [passwordFormData, setPasswordFormData] = useState({
     currentPassword: "",
     newPasswordFirst: "",
@@ -397,7 +393,6 @@ const renderGenderOption = (option) => (
                 <DraggableMarker position={position} setPosition={(e) => setPosition([e.lat, e.lng])} />
               </MapContainer>
               <button className="save-btn" onClick={() => {
-                console.log('position:', position)
                 axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, { latitude: position[0], longitude: position[1] }, httpAuthHeader)
                   .then(res => {
                     window.location.reload();

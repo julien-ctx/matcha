@@ -25,6 +25,9 @@ export default function RootLayout({
           <SocialProvider>
             <ChatProvider>
               <html lang="en">
+                <head>
+                  <link rel="icon" href="/favicon.svg" />
+                </head>
                 <body>
                   <Header />
                   <main>

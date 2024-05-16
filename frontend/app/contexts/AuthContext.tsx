@@ -76,7 +76,7 @@ const AuthProvider = ({ children }) => {
               setUser(response.data.user)
               if (response.data.user.date_of_birth) {
                 connectSocket(storedToken);
-                console.log('Socket connection established.')
+                // console.log('Socket connection established.')
               }
             setAuthStatus(AuthStatus.Validated);
           } else {
