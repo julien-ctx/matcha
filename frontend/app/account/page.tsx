@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { AuthStatus } from "../types/authTypes"
 import axios from "axios"
@@ -9,6 +9,8 @@ import './account.css'
 import { calculAge, capitalize, validatePassword } from "../utils"
 import Modal from "../components/Modal"
 import { useChat } from "../contexts/ChatContext"
+import L from 'leaflet';
+import { type } from "os"
 
 const tagsList = [
   'piercing', 'geek', 'biker', 'athlete', 'adventurer', 'artist',
@@ -34,12 +36,63 @@ export default function Account() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const { setNewMessageArrived} = useChat();
+  const [map, setMap] = useState(null);
+  const mapRef = useRef(null); 
+  const mapInstance = useRef(null); 
 
   const [passwordFormData, setPasswordFormData] = useState({
     currentPassword: "",
     newPasswordFirst: "",
     newPasswordSecond: "",
   });
+
+  useEffect(() => {
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+        iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+        iconUrl: require('leaflet/dist/images/marker-icon.png'),
+        shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    if (typeof window === 'undefined') return;
+    console.log(mapRef.current, mapInstance.current)
+    if (mapRef.current && !mapInstance.current) {
+      console.log('creating map')
+      const initialMap = L.map(mapRef.current).setView([user.latitude, user.longitude], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+      }).addTo(initialMap);
+
+      const marker = L.marker([user.latitude, user.longitude], { draggable: true }).addTo(initialMap);
+
+      marker.on('dragend', function(event) {
+        const position = event.target.getLatLng();
+        console.log(`New position: ${position.lat}, ${position.lng}`);
+      });
+
+      initialMap.on('click', function(e) {
+        const clickedLat = e.latlng.lat;
+        const clickedLng = e.latlng.lng;
+        marker.setLatLng([clickedLat, clickedLng]).update();
+        console.log(`New position from click: ${clickedLat}, ${clickedLng}`);
+      });
+
+      mapInstance.current = initialMap; // Save the map instance
+    }
+
+    // Clean up map on component unmount
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+      }
+    };
+}, [mapRef, user]);
+
 
   useEffect(() => {
     if (!user) return;
@@ -284,10 +337,6 @@ const renderGenderOption = (option) => (
                     />
                   </div>
                 </div>
-
-                <label className="text-2xl">Your Position</label>
-                <p>{user.city}, {user.country}</p>
-
                 <label className="text-2xl">Your Birthday / Age</label>
                 <p>{user.date_of_birth.split('T')[0]} / {calculAge(user.date_of_birth)} years old</p>
 
@@ -358,6 +407,11 @@ const renderGenderOption = (option) => (
                   }}>Save</button>
               </div>
             </div>
+            <div className="section">
+              <h1 className="text-4xl">Your Location</h1>
+              <div ref={mapRef} id="locationMap" style={{ height: '500px', width: '100%' }}></div>
+            </div>
+
             <div className="section">
               <h1 className="text-4xl">Account Information</h1>
               <label className="text-2xl">Your Email</label>

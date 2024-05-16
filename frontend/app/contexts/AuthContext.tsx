@@ -41,20 +41,6 @@ const AuthProvider = ({ children }) => {
         token: tok
       }
     });
-
-    newSocket.on('connect', () => {
-      console.log('Connected to server successfully!');
-      setSocket(newSocket);
-    });
-  
-    newSocket.on('connect_error', (error) => {
-      console.error('Connection failed:', error);
-    });
-
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected.');
-    });
-  
     setSocket(newSocket);
   }
 
@@ -69,11 +55,12 @@ const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("jwt")
+    socket?.disconnect()
+    setSocket(null)
     setAuthToken(null)
     setAuthStatus(AuthStatus.NotValidated)
     setHttpAuthHeader(null)
     setUser(undefined)
-    setSocket(null)
   }
 
   useEffect(() => {

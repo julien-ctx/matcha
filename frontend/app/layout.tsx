@@ -30,6 +30,16 @@ export default function RootLayout({
                   <main>
                     {children}
                   </main>
+                  <footer className="w-full h-14 bg-slate-950 px-4 relative flex items-center">
+                    <div className="text-white text-sm flex w-full">
+                      <p>made by</p>
+                      <a href="https://github.com/mgkgng" className="footer-anchor">min-kang</a>
+                      <p>and</p>
+                      <a href="https://github.com/julien-ctx" className="footer-anchor">jcauchet</a>
+                    </div>
+
+                    <p className="absolute top-1/2 right-4 text-white -translate-y-1/2">matcha</p>
+                  </footer>
                 </body>
               </html>
             </ChatProvider>
