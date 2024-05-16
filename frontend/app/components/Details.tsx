@@ -4,12 +4,40 @@ import React, { useState } from 'react';
 import axios from "axios"
 import './Details.css';
 import { useAuth } from '../contexts/AuthContext';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+const customIcon = new L.Icon({
+    iconUrl: '/marker.svg',
+    iconSize: [38, 38],
+    iconAnchor: [19, 38], 
+    popupAnchor: [0, -38],
+});
+
+const DraggableMarker = ({ position, setPosition }) => {
+    useMapEvents({
+        click(e) {
+        setPosition(e.latlng);
+        },
+    });
+
+    return (
+        <Marker position={position} draggable={true} icon={customIcon}
+        eventHandlers={{
+        dragend: (e) => {
+            setPosition(e.target.getLatLng());
+        }
+        }} />
+    );
+};
 
 const enum CurrentDetail {
     Birthday,
     Gender,
     Orientation,
     Photos,
+    Position,
     Bio,
     Tags
 }
@@ -49,6 +77,7 @@ export default function Details() {
     const [photos, setPhotos] = useState<any>([]); // TODO type set
     const [bio, setBio] = useState<string>('');
     const [tags, setTags] = useState<string[]>([]);
+    const [position, setPosition] = useState([48.856614, 2.352222]); // Paris: 48.856614, 2.352222
 
     function nextDetail() { setCurrentDetail((prev) => (prev < CurrentDetail.Tags ? prev + 1 : prev)); }
     function prevDetail() { setCurrentDetail((prev) => (prev > CurrentDetail.Birthday ? prev - 1 : prev)); }
@@ -61,8 +90,8 @@ export default function Details() {
         formData.append('sexualOrientation', OrientationList[orientation]);
         formData.append('bio', bio);
         formData.append('tags', tags.join(','));
-        formData.append('latitude', 999);
-        formData.append('longitude', 999);
+        formData.append('latitude', position[0]);
+        formData.append('longitude', position[1]);
         
         photos.forEach((photo, index) => {
             formData.append(`pictures`, photo, `photo${index}.jpg`);
@@ -74,15 +103,7 @@ export default function Details() {
                 'Content-Type': 'multipart/form-data'
             }
         }).then(res => {
-            // It's not pretty but it works
-            axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
-                latitude: 999,
-                longitude: 999
-            }, httpAuthHeader).then(response => {
-                window.location.reload();
-            }).catch(e => {
-                console.log('error:', e);
-            })
+            window.location.reload();
         }).catch(e => {
             console.log('error:', e);
         })
@@ -123,6 +144,8 @@ export default function Details() {
                 return orientation !== null;
             case CurrentDetail.Photos:
                 return photos.length > 0;
+            case CurrentDetail.Position:
+                return position[0] !== null;
             case CurrentDetail.Bio:
                 return bio.trim().length > 0;
             case CurrentDetail.Tags:
@@ -134,7 +157,6 @@ export default function Details() {
 
     const isFirstDetail = currentDetail === CurrentDetail.Birthday;
     const isLastDetail = currentDetail === CurrentDetail.Tags;
-
 
     const orientationOptions = [
         { id: 'male', value: Orientation.Male, label: 'Male' },
@@ -236,6 +258,15 @@ export default function Details() {
                             </div>
                         ))}
                     </div>
+                </div>}
+                {currentDetail === CurrentDetail.Position && <div>
+                    <h1 className="text-4xl">Show us where you are!</h1>
+                    <MapContainer center={position} zoom={13} className="w-full aspect-square">
+                        <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                        <DraggableMarker position={position} setPosition={(e) => setPosition([e.lat, e.lng])} />
+                    </MapContainer>
                 </div>}
                 {currentDetail === CurrentDetail.Bio && <div className="w-4/5 h-3/5 flex flex-col items-center justify-center">
                     <h2 className="detail-title mb-4">Bio</h2>
