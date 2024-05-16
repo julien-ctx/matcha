@@ -23,9 +23,7 @@ export const TabProvider = ({ children }) => {
     useEffect(() => {
         if (!user) return;
 
-        console.log('checking tab')
         localStorage.setItem(TAB_KEY, tabId);
-        console.log('tab set')
     }, [user])
 
 

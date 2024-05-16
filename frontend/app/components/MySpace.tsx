@@ -74,8 +74,6 @@ export default function MySpace() {
 
     function fetchChatRooms() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/social/chatrooms`, httpAuthHeader).then(response => {
-            console.log('chatroom: ', response.data)
-            // TODO sort by last message 
             const chatRoomSorted = response.data.sort((a, b) => {
                 return new Date(b.updated_at) - new Date(a.updated_at);
             });

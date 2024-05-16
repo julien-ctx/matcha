@@ -13,6 +13,10 @@ export const setOnlineStatus = async (userId, isOnline) => {
       isOnline,
       userId,
     ])
+
+    await pool.query("UPDATE T_USER SET last_login = CURRENT_TIMESTAMP WHERE id = $1;", [
+      userId
+    ])
   } catch (error) {
     console.error("Database error setting user online status:", error)
   }

@@ -29,7 +29,6 @@ export default function Profile({ profile, matchList, setMatchList, setCurrentPr
 
     const { setChatRoomErrorModalOpen } = useChat();
 
-    console.log('profile', profile)
     function prevImage() {
         if (currentImageIndex === 0) return;
 

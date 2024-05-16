@@ -51,7 +51,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     function fetchFilter() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/profile/filter`, httpAuthHeader)
         .then(response => {
-                console.log('fetchFilter', response)
                 if (response.data.message === undefined) {
                     setAgeRange([response.data.age_min, response.data.age_max]);
                     setKmWithin([response.data.location_radius]);
@@ -157,7 +156,6 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
     function handleDislike() {
         axios.post(`${process.env.NEXT_PUBLIC_API_URL}/social/dislike/${profiles[currentProfileIndex]?.id}`, {}, httpAuthHeader)
             .then(res => {
-                console.log('unlike', res.data);
                 socket.emit('unlike', { recipientId: profiles[currentProfileIndex]?.id });
 
                 setProfiles(currentProfiles => currentProfiles.filter((_, index) => index !== currentProfileIndex));
