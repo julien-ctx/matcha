@@ -296,7 +296,7 @@ export default function Match({ setCurrentProfile, setMatchList, setShowChatResp
                             axios.put(`${process.env.NEXT_PUBLIC_API_URL}/profile/details`, {
                                 isPremium: true
                             }, httpAuthHeader).then((res) => {
-                                window.location.reload();
+                                window.location.href = '/'
                             }).catch((err) => {
                                 console.error(err);
                             })
